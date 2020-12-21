@@ -30,7 +30,10 @@ android {
         jvmTarget = '1.8'
     }
 }
-
+repositories {
+    jcenter()
+    maven { url 'https://jitpack.io' }
+}
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -46,5 +49,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-
+    implementation 'com.beust:klaxon:5.0.1'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation "io.karn:khttp-android:0.1.2"
 }
