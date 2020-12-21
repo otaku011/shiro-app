@@ -1,31 +1,48 @@
 package com.example.fastani.ui.notifications
 
+import android.content.res.Configuration
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.preference.*
+
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreferenceCompat
 import com.example.fastani.R
 
-class NotificationsFragment : Fragment() {
+class NotificationsFragment : PreferenceFragmentCompat() {
 
-    private lateinit var notificationsViewModel: NotificationsViewModel
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.settings, rootKey)
+        val autoDarkMode = findPreference("auto_dark_mode") as SwitchPreferenceCompat?
+        val darkMode = findPreference("dark_mode") as SwitchPreferenceCompat?
+        darkMode?.isEnabled = autoDarkMode?.isChecked != true
+        darkMode?.isChecked =
+            resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
-        notificationsViewModel =
-                ViewModelProviders.of(this).get(NotificationsViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_notifications, container, false)
-        val textView: TextView = root.findViewById(R.id.text_notifications)
-        notificationsViewModel.text.observe(viewLifecycleOwner, Observer {
-            textView.text = it
-        })
-        return root
+        autoDarkMode?.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { preference: Preference, any: Any ->
+                darkMode?.isEnabled = any != true
+                if (any == true) {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+                    val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                    darkMode?.isChecked = isDarkMode == Configuration.UI_MODE_NIGHT_YES
+                } else {
+                    if (darkMode?.isChecked == true) {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    } else {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    }
+                }
+                return@OnPreferenceChangeListener true
+            }
+        darkMode?.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { preference: Preference, any: Any ->
+                if (any == true) {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                } else {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                }
+                return@OnPreferenceChangeListener true
+            }
     }
 }
