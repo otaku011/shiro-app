@@ -1,6 +1,7 @@
 package com.example.fastani
 
 import android.os.Bundle
+import android.webkit.CookieManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -14,8 +15,10 @@ import com.beust.klaxon.Klaxon
 import com.beust.klaxon.Parser
 import com.beust.klaxon.lookup
 import khttp.responses.Response
+import khttp.structures.cookie.Cookie
 import khttp.structures.cookie.CookieJar
 import org.json.JSONObject
+import java.net.HttpCookie
 import kotlin.concurrent.thread
 
 data class Token(val headers: Map<String, String>, val cookies: CookieJar)
@@ -39,29 +42,45 @@ data class Card(
     val anilistId: String,
     val cdnData: CdnData,
 )
+
 data class AnimeData(val cards: List<Card>)
 data class SearchResponse(val animeData: AnimeData)
 
+// No error handling so far
+fun getToken(): Token? {
+    val headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0")
+    val fastani = khttp.get("https://fastani.net", headers = headers)
+
+    // fastani.cookie doesn't work
+    val responseHeaders = fastani.headers["Set-Cookie"]?.replace("\n", "")
+    println(responseHeaders)
+    val cookies = HttpCookie.parse(responseHeaders)
+
+    val cookieMap = mutableMapOf<String, String>()
+    cookies.forEach {
+        cookieMap[it.name] = it.value
+        println(it.name)
+    }
+    val cookieJar = CookieJar(cookieMap)
+
+    val jsMatch = Regex("""src=\"(\/static\/js\/main.*?)\"""").find(fastani.text)
+    val (destructed) = jsMatch!!.destructured
+    val jsLocation = "https://fastani.net$destructed"
+    val js = khttp.get(jsLocation, headers = headers)
+    val tokenMatch = Regex("""method:\"GET\".*?\"(.*?)\".*?\"(.*?)\"""").find(js.text)
+    val (key, token) = tokenMatch!!.destructured
+    println("COOKIE: $cookieJar")
+
+    return Token(
+        mapOf(
+            key to token,
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
+        ), fastani.cookies
+    )
+}
+
 class MainActivity : AppCompatActivity() {
 
-    // No error handling so far
-    private fun getToken(): Token {
-        val headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0")
-        val fastani = khttp.get("https://fastani.net", headers = headers)
-        val cookies = fastani.cookies
-        val jsMatch = Regex("""src=\"(\/static\/js\/main.*?)\"""").find(fastani.text)
-        val (destructed) = jsMatch!!.destructured
-        val jsLocation = "https://fastani.net$destructed"
-        val js = khttp.get(jsLocation, headers = headers)
-        val tokenMatch = Regex("""method:\"GET\".*?\"(.*?)\".*?\"(.*?)\"""").find(js.text)
-        val (key, token) = tokenMatch!!.destructured
-        return Token(
-            mapOf(
-                key to token,
-                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
-            ), cookies
-        )
-    }
 
     private fun search(query: String, token: Token, page: Int = 1): SearchResponse? {
         // Tags and years can be added
@@ -95,7 +114,7 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         thread {
             val token = getToken()
-            search("never", token)
+            //search("never", token)
         }
 
 

@@ -3,14 +3,13 @@ package com.example.fastani.ui.dashboard
 import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.os.Bundle
+import android.transition.TransitionManager
 import android.view.*
 import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.fastani.R
 import kotlinx.android.synthetic.main.fragment_dashboard.*
@@ -26,33 +25,39 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        main_search.onActionViewExpanded()
-        val roomParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
-            LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view width
-            LinearLayoutCompat.LayoutParams.WRAP_CONTENT // view height
-        )
-        roomParams.gravity = Gravity.CENTER_VERTICAL or Gravity.END
-        roomParams.height = 120.toPx
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                return false
+                println(query)
+                return true
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                print(newText);
+                println(newText);
                 return true
             }
         })
-        main_search.layoutParams = roomParams;
+        main_search.setOnQueryTextFocusChangeListener { view, b ->
+            val searchParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+                LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+                60.toPx // view height
+            )
+            TransitionManager.beginDelayedTransition(main_search)
+
+            val margins = if (b) 0 else 10.toPx
+            searchParams.height -= margins
+            searchParams.setMargins(margins)
+            main_search.layoutParams = searchParams
+        }
+        main_search.onActionViewExpanded()
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         dashboardViewModel =
-                ViewModelProviders.of(this).get(DashboardViewModel::class.java)
+            ViewModelProviders.of(this).get(DashboardViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_dashboard, container, false)
 
         return root
