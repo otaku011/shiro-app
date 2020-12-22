@@ -9,8 +9,37 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
+import khttp.responses.Response
+import khttp.structures.cookie.CookieJar
+import kotlin.concurrent.thread
+
+data class Token(val headers: Map<String, String>, val cookies: CookieJar)
 
 class MainActivity : AppCompatActivity() {
+
+    // No error handling so far
+    private fun getToken(): Token {
+        val headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0")
+        val fastani = khttp.get("https://fastani.net", headers = headers)
+        val cookies = fastani.cookies
+        val jsMatch = Regex("""src=\"(\/static\/js\/main.*?)\"""").find(fastani.text)
+        val (destructed) = jsMatch!!.destructured
+        val jsLocation = "https://fastani.net$destructed"
+        val js = khttp.get(jsLocation, headers = headers)
+        val tokenMatch = Regex("""method:\"GET\".*?\"(.*?)\".*?\"(.*?)\"""").find(js.text)
+        val (key, token) = tokenMatch!!.destructured
+        return Token(mapOf(key to token, "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"), cookies)
+    }
+
+    private fun search(query: String, token: Token, page: Int = 1): Any? {
+        // Tags and years can be added
+        val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
+        // Security headers
+        val headers = token.headers
+        val response = khttp.get(url, headers = headers, cookies = token.cookies)
+        println(response.text)
+        return null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Setting the theme
@@ -31,6 +60,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
+        // UNCOMMENT FOR WORKING SEARCH
+        /*thread {
+            val token = getToken()
+            search("overlord", token)
+        }*/
+
 
         val navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
