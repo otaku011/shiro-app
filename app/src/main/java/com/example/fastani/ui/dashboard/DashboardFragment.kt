@@ -11,8 +11,15 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.Headers
 import com.example.fastani.R
+import com.example.fastani.getToken
+import com.example.fastani.search
 import kotlinx.android.synthetic.main.fragment_dashboard.*
+import kotlinx.android.synthetic.main.search_result.view.*
+import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
@@ -28,6 +35,31 @@ class DashboardFragment : Fragment() {
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 println(query)
+                cardSpace.removeAllViews()
+                thread {
+                    val token = getToken()
+                    val data = search(query, token)
+                    val headers = token.headers.toMutableMap()
+                    headers["Cookie"] = ""
+                    token.cookies.forEach {
+                        headers["Cookie"] += it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";"
+                    }
+                    data?.animeData?.cards?.forEach {
+
+                        val card: View = layoutInflater.inflate(R.layout.search_result, null)
+                        val glideUrl =
+                            GlideUrl("https://fastani.net/" + it.coverImage.large) { headers }
+                        activity?.runOnUiThread {
+                            context?.let {
+                                Glide.with(it)
+                                    .load(glideUrl)
+                                    .into(card.imageView)
+                            }
+                            card.cardTitle.text = it.title.english
+                            cardSpace.addView(card)
+                        }
+                    }
+                }
                 return true
             }
 
@@ -58,8 +90,7 @@ class DashboardFragment : Fragment() {
     ): View? {
         dashboardViewModel =
             ViewModelProviders.of(this).get(DashboardViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_dashboard, container, false)
 
-        return root
+        return inflater.inflate(R.layout.fragment_dashboard, container, false)
     }
 }

@@ -47,9 +47,11 @@ data class Card(
 data class AnimeData(val cards: List<Card>)
 data class SearchResponse(val animeData: AnimeData)
 
+const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
+
 // No error handling so far
 fun getToken(): Token {
-    val headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0")
+    val headers = mapOf("User-Agent" to USER_AGENT)
     val fastani = khttp.get("https://fastani.net", headers = headers)
 
     val jsMatch = Regex("""src=\"(\/static\/js\/main.*?)\"""").find(fastani.text)
@@ -58,26 +60,28 @@ fun getToken(): Token {
     val js = khttp.get(jsLocation, headers = headers)
     val tokenMatch = Regex("""method:\"GET\".*?\"(.*?)\".*?\"(.*?)\"""").find(js.text)
     val (key, token) = tokenMatch!!.destructured
-
+    val tokenHeaders = mapOf(
+        key to token,
+        "User-Agent" to USER_AGENT
+    )
     return Token(
-        mapOf(
-            key to token,
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
-        ), fastani.cookies
+        tokenHeaders,
+        fastani.cookies,
     )
 }
 
+fun search(query: String, token: Token, page: Int = 1): SearchResponse? {
+    // Tags and years can be added
+    val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
+    // Security headers
+    val headers = token.headers
+    val response = khttp.get(url, headers = headers, cookies = token.cookies)
+    val parsed = Klaxon().parse<SearchResponse>(response.text)
+    println(parsed)
+    return parsed
+}
+
 class MainActivity : AppCompatActivity() {
-    private fun search(query: String, token: Token, page: Int = 1): SearchResponse? {
-        // Tags and years can be added
-        val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
-        // Security headers
-        val headers = token.headers
-        val response = khttp.get(url, headers = headers, cookies = token.cookies)
-        val parsed = Klaxon().parse<SearchResponse>(response.text)
-        println(parsed)
-        return parsed
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Setting the theme
