@@ -10,6 +10,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Klaxon
 import com.beust.klaxon.Parser
 import com.beust.klaxon.lookup
 import khttp.responses.Response
@@ -18,6 +19,28 @@ import org.json.JSONObject
 import kotlin.concurrent.thread
 
 data class Token(val headers: Map<String, String>, val cookies: CookieJar)
+data class Title(val romaji: String, val english: String, val native: String)
+data class EndDate(val year: Int, val month: Int, val day: Int)
+data class Episode(val file: String, val title: String, val thumb: String)
+data class CoverImage(val large: String)
+data class Seasons(val episodes: List<Episode>)
+data class CdnData(val seasons: List<Seasons>)
+data class Card(
+    val title: Title,
+    val endDate: EndDate,
+    val episodes: Int,
+    val duration: Int,
+    val trailer: String?,
+    val averageScore: Int,
+    val isAdult: Boolean,
+    val status: String,
+    val coverImage: CoverImage,
+    val bannerImage: String,
+    val anilistId: String,
+    val cdnData: CdnData,
+)
+data class AnimeData(val cards: List<Card>)
+data class SearchResponse(val animeData: AnimeData)
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,20 +63,15 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun search(query: String, token: Token, page: Int = 1): JsonObject {
+    private fun search(query: String, token: Token, page: Int = 1): SearchResponse? {
         // Tags and years can be added
         val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
         // Security headers
         val headers = token.headers
         val response = khttp.get(url, headers = headers, cookies = token.cookies)
-        val parser: Parser = Parser.default()
-        val stringBuilder: StringBuilder = StringBuilder(response.text)
-        val json: JsonObject = parser.parse(stringBuilder) as JsonObject
-        val cardArray = json.obj("animeData")?.array<JsonObject>("cards")
-        // Gets a JsonArray of streaming links for example
-        // .get(0) is first search result
-        println(cardArray?.get(0)?.lookup<String?>("cdnData.seasons.episodes.file"))
-        return json
+        val parsed = Klaxon().parse<SearchResponse>(response.text)
+        println(parsed)
+        return parsed
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +93,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
-        // UNCOMMENT FOR WORKING SEARCH
         thread {
             val token = getToken()
             search("never", token)
