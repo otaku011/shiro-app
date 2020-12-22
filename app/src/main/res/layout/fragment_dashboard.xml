@@ -10,10 +10,11 @@
     <androidx.appcompat.widget.SearchView
             android:id="@+id/main_search"
             app:queryBackground="@android:color/transparent"
-            android:backgroundTint="@color/colorPrimaryDark"
+
+            android:background="@color/grayBackground"
             app:searchHintIcon="@drawable/search_white"
             android:layout_width="fill_parent"
-            android:layout_height="40dp"
+            android:layout_height="60dp"
             app:queryHint="@string/search_hint" >
 
     </androidx.appcompat.widget.SearchView>

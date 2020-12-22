@@ -1,8 +1,9 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Customize your theme here. -->
+        <item name="android:fontFamily">@font/open_sans_regular</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -10,9 +11,20 @@
         <item name="android:statusBarColor">@color/darkBar</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="tabBackground">@color/darkBar</item>
+        <item name="colorOnPrimary">@color/colorAccent</item>
+        <item name="colorSurface">@color/darkBar</item>
+        <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
     </style>
 
-    <style name="NoActionBarTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/NavigationView</item>
+    </style>
+
+    <style name="NavigationView" parent="Theme.MaterialComponents.Light">
+        <item name="colorPrimary">@color/textColor</item>
+    </style>
+
+    <style name="NoActionBarTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -20,7 +32,7 @@
         <item name="windowActionBar">false</item>
     </style>
 
-    <style name="AppTheme.Picker" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="AppTheme.Picker" parent="Theme.AppCompat.NoActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
         <item name="android:solidColor">@color/colorPrimary</item>
         <item name="android:colorControlNormal">@android:color/white</item>

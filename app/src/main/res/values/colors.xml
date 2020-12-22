@@ -5,4 +5,8 @@
     <color name="colorAccent">#ff4b4a</color>
     <color name="darkBar">#121212</color>
     <color name="background">#000000</color>
+    <color name="textColor">#e6e6e6</color>
+    <color name="grayBackground">#333333</color>
+    <color name="grayItem">#21201e</color>
+    <color name="grayForeground">#b3b3b3</color>
 </resources>
