@@ -9,8 +9,12 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Parser
+import com.beust.klaxon.lookup
 import khttp.responses.Response
 import khttp.structures.cookie.CookieJar
+import org.json.JSONObject
 import kotlin.concurrent.thread
 
 data class Token(val headers: Map<String, String>, val cookies: CookieJar)
@@ -28,17 +32,28 @@ class MainActivity : AppCompatActivity() {
         val js = khttp.get(jsLocation, headers = headers)
         val tokenMatch = Regex("""method:\"GET\".*?\"(.*?)\".*?\"(.*?)\"""").find(js.text)
         val (key, token) = tokenMatch!!.destructured
-        return Token(mapOf(key to token, "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"), cookies)
+        return Token(
+            mapOf(
+                key to token,
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
+            ), cookies
+        )
     }
 
-    private fun search(query: String, token: Token, page: Int = 1): Any? {
+    private fun search(query: String, token: Token, page: Int = 1): JsonObject {
         // Tags and years can be added
         val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
         // Security headers
         val headers = token.headers
         val response = khttp.get(url, headers = headers, cookies = token.cookies)
-        println(response.text)
-        return null
+        val parser: Parser = Parser.default()
+        val stringBuilder: StringBuilder = StringBuilder(response.text)
+        val json: JsonObject = parser.parse(stringBuilder) as JsonObject
+        val cardArray = json.obj("animeData")?.array<JsonObject>("cards")
+        // Gets a JsonArray of streaming links for example
+        // .get(0) is first search result
+        println(cardArray?.get(0)?.lookup<String?>("cdnData.seasons.episodes.file"))
+        return json
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,10 +76,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         // UNCOMMENT FOR WORKING SEARCH
-        /*thread {
+        thread {
             val token = getToken()
-            search("overlord", token)
-        }*/
+            search("never", token)
+        }
 
 
         val navController = findNavController(R.id.nav_host_fragment)
