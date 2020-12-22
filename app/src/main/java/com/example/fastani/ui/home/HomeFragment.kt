@@ -12,27 +12,11 @@ import com.beust.klaxon.Klaxon
 import com.example.fastani.*
 import kotlin.concurrent.thread
 
-data class HomePageResponse(
-    val animeData: AnimeData,
-    val homeSlidesData: List<Card>,
-    val recentlyAddedData: List<Card>,
-    val trendingData: List<Card>
-)
+
 
 class HomeFragment : Fragment() {
 
     private lateinit var homeViewModel: HomeViewModel
-
-    private fun getHome(token: Token): HomePageResponse? {
-        val url = "https://fastani.net/api/data"
-        val response = khttp.get(url, headers=token.headers, cookies=token.cookies)
-        println(token)
-        println(response.text)
-        val parsed = Klaxon().parse<HomePageResponse>(response.text)
-        println(parsed)
-        return parsed
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

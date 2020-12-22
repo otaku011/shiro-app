@@ -15,8 +15,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
 import com.example.fastani.R
-import com.example.fastani.getToken
-import com.example.fastani.search
+import com.example.fastani.FastAniApi
 import kotlinx.android.synthetic.main.fragment_dashboard.*
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.concurrent.thread
@@ -37,18 +36,12 @@ class DashboardFragment : Fragment() {
                 println(query)
                 cardSpace.removeAllViews()
                 thread {
-                    val token = getToken()
-                    val data = search(query, token)
-                    val headers = token.headers.toMutableMap()
-                    headers["Cookie"] = ""
-                    token.cookies.forEach {
-                        headers["Cookie"] += it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";"
-                    }
-                    data?.animeData?.cards?.forEach {
+                    val data = FastAniApi.search(query)
 
+                    data?.animeData?.cards?.forEach {
                         val card: View = layoutInflater.inflate(R.layout.search_result, null)
                         val glideUrl =
-                            GlideUrl("https://fastani.net/" + it.coverImage.large) { headers }
+                            GlideUrl("https://fastani.net/" + it.coverImage.large) { FastAniApi.currentHeaders }
                         activity?.runOnUiThread {
                             context?.let {
                                 Glide.with(it)
