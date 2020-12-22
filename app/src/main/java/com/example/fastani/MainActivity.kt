@@ -24,7 +24,8 @@ import kotlin.concurrent.thread
 data class Token(val headers: Map<String, String>, val cookies: CookieJar)
 data class Title(val romaji: String, val english: String, val native: String)
 data class EndDate(val year: Int, val month: Int, val day: Int)
-data class Episode(val file: String, val title: String, val thumb: String)
+data class FullEpisode(val file: String, val title: String, val thumb: String)
+data class Episode(val file: String)
 data class CoverImage(val large: String)
 data class Seasons(val episodes: List<Episode>)
 data class CdnData(val seasons: List<Seasons>)
@@ -47,21 +48,9 @@ data class AnimeData(val cards: List<Card>)
 data class SearchResponse(val animeData: AnimeData)
 
 // No error handling so far
-fun getToken(): Token? {
+fun getToken(): Token {
     val headers = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0")
     val fastani = khttp.get("https://fastani.net", headers = headers)
-
-    // fastani.cookie doesn't work
-    val responseHeaders = fastani.headers["Set-Cookie"]?.replace("\n", "")
-    println(responseHeaders)
-    val cookies = HttpCookie.parse(responseHeaders)
-
-    val cookieMap = mutableMapOf<String, String>()
-    cookies.forEach {
-        cookieMap[it.name] = it.value
-        println(it.name)
-    }
-    val cookieJar = CookieJar(cookieMap)
 
     val jsMatch = Regex("""src=\"(\/static\/js\/main.*?)\"""").find(fastani.text)
     val (destructed) = jsMatch!!.destructured
@@ -69,7 +58,6 @@ fun getToken(): Token? {
     val js = khttp.get(jsLocation, headers = headers)
     val tokenMatch = Regex("""method:\"GET\".*?\"(.*?)\".*?\"(.*?)\"""").find(js.text)
     val (key, token) = tokenMatch!!.destructured
-    println("COOKIE: $cookieJar")
 
     return Token(
         mapOf(
@@ -80,8 +68,6 @@ fun getToken(): Token? {
 }
 
 class MainActivity : AppCompatActivity() {
-
-
     private fun search(query: String, token: Token, page: Int = 1): SearchResponse? {
         // Tags and years can be added
         val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
@@ -113,7 +99,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
         thread {
-            val token = getToken()
+            //val token = getToken()
             //search("never", token)
         }
 

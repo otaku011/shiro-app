@@ -25,7 +25,7 @@ class HomeFragment : Fragment() {
 
     private fun getHome(token: Token): HomePageResponse? {
         val url = "https://fastani.net/api/data"
-        val response = khttp.get(url, headers=token.headers)
+        val response = khttp.get(url, headers=token.headers, cookies=token.cookies)
         println(token)
         println(response.text)
         val parsed = Klaxon().parse<HomePageResponse>(response.text)
