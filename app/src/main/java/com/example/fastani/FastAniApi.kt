@@ -1,7 +1,11 @@
 package com.example.fastani
 
-import com.beust.klaxon.Klaxon
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import khttp.structures.cookie.CookieJar
+
 
 const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
 
@@ -38,7 +42,10 @@ class FastAniApi {
 
     data class AnimeData(val cards: List<Card>)
     data class SearchResponse(val animeData: AnimeData)
+
     companion object {
+        private val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule()).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+
         // No error handling so far
         private fun getToken(): Token {
             val headers = mapOf("User-Agent" to USER_AGENT)
@@ -67,8 +74,7 @@ class FastAniApi {
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
-            val parsed = response?.let { Klaxon().parse<SearchResponse>(it.text) }
-
+            val parsed: SearchResponse? = response?.text?.let { mapper.readValue(it) }
             println(parsed)
             return parsed
         }
@@ -80,16 +86,14 @@ class FastAniApi {
             if (response != null) {
                 println(response.text)
             }
-            val parsed = response?.let { Klaxon().parse<HomePageResponse>(it.text) }
-            println(parsed)
-            return parsed
+            return response?.text?.let { mapper.readValue(it) }
         }
 
         var currentToken: Token? = null;
-        var currentHeaders:  MutableMap<String, String>? = null;
+        var currentHeaders: MutableMap<String, String>? = null;
 
         fun init() {
-            if(currentToken != null) return;
+            if (currentToken != null) return;
 
             currentToken = getToken();
             currentHeaders = FastAniApi.currentToken?.headers?.toMutableMap()
