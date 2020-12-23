@@ -13,12 +13,10 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.R
 import com.example.fastani.FastAniApi
+import com.example.fastani.ui.GridAdapter
 import kotlinx.android.synthetic.main.fragment_dashboard.*
-import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -36,28 +34,18 @@ class DashboardFragment : Fragment() {
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 progress_bar.visibility = View.VISIBLE;
-                cardSpace.removeAllViews()
                 thread {
                     val data = FastAniApi.search(query)
                     activity?.runOnUiThread{
                         progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                     }
-                    data?.animeData?.cards?.forEach {
-                        val card: View = layoutInflater.inflate(R.layout.search_result, null)
-                        val glideUrl =
-                            GlideUrl("https://fastani.net/" + it.coverImage.large) { FastAniApi.currentHeaders }
-                        activity?.runOnUiThread {
-                            context?.let {
-                                Glide.with(it)
-                                    .load(glideUrl)
-                                    .into(card.imageView)
-                            }
-                            card.cardTitle.text = it.title.english
-                            card.cardDescription.text = it.description
-                            cardSpace.addView(card)
-                        }
+                    val adapter = context?.let {
+                        GridAdapter(
+                            it,
+                            data?.animeData?.cards!! as ArrayList<FastAniApi.Card>
+                        )
                     }
-
+                    cardSpace.adapter = adapter
                 }
                 return true
             }

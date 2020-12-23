@@ -36,12 +36,15 @@
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        <LinearLayout
+        <GridView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:columnWidth="150dp"
+                android:horizontalSpacing="10dp"
+                android:numColumns="3"
                 android:id="@+id/cardSpace"
                 android:orientation="vertical"
         >
-        </LinearLayout>
+        </GridView>
     </ScrollView>
 </LinearLayout>
