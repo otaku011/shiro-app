@@ -3,7 +3,6 @@ package com.example.fastani.ui.dashboard
 import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.os.Bundle
-import android.os.Handler
 import android.transition.ChangeBounds
 import android.transition.Transition
 import android.transition.TransitionManager
@@ -14,11 +13,8 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.transition.AutoTransition
-import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.Headers
 import com.example.fastani.R
 import com.example.fastani.FastAniApi
 import kotlinx.android.synthetic.main.fragment_dashboard.*
@@ -57,7 +53,7 @@ class DashboardFragment : Fragment() {
                                     .into(card.imageView)
                             }
                             card.cardTitle.text = it.title.english
-                            card.cardDescript.text = it.description
+                            card.cardDescription.text = it.description
                             cardSpace.addView(card)
                         }
                     }

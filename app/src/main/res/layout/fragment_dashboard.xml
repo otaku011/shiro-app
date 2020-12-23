@@ -9,8 +9,6 @@
         tools:context=".ui.dashboard.DashboardFragment"
         android:orientation="vertical">
 
-
-
     <androidx.appcompat.widget.SearchView
             android:animateLayoutChanges="true"
             android:id="@+id/main_search"
@@ -34,7 +32,6 @@
             style="@android:style/Widget.Material.ProgressBar.Horizontal"
             android:layout_height="wrap_content">
     </androidx.core.widget.ContentLoadingProgressBar>
-
 
     <ScrollView
             android:layout_width="match_parent"
