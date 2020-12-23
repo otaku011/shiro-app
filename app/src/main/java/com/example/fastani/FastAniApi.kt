@@ -117,7 +117,7 @@ class FastAniApi {
             if (currentToken != null) return
 
             /*
-            var tKey = DataStore.getKey<Int>("test", 1)
+            var tKey = DataStore.getKey<Int>("test","path", 1)
             DataStore.setKey<Int>("test",tKey!!+1)
             println("DDADA::::: " + tKey)*/
 

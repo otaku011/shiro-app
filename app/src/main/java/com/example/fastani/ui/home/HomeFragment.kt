@@ -31,6 +31,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun homeLoaded(data : FastAniApi.HomePageResponse?) {
+        activity?.runOnUiThread {
+            trendingScrollView.removeAllViews()
+            recentScrollView.removeAllViews()
+        }
+
         data?.trendingData?.forEach { cardInfo ->
             val card: View = layoutInflater.inflate(R.layout.home_card, null)
             val glideUrl =
@@ -70,6 +75,11 @@ class HomeFragment : Fragment() {
     override fun onDestroy() {
         FastAniApi.onHomeFetched -= ::homeLoaded;
         super.onDestroy()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

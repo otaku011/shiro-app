@@ -24,6 +24,10 @@ val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).
 
 class DashboardFragment : Fragment() {
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
+
     private lateinit var dashboardViewModel: DashboardViewModel
 
     @SuppressLint("ClickableViewAccessibility")
