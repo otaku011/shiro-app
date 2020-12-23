@@ -10,10 +10,6 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Klaxon
-import com.beust.klaxon.Parser
-import com.beust.klaxon.lookup
 import khttp.responses.Response
 import khttp.structures.cookie.Cookie
 import khttp.structures.cookie.CookieJar

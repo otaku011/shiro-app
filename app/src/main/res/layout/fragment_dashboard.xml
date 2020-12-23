@@ -9,6 +9,8 @@
         tools:context=".ui.dashboard.DashboardFragment"
         android:orientation="vertical">
 
+
+
     <androidx.appcompat.widget.SearchView
             android:animateLayoutChanges="true"
             android:id="@+id/main_search"
@@ -18,10 +20,22 @@
             app:searchHintIcon="@drawable/search_white"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_margin="10dp"
+            android:layout_margin="0dp"
             app:queryHint="@string/search_hint">
 
     </androidx.appcompat.widget.SearchView>
+
+    <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
+    <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="match_parent"
+            android:indeterminate="true"
+            android:layout_marginTop="-6.3dp"
+            style="@android:style/Widget.Material.ProgressBar.Horizontal"
+            android:layout_height="wrap_content">
+    </androidx.core.widget.ContentLoadingProgressBar>
+
+
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">

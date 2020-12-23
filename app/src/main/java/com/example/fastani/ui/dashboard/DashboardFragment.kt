@@ -3,6 +3,9 @@ package com.example.fastani.ui.dashboard
 import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.os.Bundle
+import android.os.Handler
+import android.transition.ChangeBounds
+import android.transition.Transition
 import android.transition.TransitionManager
 import android.view.*
 import android.widget.LinearLayout
@@ -11,6 +14,8 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.Headers
@@ -30,14 +35,17 @@ class DashboardFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        progress_bar.setVisibility(View.GONE)
 
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                println(query)
+                progress_bar.setVisibility(View.VISIBLE);
                 cardSpace.removeAllViews()
                 thread {
                     val data = FastAniApi.search(query)
-
+                    activity?.runOnUiThread{
+                        progress_bar.setVisibility(View.GONE) // GONE for remove space, INVISIBLE for just alpha = 0
+                    }
                     data?.animeData?.cards?.forEach {
                         val card: View = layoutInflater.inflate(R.layout.search_result, null)
                         val glideUrl =
@@ -49,9 +57,11 @@ class DashboardFragment : Fragment() {
                                     .into(card.imageView)
                             }
                             card.cardTitle.text = it.title.english
+                            card.cardDescript.text = it.description
                             cardSpace.addView(card)
                         }
                     }
+
                 }
                 return true
             }
@@ -66,9 +76,12 @@ class DashboardFragment : Fragment() {
                 LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
                 60.toPx // view height
             )
-            TransitionManager.beginDelayedTransition(main_search)
+            val transition: Transition = ChangeBounds();
+            transition.duration = 50 // DURATION OF ANIMATION IN MS
 
-            val margins = if (b) 0 else 10.toPx
+            TransitionManager.beginDelayedTransition(main_search, transition)
+
+            val margins = if (b) 0 else 5.toPx
             searchParams.height -= margins
             searchParams.setMargins(margins)
             main_search.layoutParams = searchParams
@@ -83,6 +96,7 @@ class DashboardFragment : Fragment() {
     ): View? {
         dashboardViewModel =
             ViewModelProviders.of(this).get(DashboardViewModel::class.java)
+
 
         return inflater.inflate(R.layout.fragment_dashboard, container, false)
     }

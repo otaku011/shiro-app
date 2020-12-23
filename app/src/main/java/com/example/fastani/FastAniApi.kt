@@ -37,6 +37,7 @@ class FastAniApi {
         val coverImage: CoverImage,
         val bannerImage: String,
         val anilistId: String,
+        val description: String,
         val cdnData: CdnData,
     )
 
@@ -51,11 +52,11 @@ class FastAniApi {
             val headers = mapOf("User-Agent" to USER_AGENT)
             val fastani = khttp.get("https://fastani.net", headers = headers)
 
-            val jsMatch = Regex("""src=\"(\/static\/js\/main.*?)\"""").find(fastani.text)
+            val jsMatch = Regex("""src="(/static/js/main.*?)"""").find(fastani.text)
             val (destructed) = jsMatch!!.destructured
             val jsLocation = "https://fastani.net$destructed"
             val js = khttp.get(jsLocation, headers = headers)
-            val tokenMatch = Regex("""method:\"GET\".*?\"(.*?)\".*?\"(.*?)\"""").find(js.text)
+            val tokenMatch = Regex("""method:"GET".*?"(.*?)".*?"(.*?)"""").find(js.text)
             val (key, token) = tokenMatch!!.destructured
             val tokenHeaders = mapOf(
                 key to token,
