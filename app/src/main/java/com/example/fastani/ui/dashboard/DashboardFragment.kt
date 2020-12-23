@@ -31,16 +31,16 @@ class DashboardFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        progress_bar.setVisibility(View.GONE)
+        progress_bar.visibility = View.GONE
 
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                progress_bar.setVisibility(View.VISIBLE);
+                progress_bar.visibility = View.VISIBLE;
                 cardSpace.removeAllViews()
                 thread {
                     val data = FastAniApi.search(query)
                     activity?.runOnUiThread{
-                        progress_bar.setVisibility(View.GONE) // GONE for remove space, INVISIBLE for just alpha = 0
+                        progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                     }
                     data?.animeData?.cards?.forEach {
                         val card: View = layoutInflater.inflate(R.layout.search_result, null)
