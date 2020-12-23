@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import khttp.structures.cookie.CookieJar
+import java.lang.Exception
+import java.lang.reflect.Executable
 
 
 const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -14,7 +16,7 @@ class FastAniApi {
         val animeData: AnimeData,
         val homeSlidesData: List<Card>,
         val recentlyAddedData: List<Card>,
-        val trendingData: List<Card>
+        val trendingData: List<Card>,
     )
 
     data class Token(val headers: Map<String, String>, val cookies: CookieJar)
@@ -45,27 +47,32 @@ class FastAniApi {
     data class SearchResponse(val animeData: AnimeData)
 
     companion object {
-        private val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule()).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+        private val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
-        // No error handling so far
-        private fun getToken(): Token {
-            val headers = mapOf("User-Agent" to USER_AGENT)
-            val fastani = khttp.get("https://fastani.net", headers = headers)
+        // NULL IF ERROR
+        private fun getToken(): Token? {
+            try {
+                val headers = mapOf("User-Agent" to USER_AGENT)
+                val fastani = khttp.get("https://fastani.net", headers = headers)
 
-            val jsMatch = Regex("""src="(/static/js/main.*?)"""").find(fastani.text)
-            val (destructed) = jsMatch!!.destructured
-            val jsLocation = "https://fastani.net$destructed"
-            val js = khttp.get(jsLocation, headers = headers)
-            val tokenMatch = Regex("""method:"GET".*?"(.*?)".*?"(.*?)"""").find(js.text)
-            val (key, token) = tokenMatch!!.destructured
-            val tokenHeaders = mapOf(
-                key to token,
-                "User-Agent" to USER_AGENT
-            )
-            return Token(
-                tokenHeaders,
-                fastani.cookies,
-            )
+                val jsMatch = Regex("""src="(/static/js/main.*?)"""").find(fastani.text)
+                val (destructed) = jsMatch!!.destructured
+                val jsLocation = "https://fastani.net$destructed"
+                val js = khttp.get(jsLocation, headers = headers)
+                val tokenMatch = Regex("""method:"GET".*?"(.*?)".*?"(.*?)"""").find(js.text)
+                val (key, token) = tokenMatch!!.destructured
+                val tokenHeaders = mapOf(
+                    key to token,
+                    "User-Agent" to USER_AGENT
+                )
+                return Token(
+                    tokenHeaders,
+                    fastani.cookies,
+                )
+            } catch (e: Exception) {
+                return null
+            }
         }
 
         //search via http get request, NOT INSTANT
@@ -80,14 +87,31 @@ class FastAniApi {
             return parsed
         }
 
+        var cachedHome: HomePageResponse? = null;
+
+        fun requestHome(canBeCached: Boolean = true): HomePageResponse? {
+            if (currentToken == null) return null
+
+            if (cachedHome != null && canBeCached) {
+                onHomeFetched.invoke(cachedHome)
+                return cachedHome
+            }
+            return getHome()
+        }
+
         fun getHome(): HomePageResponse? {
             val url = "https://fastani.net/api/data"
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
-            return response?.text?.let { mapper.readValue(it) }
+            val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
+            cachedHome = res
+            onHomeFetched.invoke(res)
+            return res;
         }
 
         var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
+
+        var onHomeFetched = Event<HomePageResponse?>();
 
         fun init() {
             if (currentToken != null) return
@@ -98,10 +122,13 @@ class FastAniApi {
             println("DDADA::::: " + tKey)*/
 
             currentToken = getToken()
-            currentHeaders = currentToken?.headers?.toMutableMap()
-            currentHeaders?.set("Cookie", "")
-            currentToken?.cookies?.forEach {
-                currentHeaders?.set("Cookie", it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";")
+            if(currentToken != null) {
+                currentHeaders = currentToken?.headers?.toMutableMap()
+                currentHeaders?.set("Cookie", "")
+                currentToken?.cookies?.forEach {
+                    currentHeaders?.set("Cookie", it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";")
+                }
+                requestHome()
             }
         }
     }

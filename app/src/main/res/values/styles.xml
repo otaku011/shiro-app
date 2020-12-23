@@ -11,6 +11,8 @@
         <item name="android:statusBarColor">@color/darkBar</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="tabBackground">@color/darkBar</item>
+        <item name="android:scrollbarThumbHorizontal">@color/transparent</item>
+        <item name="android:scrollbarThumbVertical">@color/transparent</item>
         <item name="colorOnPrimary">@color/colorAccent</item>
         <item name="colorSurface">@color/darkBar</item>
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
