@@ -86,16 +86,21 @@ class FastAniApi {
             return response?.text?.let { mapper.readValue(it) }
         }
 
-        var currentToken: Token? = null;
-        var currentHeaders: MutableMap<String, String>? = null;
+        var currentToken: Token? = null
+        var currentHeaders: MutableMap<String, String>? = null
 
         fun init() {
-            if (currentToken != null) return;
+            if (currentToken != null) return
 
-            currentToken = getToken();
-            currentHeaders = FastAniApi.currentToken?.headers?.toMutableMap()
+            /*
+            var tKey = DataStore.getKey<Int>("test", 1)
+            DataStore.setKey<Int>("test",tKey!!+1)
+            println("DDADA::::: " + tKey)*/
+
+            currentToken = getToken()
+            currentHeaders = currentToken?.headers?.toMutableMap()
             currentHeaders?.set("Cookie", "")
-            FastAniApi.currentToken?.cookies?.forEach {
+            currentToken?.cookies?.forEach {
                 currentHeaders?.set("Cookie", it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";")
             }
         }

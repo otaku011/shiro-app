@@ -1,22 +1,14 @@
 package com.example.fastani
 
 import android.os.Bundle
-import android.webkit.CookieManager
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
-import khttp.responses.Response
-import khttp.structures.cookie.Cookie
-import khttp.structures.cookie.CookieJar
-import org.json.JSONObject
-import java.net.HttpCookie
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.concurrent.thread
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -40,10 +32,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
+
+        DataStore.init(this)
         thread {
-            FastAniApi.init();
-            //val token = getToken()
-            //search("never", token)
+            FastAniApi.init()
         }
 
 

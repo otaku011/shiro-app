@@ -7,15 +7,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import com.bumptech.glide.GenericTransitionOptions.with
-import com.bumptech.glide.Glide
-
 import com.bumptech.glide.load.model.GlideUrl
-
 import com.example.fastani.*
-import com.example.fastani.ui.FastaniGlideModule
 import com.example.fastani.ui.GlideApp
-
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlin.concurrent.thread
