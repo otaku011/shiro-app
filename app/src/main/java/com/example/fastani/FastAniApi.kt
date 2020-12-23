@@ -83,10 +83,6 @@ class FastAniApi {
         fun getHome(): HomePageResponse? {
             val url = "https://fastani.net/api/data"
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
-            println(currentToken)
-            if (response != null) {
-                println(response.text)
-            }
             return response?.text?.let { mapper.readValue(it) }
         }
 

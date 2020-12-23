@@ -6,22 +6,45 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.home.HomeFragment">
-        <LinearLayout
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Trending now"
-                        android:textStyle="bold"
-                        android:padding="10dp"
-                >
-                </TextView>
-            <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-            </HorizontalScrollView>
-        </LinearLayout>
+                android:text="@string/trending_now"
+                android:textStyle="bold"
+                android:padding="10dp"
+        >
+        </TextView>
+        <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="170dp">
+            <LinearLayout
+                    android:id="@+id/trendingScrollView"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+            </LinearLayout>
+        </HorizontalScrollView>
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Recently added"
+                android:textStyle="bold"
+                android:padding="10dp"
+        >
+        </TextView>
+        <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="170dp">
+            <LinearLayout
+                    android:id="@+id/recentScrollView"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
 </LinearLayout>
