@@ -9,11 +9,17 @@ import android.widget.BaseAdapter
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.navigation.Navigation
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.findNavController
+import androidx.navigation.findNavController
+import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.FastAniApi
 import com.example.fastani.FastAniApi.Card
+import com.example.fastani.MainActivity
 import com.example.fastani.R
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.math.roundToInt
@@ -65,6 +71,11 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 Toast.makeText(context, card.title.english, Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
             }
+
+            cardView.setOnClickListener {
+                 MainActivity.loadPage(card)
+            }
+
             val glideUrl =
                 GlideUrl("https://fastani.net/" + card.coverImage.large) { FastAniApi.currentHeaders }
             context.let {

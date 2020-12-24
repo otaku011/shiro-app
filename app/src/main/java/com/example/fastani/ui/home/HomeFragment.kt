@@ -109,11 +109,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-    override fun onDestroy() {
-        FastAniApi.onHomeFetched -= ::homeLoaded;
-        super.onDestroy()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f

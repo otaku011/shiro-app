@@ -3,18 +3,38 @@ package com.example.fastani
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.concurrent.thread
+import android.R
+
+import androidx.navigation.Navigation
+
+
+
 
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        var navController : NavController? = null
         var statusHeight: Int = 0
+        var activity : MainActivity? = null
+
+        fun loadPage(card : FastAniApi.Card) {
+            /*activity?.runOnUiThread {
+                val _navController = Navigation.findNavController(activity!!, R.id.nav_host_fragment)
+                _navController?.navigateUp()
+                _navController?.navigate(R.layout.fragment_results,null,null)
+            }*/
+
+            // NavigationUI.navigateUp(navController!!,R.layout.fragment_results)
+        }
     }
 
     fun getStatusBarHeight(): Int {
@@ -28,6 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         statusHeight = getStatusBarHeight()
+        activity = this
 
         // Setting the theme
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
@@ -54,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val navController = findNavController(R.id.nav_host_fragment)
+        navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
@@ -63,6 +84,6 @@ class MainActivity : AppCompatActivity() {
             )
         )
         //setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        navView.setupWithNavController(navController!!)
     }
 }

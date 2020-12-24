@@ -62,7 +62,7 @@
                     >
                     </ImageView>
 
-                </androidx.cardview.widget.CardView>
+                </androidx.cardview.widget.CardView>ö
                 <TextView
                         android:id="@+id/main_name"
                         android:layout_width="match_parent"
