@@ -16,6 +16,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.*
 import com.example.fastani.FastAniApi.Companion.requestHome
 import com.example.fastani.ui.GlideApp
+import com.example.fastani.ui.PlayerFragment
 import com.example.fastani.ui.dashboard.toPx
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
@@ -64,7 +65,6 @@ class HomeFragment : Fragment() {
             }
 
             main_name.text = cardInfo?.title?.english
-            main_name_jap.text = cardInfo?.title?.native
 
             main_genres.text = cardInfo?.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
 
@@ -72,54 +72,54 @@ class HomeFragment : Fragment() {
                 val card: View = layoutInflater.inflate(R.layout.home_card, null)
                 val glideUrl =
                     GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-              //  activity?.runOnUiThread {
-                    context?.let {
-                        GlideApp.with(it)
-                            .load(glideUrl)
-                            .into(card.imageView)
-                    }
-                    card.imageView.setOnLongClickListener {
-                        Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
-                        return@setOnLongClickListener true
-                    }
-                    trendingScrollView.addView(card)
-               // }
+                //  activity?.runOnUiThread {
+                context?.let {
+                    GlideApp.with(it)
+                        .load(glideUrl)
+                        .into(card.imageView)
+                }
+                card.imageView.setOnLongClickListener {
+                    Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
+                    return@setOnLongClickListener true
+                }
+                trendingScrollView.addView(card)
+                // }
             }
             data?.recentlyAddedData?.forEach { cardInfo ->
                 val card: View = layoutInflater.inflate(R.layout.home_card, null)
                 val glideUrl =
                     GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-               // activity?.runOnUiThread {
-                    context?.let {
-                        GlideApp.with(it)
-                            .load(glideUrl)
-                            .into(card.imageView)
-                    }
-                    card.imageView.setOnLongClickListener {
-                        Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
-                        return@setOnLongClickListener true
-                    }
-                    recentScrollView.addView(card)
+                // activity?.runOnUiThread {
+                context?.let {
+                    GlideApp.with(it)
+                        .load(glideUrl)
+                        .into(card.imageView)
+                }
+                card.imageView.setOnLongClickListener {
+                    Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
+                    return@setOnLongClickListener true
+                }
+                recentScrollView.addView(card)
                 //}
             }
 
-
             main_scroll.alpha = 1f
-            main_load.alpha = 0f
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
-        main_load.alpha = 1f
-
-        main_layout.setPadding(0,MainActivity.statusHeight + 10.toPx,0, 0)
+        main_poster.setOnClickListener {
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(R.id.homeRoot, PlayerFragment())
+                ?.commitAllowingStateLoss()
+        }
 
         main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-            val fade = (FADE_SCROLL_DISTANCE - scrollY)/FADE_SCROLL_DISTANCE
-            val gray : Int = Color.argb(fade,0f,fade,0f)
-         //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
+            val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE
+            val gray: Int = Color.argb(fade, 0f, fade, 0f)
+            //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
         }
         homeViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)

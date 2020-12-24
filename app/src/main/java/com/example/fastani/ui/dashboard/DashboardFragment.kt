@@ -46,7 +46,7 @@ class DashboardFragment : Fragment() {
             ResAdapter(
                 it,
                 ArrayList<FastAniApi.Card>(),
-                cardSpace
+                cardSpace,
             )
         }
         cardSpace.adapter = adapter
