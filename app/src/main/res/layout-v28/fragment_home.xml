@@ -16,7 +16,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:scaleType="centerCrop"
-                android:alpha="0.1"
+                android:alpha="0.07"
                 android:src="@drawable/faded_bg"
                 android:contentDescription="Background"/>
 
@@ -28,7 +28,7 @@
             <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/fastani_name"
+                    android:text="FASTANI HOME"
                     android:gravity="center_horizontal"
                     android:textFontWeight="200"
                     android:textSize="20dp"
