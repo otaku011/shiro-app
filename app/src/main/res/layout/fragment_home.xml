@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -7,129 +7,175 @@
         android:layout_height="match_parent"
         tools:context=".ui.home.HomeFragment"
         android:orientation="vertical"
-        android:id="@+id/main_scroll"
 >
-<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
-android:paddingBottom="100dp"
->
-    <ImageView
-            android:id="@+id/main_backgroundImage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:scaleType="centerCrop"
-            android:alpha="1"
-            android:src="@drawable/faded_bg"
-            android:foreground="@drawable/gradient"
-            android:contentDescription="Background"/>
-
-
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-        <TextView
-                android:id="@+id/main_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Attack On Titan"
-                android:gravity="center_horizontal"
-                android:textFontWeight="200"
-                android:textSize="20dp"
-                android:textColor="@color/textColor"
-                android:padding="10dp"
+    <ProgressBar
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:id="@+id/main_load"
+    >
+    </ProgressBar>
+    <ScrollView android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/main_scroll">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                     android:paddingBottom="100dp"
         >
-        </TextView>
+            <ImageView
+                    android:id="@+id/main_backgroundImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="520dp"
+                    android:layout_alignParentTop="true"
+                    android:scaleType="centerCrop"
+                    android:alpha="1"
+                    android:src="@drawable/faded_bg"
+                    android:foreground="@drawable/gradient"
+                    android:contentDescription="Background"/>
 
-        <ImageView
-                android:id="@+id/main_poster"
-        android:layout_width="200dp"
-        android:layout_height="294dp"
-        android:layout_gravity="center_horizontal"
-            >
+
+            <LinearLayout
+                    android:id="@+id/main_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
 
-        </ImageView>
-        <TextView
-                android:id="@+id/main_genres"
-                android:gravity="center_horizontal"
-                android:layout_gravity="center_horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/textColor"
-                android:layout_margin="10dp"
-                android:text="Survival | Kaiju | Military | Henshin | Post-Apocalyptic | Tragedy">
 
-        </TextView>
-
-        <Button
-                android:textFontWeight="900"
-                android:layout_marginBottom="20dp"
-                android:layout_width="100dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_horizontal"
-                android:backgroundTint="@color/textColor"
-                android:textColor="@color/background"
-                android:text="Play">
-        </Button>
-        <!--
-                    <TextView
+                <androidx.cardview.widget.CardView
+                        android:layout_marginTop="10dp"
+                        android:layout_width="200dp"
+                        android:layout_height="294dp"
+                        android:layout_marginBottom="2dp"
+                        android:elevation="10dp"
+                        app:cardCornerRadius="2dp"
+                        android:layout_gravity="center_horizontal"
+                        app:cardBackgroundColor="@color/grayItem"
+                >
+                    <ImageView
+                            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:id="@+id/main_poster"
+                            android:scaleType="centerCrop"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="FASTANI HOME"
-                            android:gravity="center_horizontal"
-                            android:textFontWeight="200"
-                            android:textSize="20dp"
-                            android:textColor="@color/colorAccent"
-                            android:padding="10dp"
-                    >-->
-        <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/trending_now"
-                android:gravity="center_horizontal"
-                android:textStyle="bold"
-                android:textColor="@color/textColor"
-                android:textFontWeight="900"
-                android:textSize="16dp"
-                android:padding="10dp"
-        >
-        </TextView>
-        <HorizontalScrollView
-                android:layout_width="wrap_content"
-                android:layout_height="170dp">
-            <LinearLayout
-                    android:id="@+id/trendingScrollView"
-                    android:orientation="horizontal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-            </LinearLayout>
-        </HorizontalScrollView>
-        <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/textColor"
-                android:gravity="center_horizontal"
+                            android:layout_height="match_parent"
+                    >
+                    </ImageView>
 
-                android:text="Recently Added"
-                android:textSize="16dp"
-                android:textFontWeight="900"
-                android:textStyle="bold"
-                android:padding="10dp"
-        >
-        </TextView>
-        <HorizontalScrollView
-                android:layout_width="wrap_content"
-                android:layout_height="170dp">
-            <LinearLayout
-                    android:id="@+id/recentScrollView"
-                    android:orientation="horizontal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-            </LinearLayout>
-        </HorizontalScrollView>
-    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+                <TextView
+                        android:id="@+id/main_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="NAME PLACEHOLDER"
+                        android:gravity="center_horizontal"
+                        android:textFontWeight="900"
+                        android:paddingTop="5dp"
+                        android:textSize="20dp"
+                        android:textColor="@color/textColor"
+                >
+                </TextView>
 
+                <TextView
+                        android:visibility="gone"
+                        android:id="@+id/main_name_jap"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="NAME PLACEHOLDER"
+                        android:gravity="center_horizontal"
+                        android:textFontWeight="900"
+                        android:textSize="16dp"
+                        android:textColor="@color/grayForeground"
+                        android:paddingTop="0dp"
+                        android:paddingBottom="10dp"
+                >
+                </TextView>
+
+                <TextView
+                        android:id="@+id/main_genres"
+                        android:gravity="center_horizontal"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textColor"
+                        android:layout_margin="10dp"
+                        android:text="Survival | Kaiju | Military | Henshin | Post-Apocalyptic | Tragedy">
+
+                </TextView>
+
+                <Button
+                        android:layout_marginTop="20dp"
+                        android:textFontWeight="900"
+                        android:layout_marginBottom="20dp"
+                        android:layout_width="150dp"
+                        android:elevation="10dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/button_bg"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:textColor="@color/textColor"
+                        android:text="WATCH ">
+                </Button>
+
+                <!--
+                            <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="FASTANI HOME"
+                                    android:gravity="center_horizontal"
+                                    android:textFontWeight="200"
+                                    android:textSize="20dp"
+                                    android:textColor="@color/colorAccent"
+                                    android:padding="10dp"
+                            >-->
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/trending_now"
+                        android:gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="@color/textColor"
+                        android:textFontWeight="900"
+                        android:textSize="16dp"
+                        android:padding="10dp"
+                >
+                </TextView>
+                <HorizontalScrollView
+                        android:layout_width="wrap_content"
+                        android:layout_height="170dp">
+                    <LinearLayout
+                            android:id="@+id/trendingScrollView"
+                            android:orientation="horizontal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+                    </LinearLayout>
+                </HorizontalScrollView>
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textColor"
+                        android:gravity="center_horizontal"
+
+                        android:text="Recently Added"
+                        android:textSize="16dp"
+                        android:textFontWeight="900"
+                        android:textStyle="bold"
+                        android:padding="10dp"
+                >
+                </TextView>
+                <HorizontalScrollView
+                        android:layout_width="wrap_content"
+                        android:layout_height="170dp">
+                    <LinearLayout
+                            android:id="@+id/recentScrollView"
+                            android:orientation="horizontal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+                    </LinearLayout>
+                </HorizontalScrollView>
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </ScrollView>
 </FrameLayout>
-</ScrollView>

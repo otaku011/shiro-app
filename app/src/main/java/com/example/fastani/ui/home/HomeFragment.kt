@@ -1,5 +1,6 @@
 package com.example.fastani.ui.home
 
+import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
@@ -23,6 +24,9 @@ import kotlin.concurrent.thread
 const val MAXIMUM_FADE = 0.3f
 const val FADE_SCROLL_DISTANCE = 700f
 
+val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
+
 class HomeFragment : Fragment() {
 
     private lateinit var homeViewModel: HomeViewModel
@@ -39,6 +43,7 @@ class HomeFragment : Fragment() {
 
     private fun homeLoaded(data: FastAniApi.HomePageResponse?) {
         activity?.runOnUiThread {
+
             trendingScrollView.removeAllViews()
             recentScrollView.removeAllViews()
 
@@ -59,13 +64,15 @@ class HomeFragment : Fragment() {
             }
 
             main_name.text = cardInfo?.title?.english
+            main_name_jap.text = cardInfo?.title?.native
+
             main_genres.text = cardInfo?.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
 
             data?.trendingData?.forEach { cardInfo ->
                 val card: View = layoutInflater.inflate(R.layout.home_card, null)
                 val glideUrl =
                     GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-                activity?.runOnUiThread {
+              //  activity?.runOnUiThread {
                     context?.let {
                         GlideApp.with(it)
                             .load(glideUrl)
@@ -76,13 +83,13 @@ class HomeFragment : Fragment() {
                         return@setOnLongClickListener true
                     }
                     trendingScrollView.addView(card)
-                }
+               // }
             }
             data?.recentlyAddedData?.forEach { cardInfo ->
                 val card: View = layoutInflater.inflate(R.layout.home_card, null)
                 val glideUrl =
                     GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-                activity?.runOnUiThread {
+               // activity?.runOnUiThread {
                     context?.let {
                         GlideApp.with(it)
                             .load(glideUrl)
@@ -93,8 +100,12 @@ class HomeFragment : Fragment() {
                         return@setOnLongClickListener true
                     }
                     recentScrollView.addView(card)
-                }
+                //}
             }
+
+
+            main_scroll.alpha = 1f
+            main_load.alpha = 0f
         }
     }
 
@@ -103,29 +114,17 @@ class HomeFragment : Fragment() {
         super.onDestroy()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        main_name.setPadding(0,MainActivity.statusHeight,0,0)
-                /*
-                activity?.getWindow()?.setFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS, WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        main_scroll.alpha = 0f
+        main_load.alpha = 1f
 
-                val rectangle = Rect()
-                val window: Window? = activity?.getWindow()
-                window?.getDecorView()?.getWindowVisibleDisplayFrame(rectangle)
-                val statusBarHeight: Int = rectangle.top
-                val contentViewTop: Int = window.findViewById(Window.ID_ANDROID_CONTENT).getTop()
-                val titleBarHeight = contentViewTop - statusBarHeight
+        main_layout.setPadding(0,MainActivity.statusHeight + 10.toPx,0, 0)
 
-               */
         main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             val fade = (FADE_SCROLL_DISTANCE - scrollY)/FADE_SCROLL_DISTANCE
             val gray : Int = Color.argb(fade,0f,fade,0f)
-            main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade)
+         //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
         }
         homeViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
