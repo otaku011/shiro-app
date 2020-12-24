@@ -34,40 +34,49 @@ class HomeFragment : Fragment() {
         activity?.runOnUiThread {
             trendingScrollView.removeAllViews()
             recentScrollView.removeAllViews()
-        }
 
-        data?.trendingData?.forEach { cardInfo ->
-            val card: View = layoutInflater.inflate(R.layout.home_card, null)
-            val glideUrl =
-                GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-            activity?.runOnUiThread {
-                context?.let {
-                    GlideApp.with(it)
-                        .load(glideUrl)
-                        .into(card.imageView)
-                }
-                card.imageView.setOnLongClickListener {
-                    Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
-                    return@setOnLongClickListener true
-                }
-                trendingScrollView.addView(card)
+            val cardInfo = data?.homeSlidesData?.get(0)
+            val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
+            context?.let {
+                GlideApp.with(it)
+                    .load(glideUrl)
+                    .into(main_backgroundImage)
             }
-        }
-        data?.recentlyAddedData?.forEach { cardInfo ->
-            val card: View = layoutInflater.inflate(R.layout.home_card, null)
-            val glideUrl =
-                GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-            activity?.runOnUiThread {
-                context?.let {
-                    GlideApp.with(it)
-                        .load(glideUrl)
-                        .into(card.imageView)
+            main_backgroundImage.alpha = 0.3f
+
+            data?.trendingData?.forEach { cardInfo ->
+                val card: View = layoutInflater.inflate(R.layout.home_card, null)
+                val glideUrl =
+                    GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
+                activity?.runOnUiThread {
+                    context?.let {
+                        GlideApp.with(it)
+                            .load(glideUrl)
+                            .into(card.imageView)
+                    }
+                    card.imageView.setOnLongClickListener {
+                        Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
+                        return@setOnLongClickListener true
+                    }
+                    trendingScrollView.addView(card)
                 }
-                card.imageView.setOnLongClickListener {
-                    Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
-                    return@setOnLongClickListener true
+            }
+            data?.recentlyAddedData?.forEach { cardInfo ->
+                val card: View = layoutInflater.inflate(R.layout.home_card, null)
+                val glideUrl =
+                    GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
+                activity?.runOnUiThread {
+                    context?.let {
+                        GlideApp.with(it)
+                            .load(glideUrl)
+                            .into(card.imageView)
+                    }
+                    card.imageView.setOnLongClickListener {
+                        Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
+                        return@setOnLongClickListener true
+                    }
+                    recentScrollView.addView(card)
                 }
-                recentScrollView.addView(card)
             }
         }
     }

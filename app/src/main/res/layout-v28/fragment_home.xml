@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -7,78 +7,113 @@
         android:layout_height="match_parent"
         tools:context=".ui.home.HomeFragment"
         android:orientation="vertical"
-    >
-    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+>
 
-        <ImageView
-                android:id="@+id/main_backgroundImage"
+    <ImageView
+            android:id="@+id/main_backgroundImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:scaleType="centerCrop"
+            android:alpha="0.3"
+            android:src="@drawable/faded_bg"
+            android:contentDescription="Background"/>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:scaleType="centerCrop"
-                android:alpha="0.07"
-                android:src="@drawable/faded_bg"
-                android:contentDescription="Background"/>
+                android:text="Attack On Titan"
+                android:gravity="center_horizontal"
+                android:textFontWeight="200"
+                android:textSize="20dp"
+                android:textColor="@color/textColor"
+                android:padding="10dp"
+        >
+        </TextView>
 
-        <LinearLayout
+        <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:text="Several hundred years ago, humans were nearly exterminated by titans. Titans are typically several stories tall, seem to have no intelligence, devour human beings and, worst of all, seem to do it for the pleasure rather than as a food source. A small percentage of humanity survived by walling themselves in a city protected by extremely high walls, even taller than the biggest of titans.
+Flash forward to the present and the city has not seen a titan in over 100 years. Teenage boy Eren and his foster sister Mikasa witness something horrific as the city walls are destroyed by a colossal titan that appears out of thin air. As the smaller titans flood the city, the two kids watch in horror as their mother is eaten alive. Eren vows that he will murder every single titan and take revenge for all of mankind.
+(Source: MangaHelpers) "
+                android:gravity="center_horizontal"
+                android:textFontWeight="200"
+                android:maxHeight="400dp"
+                android:textSize="20dp"
+                android:textColor="@color/textColor"
+                android:padding="10dp"
+        >
 
-            <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="FASTANI HOME"
-                    android:gravity="center_horizontal"
-                    android:textFontWeight="200"
-                    android:textSize="20dp"
-                    android:textColor="@color/colorAccent"
-                    android:padding="10dp"
-            >
-            </TextView>
-            <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/trending_now"
-                    android:textStyle="bold"
-                    android:textColor="@color/textColor"
-                    android:textFontWeight="900"
-                    android:textSize="16dp"
-                    android:padding="10dp"
-            >
-            </TextView>
-            <HorizontalScrollView
-                    android:layout_width="wrap_content"
-                    android:layout_height="170dp">
-                <LinearLayout
-                        android:id="@+id/trendingScrollView"
-                        android:orientation="horizontal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-                </LinearLayout>
-            </HorizontalScrollView>
-            <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/textColor"
-                    android:text="Recently Added:"
-                    android:textSize="16dp"
-                    android:textFontWeight="900"
-                    android:textStyle="bold"
-                    android:padding="10dp"
-            >
-            </TextView>
-            <HorizontalScrollView
-                    android:layout_width="wrap_content"
-                    android:layout_height="170dp">
-                <LinearLayout
-                        android:id="@+id/recentScrollView"
-                        android:orientation="horizontal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-                </LinearLayout>
-            </HorizontalScrollView>
-        </LinearLayout>
-    </FrameLayout>
+        </TextView>
 
-</LinearLayout>
+        <Button
+                android:textFontWeight="900"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:backgroundTint="@color/textColor"
+                android:textColor="@color/background"
+                android:text="Play">
+        </Button>
+        <!--
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="FASTANI HOME"
+                            android:gravity="center_horizontal"
+                            android:textFontWeight="200"
+                            android:textSize="20dp"
+                            android:textColor="@color/colorAccent"
+                            android:padding="10dp"
+                    >-->
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trending_now"
+                android:textStyle="bold"
+                android:textColor="@color/textColor"
+                android:textFontWeight="900"
+                android:textSize="16dp"
+                android:padding="10dp"
+        >
+        </TextView>
+        <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="170dp">
+            <LinearLayout
+                    android:id="@+id/trendingScrollView"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+            </LinearLayout>
+        </HorizontalScrollView>
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textColor"
+                android:text="Recently Added:"
+                android:textSize="16dp"
+                android:textFontWeight="900"
+                android:textStyle="bold"
+                android:padding="10dp"
+        >
+        </TextView>
+        <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="170dp">
+            <LinearLayout
+                    android:id="@+id/recentScrollView"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+</FrameLayout>
