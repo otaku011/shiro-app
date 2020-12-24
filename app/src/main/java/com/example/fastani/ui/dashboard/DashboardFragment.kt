@@ -18,9 +18,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fastani.R
 import com.example.fastani.FastAniApi
+import com.example.fastani.MainActivity
 import com.example.fastani.ui.GridAdapter
 import com.example.fastani.ui.ResAdapter
 import kotlinx.android.synthetic.main.fragment_dashboard.*
+import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -28,15 +30,17 @@ val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).
 
 class DashboardFragment : Fragment() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     private lateinit var dashboardViewModel: DashboardViewModel
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+            MainActivity.statusHeight // view height
+        )
+        top_padding.layoutParams = topParams
+
         progress_bar.visibility = View.GONE
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             ResAdapter(
@@ -79,7 +83,7 @@ class DashboardFragment : Fragment() {
             TransitionManager.beginDelayedTransition(main_search, transition)
 
             val margins = if (b) 0 else 6.toPx
-            searchParams.height -= margins*2 // TO KEEP
+            searchParams.height -= margins * 2 // TO KEEP
             searchParams.setMargins(margins)
             main_search.layoutParams = searchParams
         }

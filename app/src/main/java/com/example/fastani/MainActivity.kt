@@ -13,7 +13,22 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        var statusHeight: Int = 0
+    }
+
+    fun getStatusBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        return result
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        statusHeight = getStatusBarHeight()
+
         // Setting the theme
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
         val autoDarkMode = settingsManager.getBoolean("auto_dark_mode", true)

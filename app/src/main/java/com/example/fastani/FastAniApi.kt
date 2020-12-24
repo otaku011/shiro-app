@@ -40,6 +40,7 @@ class FastAniApi {
         val anilistId: String,
         val description: String,
         val cdnData: CdnData,
+        val genres: List<String>,
     )
 
     data class AnimeData(val cards: List<Card>)

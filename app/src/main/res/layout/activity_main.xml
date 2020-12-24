@@ -11,8 +11,6 @@
             android:id="@+id/nav_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="0dp"
-            android:layout_marginEnd="0dp"
             android:backgroundTint="@color/darkBar"
             android:background="@color/darkBar"
             app:itemRippleColor="@color/background"
@@ -22,7 +20,6 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:menu="@menu/bottom_nav_menu"/>
-
     <fragment
             android:id="@+id/nav_host_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
