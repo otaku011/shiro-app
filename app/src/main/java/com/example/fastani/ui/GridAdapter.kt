@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -39,6 +40,7 @@ class GridAdapter : BaseAdapter {
 
         val inflator = context!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val cardView = inflator.inflate(R.layout.search_result, null)
+
         val glideUrl =
             GlideUrl("https://fastani.net/" + card.coverImage.large) { FastAniApi.currentHeaders }
 

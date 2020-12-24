@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.BaseAdapter
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -20,9 +21,9 @@ import kotlin.math.roundToInt
 class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
     var cardList = ArrayList<Card>()
     var context: Context? = null
-    var resView : AutofitRecyclerView? = null;
+    var resView: AutofitRecyclerView? = null;
 
-    constructor(context: Context, foodsList: ArrayList<Card>, resView :AutofitRecyclerView ) : super() {
+    constructor(context: Context, foodsList: ArrayList<Card>, resView: AutofitRecyclerView) : super() {
         this.context = context
         this.cardList = foodsList
         this.resView = resView
@@ -30,12 +31,12 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return CardViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.search_result, parent, false), context!!,resView!!
+            LayoutInflater.from(parent.context).inflate(R.layout.search_result, parent, false), context!!, resView!!
         )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when(holder) {
+        when (holder) {
 
             is CardViewHolder -> {
                 holder.bind(cardList.get(position))
@@ -49,20 +50,24 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     class CardViewHolder
-    constructor(itemView: View, _context : Context, resView : AutofitRecyclerView) : RecyclerView.ViewHolder(itemView){
+    constructor(itemView: View, _context: Context, resView: AutofitRecyclerView) : RecyclerView.ViewHolder(itemView) {
         val context = _context;
         val cardView = itemView.imageView
-        val coverHeight : Int = (resView.itemWidth / 0.68).roundToInt()
-        fun bind(card: Card){
+        val coverHeight: Int = (resView.itemWidth / 0.68).roundToInt()
+        fun bind(card: Card) {
             itemView.apply {
                 layoutParams = LinearLayout.LayoutParams(
                     MATCH_PARENT,
                     coverHeight
                 )
             }
+            cardView.setOnLongClickListener {
+                Toast.makeText(context, card.title.english, Toast.LENGTH_SHORT).show()
+                return@setOnLongClickListener true
+            }
             val glideUrl =
                 GlideUrl("https://fastani.net/" + card.coverImage.large) { FastAniApi.currentHeaders }
-            context?.let {
+            context.let {
                 Glide.with(it)
                     .load(glideUrl)
                     .into(cardView)

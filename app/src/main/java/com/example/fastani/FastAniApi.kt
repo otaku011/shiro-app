@@ -6,7 +6,6 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
-import java.lang.reflect.Executable
 
 
 const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -82,9 +81,7 @@ class FastAniApi {
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
-            val parsed: SearchResponse? = response?.text?.let { mapper.readValue(it) }
-            println(parsed)
-            return parsed
+            return response?.text?.let { mapper.readValue(it) }
         }
 
         var cachedHome: HomePageResponse? = null;
