@@ -26,11 +26,11 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View? {
         homeViewModel =
-            ViewModelProviders.of(this).get(HomeViewModel::class.java)
+            activity?.let { ViewModelProviders.of(it).get(HomeViewModel::class.java) }!!
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    private fun homeLoaded(data : FastAniApi.HomePageResponse?) {
+    private fun homeLoaded(data: FastAniApi.HomePageResponse?) {
         activity?.runOnUiThread {
             trendingScrollView.removeAllViews()
             recentScrollView.removeAllViews()
@@ -85,10 +85,13 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        FastAniApi.onHomeFetched += ::homeLoaded;
+        homeViewModel.apiData.observe(viewLifecycleOwner) {
+            homeLoaded(it)
+        }
+        /*FastAniApi.onHomeFetched += ::homeLoaded;
         thread {
             // NOTE THAT THIS WILL RESULT IN NOTHING ON FIRST LOAD BECAUSE TOKEN IS NOT LAODED
             requestHome(true)
-        }
+        }*/
     }
 }
