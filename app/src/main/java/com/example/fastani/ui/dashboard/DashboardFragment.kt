@@ -13,9 +13,13 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.fastani.R
 import com.example.fastani.FastAniApi
 import com.example.fastani.ui.GridAdapter
+import com.example.fastani.ui.ResAdapter
 import kotlinx.android.synthetic.main.fragment_dashboard.*
 import kotlin.concurrent.thread
 
@@ -34,22 +38,27 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         progress_bar.visibility = View.GONE
+        val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
+            ResAdapter(
+                it,
+                ArrayList<FastAniApi.Card>(),
+                cardSpace
+            )
+        }
+        cardSpace.adapter = adapter
 
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 progress_bar.visibility = View.VISIBLE;
+                (cardSpace.adapter as ResAdapter).cardList.clear()
+
                 thread {
                     val data = FastAniApi.search(query)
-                    activity?.runOnUiThread{
+                    activity?.runOnUiThread {
                         progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
-                    }
-                    val adapter = context?.let {
-                        GridAdapter(
-                            it,
+                        (cardSpace.adapter as ResAdapter).cardList =
                             data?.animeData?.cards!! as ArrayList<FastAniApi.Card>
-                        )
                     }
-                    cardSpace.adapter = adapter
                 }
                 return true
             }
@@ -65,12 +74,12 @@ class DashboardFragment : Fragment() {
                 60.toPx // view height
             )
             val transition: Transition = ChangeBounds();
-            transition.duration = 50 // DURATION OF ANIMATION IN MS
+            transition.duration = 100 // DURATION OF ANIMATION IN MS
 
             TransitionManager.beginDelayedTransition(main_search, transition)
 
-            val margins = if (b) 0 else 5.toPx
-            searchParams.height -= margins
+            val margins = if (b) 0 else 6.toPx
+            searchParams.height -= margins*2 // TO KEEP
             searchParams.setMargins(margins)
             main_search.layoutParams = searchParams
         }
@@ -80,7 +89,7 @@ class DashboardFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         dashboardViewModel =
             ViewModelProviders.of(this).get(DashboardViewModel::class.java)

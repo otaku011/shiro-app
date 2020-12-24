@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_margin="0dp"
+
             app:queryHint="@string/search_hint">
 
     </androidx.appcompat.widget.SearchView>
@@ -36,15 +37,18 @@
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        <GridView
+        <com.example.fastani.ui.AutofitRecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnWidth="150dp"
-                android:horizontalSpacing="10dp"
-                android:numColumns="3"
+                android:clipToPadding="false"
+                android:paddingBottom="70dp"
+                android:paddingStart="5dp"
+                android:paddingTop="5dp"
+                android:paddingEnd="5dp"
+                app:spanCount="3"
                 android:id="@+id/cardSpace"
                 android:orientation="vertical"
         >
-        </GridView>
+        </com.example.fastani.ui.AutofitRecyclerView>
     </ScrollView>
 </LinearLayout>
