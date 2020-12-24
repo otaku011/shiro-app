@@ -20,7 +20,9 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.FastAniApi
 import com.example.fastani.FastAniApi.Card
 import com.example.fastani.MainActivity
+import com.example.fastani.MainActivity.Companion.activity
 import com.example.fastani.R
+import com.example.fastani.ui.home.ResultFragment
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.math.roundToInt
 
@@ -73,7 +75,10 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             cardView.setOnClickListener {
-                 MainActivity.loadPage(card)
+                activity?.supportFragmentManager?.beginTransaction()
+                    ?.replace(R.id.homeRoot, ResultFragment())
+                    ?.commit()
+                 /*MainActivity.loadPage(card)*/
             }
 
             val glideUrl =

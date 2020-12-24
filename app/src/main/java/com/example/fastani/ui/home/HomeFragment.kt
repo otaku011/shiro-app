@@ -113,7 +113,7 @@ class HomeFragment : Fragment() {
         main_poster.setOnClickListener {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.homeRoot, PlayerFragment())
-                ?.commitAllowingStateLoss()
+                ?.commit()
         }
 
         main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->

@@ -11,29 +11,42 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.concurrent.thread
-import android.R
 
 import androidx.navigation.Navigation
-
-
-
-
+import androidx.preference.AndroidResources
+import com.example.fastani.ui.PlayerFragment
+import com.example.fastani.ui.home.ResultFragment
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        var navController : NavController? = null
+        var navController: NavController? = null
         var statusHeight: Int = 0
-        var activity : MainActivity? = null
+        var activity: MainActivity? = null
 
-        fun loadPage(card : FastAniApi.Card) {
-            /*activity?.runOnUiThread {
+        fun loadPage(card: FastAniApi.Card) {
+
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(R.id.homeRoot, ResultFragment())
+                ?.commit()
+            /*
+            activity?.runOnUiThread {
                 val _navController = Navigation.findNavController(activity!!, R.id.nav_host_fragment)
                 _navController?.navigateUp()
                 _navController?.navigate(R.layout.fragment_results,null,null)
-            }*/
-
+            }
+*/
             // NavigationUI.navigateUp(navController!!,R.layout.fragment_results)
+        }
+    }
+
+    override fun onBackPressed() {
+        if(supportFragmentManager.fragments.size > 2) {
+            val currentFragment = supportFragmentManager.fragments.last()
+            supportFragmentManager.beginTransaction().remove(currentFragment).commit()
+        }
+        else {
+            super.onBackPressed()
         }
     }
 
