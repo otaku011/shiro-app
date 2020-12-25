@@ -17,16 +17,12 @@ import com.example.fastani.*
 import com.example.fastani.FastAniApi.Companion.requestHome
 import com.example.fastani.ui.GlideApp
 import com.example.fastani.ui.PlayerFragment
-import com.example.fastani.ui.dashboard.toPx
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlin.concurrent.thread
 
 const val MAXIMUM_FADE = 0.3f
 const val FADE_SCROLL_DISTANCE = 700f
-
-val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
-val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
 
 class HomeFragment : Fragment() {
 
@@ -82,6 +78,9 @@ class HomeFragment : Fragment() {
                     Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
                     return@setOnLongClickListener true
                 }
+                card.imageView.setOnClickListener{
+                    MainActivity.loadPage(cardInfo)
+                }
                 trendingScrollView.addView(card)
                 // }
             }
@@ -98,6 +97,9 @@ class HomeFragment : Fragment() {
                 card.imageView.setOnLongClickListener {
                     Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
                     return@setOnLongClickListener true
+                }
+                card.imageView.setOnClickListener{
+                    MainActivity.loadPage(cardInfo)
                 }
                 recentScrollView.addView(card)
                 //}

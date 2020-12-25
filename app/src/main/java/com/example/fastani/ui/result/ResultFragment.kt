@@ -1,16 +1,24 @@
 package com.example.fastani.ui.result
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.FastAniApi
+import com.example.fastani.MainActivity
 import com.example.fastani.R
+import com.example.fastani.toPx
+import com.example.fastani.ui.GlideApp
 import kotlinx.android.synthetic.main.fragment_results.*
+import kotlinx.android.synthetic.main.home_card.view.*
 
-const val DESCRIPT_LENGTH = 100
+const val DESCRIPT_LENGTH = 200
 
 class ResultFragment(data: FastAniApi.Card) : Fragment() {
     var data: FastAniApi.Card = data
@@ -26,18 +34,52 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        view.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
+
+        title_holder.setPadding(
+            title_holder.paddingLeft,
+            MainActivity.statusHeight + title_background.minimumHeight - 44.toPx,
+            title_holder.paddingRight,
+            0,
+        )
+        val glideUrl =
+            GlideUrl("https://fastani.net/" + data.bannerImage) { FastAniApi.currentHeaders }
+
+        title_background.setOnLongClickListener {
+            Toast.makeText(context, data.title.english + " Trailer", Toast.LENGTH_SHORT).show()
+            return@setOnLongClickListener true
+        }
+
+        title_background.setOnClickListener() {
+            //TODO load trailer
+        }
+
+
+        context?.let {
+            GlideApp.with(it)
+                .load(glideUrl)
+                .into(title_background)
+        }
 
         title_name.text = data.title.english
         var descript = data.description
         if (descript.length > DESCRIPT_LENGTH) {
-            descript = descript.substring(0, DESCRIPT_LENGTH) + "..."
+            descript = descript.substring(0, DESCRIPT_LENGTH)
+                .replace("<br>", "")
+                .replace("<i>", "")
+                .replace("</i>", "")
+                .replace("\n", " ") + "..."
         }
         title_descript.text = descript
         title_duration.text = data.duration.toString() + "min"
-        title_rating.text = "Rated: " + (data.averageScore/10)
-        title_genres.text = data.genres.joinToString(prefix = "", postfix = "", separator = " • ")
+        var ratTxt = (data.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
+        if (!ratTxt.contains('.')) ratTxt += ".0"
+        title_rating.text = "Rated: " + ratTxt
+        title_genres.text = data.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
 
     }
 }

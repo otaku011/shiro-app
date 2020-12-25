@@ -1,6 +1,7 @@
 package com.example.fastani
 
 import android.content.pm.ActivityInfo
+import android.content.res.Resources
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -17,6 +18,9 @@ import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
 import com.example.fastani.ui.PlayerFragment
 import com.example.fastani.ui.result.ResultFragment
+
+val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +48,7 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if(supportFragmentManager.fragments.size > 2) {
             val currentFragment = supportFragmentManager.fragments.last()
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             supportFragmentManager.beginTransaction().remove(currentFragment).commit()
         }
         else {
@@ -64,6 +68,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         statusHeight = getStatusBarHeight()
         activity = this
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         // Setting the theme
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)

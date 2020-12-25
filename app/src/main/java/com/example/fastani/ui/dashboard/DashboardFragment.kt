@@ -19,14 +19,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fastani.R
 import com.example.fastani.FastAniApi
 import com.example.fastani.MainActivity
+import com.example.fastani.toPx
 import com.example.fastani.ui.GridAdapter
 import com.example.fastani.ui.ResAdapter
 import kotlinx.android.synthetic.main.fragment_dashboard.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
-
-val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
-val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
 
 class DashboardFragment : Fragment() {
 
