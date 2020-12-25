@@ -8,28 +8,42 @@
     <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
+            android:layout_marginBottom="5dp"
             android:elevation="10dp"
-            app:cardCornerRadius="1dp"
-            app:cardBackgroundColor="@color/grayItem">
+            app:cardCornerRadius="4dp"
+            app:cardBackgroundColor="@color/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView
                 android:id="@+id/imageView"
                 android:scaleType="centerCrop"
-                android:layout_width="54dp"
+                android:layout_width="142dp"
                 android:layout_height="80dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        >
+        </ImageView>
+        <ImageView
+                android:scaleType="centerInside"
+                android:layout_width="142dp"
+                android:layout_height="80dp"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
+                android:src="@drawable/nexflix_play_btt"
         >
         </ImageView>
         <TextView
                 android:id="@+id/cardTitle"
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:textSize="15sp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:textSize="15dp"
                 android:textFontWeight="900"
-                android:layout_gravity="top"
-                android:layout_marginStart="70dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="160dp"
         >
         </TextView>
+        <!--
         <TextView
                 android:id="@+id/cardDescription"
                 android:layout_width="match_parent"
@@ -40,7 +54,7 @@
                 android:textFontWeight="200"
                 android:layout_marginStart="70dp"
         >
-        </TextView>
+        </TextView>-->
 
     </androidx.cardview.widget.CardView>
 </LinearLayout>

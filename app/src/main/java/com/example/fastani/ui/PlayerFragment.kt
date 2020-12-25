@@ -1,13 +1,16 @@
 package com.example.fastani.ui
 
+import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import com.example.fastani.FastAniApi
+import com.example.fastani.MainActivity
 import com.example.fastani.R
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -41,6 +44,10 @@ data class PlayerData(
 
 class PlayerFragment(data: PlayerData) : Fragment() {
     var data: PlayerData = data
+    companion object {
+        var isInPlayer : Boolean = false
+    }
+
 
     private lateinit var exoPlayer: SimpleExoPlayer
 
@@ -87,14 +94,26 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         return getCurrentEpisode().file
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        isInPlayer = false
+        //MainActivity.showSystemUI()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        MainActivity.activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
         super.onViewCreated(view, savedInstanceState)
+        isInPlayer = true
+        retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
+        MainActivity.hideSystemUI()
+
         /*dataSourceFactory = DefaultDataSourceFactory(
             requireContext(),
             FastAniApi.USER_AGENT
         )*/
+      //MainActivity.activity!!.getWindow().setFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
             exo_rew.startAnimation(rotateLeft)

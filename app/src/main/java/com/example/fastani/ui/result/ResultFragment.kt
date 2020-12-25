@@ -9,14 +9,20 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.FastAniApi
 import com.example.fastani.MainActivity
 import com.example.fastani.R
 import com.example.fastani.toPx
 import com.example.fastani.ui.GlideApp
+import kotlinx.android.synthetic.main.episode_result.view.*
+import kotlinx.android.synthetic.main.fragment_dashboard.*
+import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.home_card.view.*
+import kotlinx.android.synthetic.main.home_card.view.imageView
+import kotlinx.android.synthetic.main.search_result.view.*
 
 const val DESCRIPT_LENGTH = 200
 
@@ -34,6 +40,35 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
+    fun loadSeason(index: Int) {
+        var epNum = 0
+        data.cdnData.seasons[index].episodes.forEach {
+
+            val card: View = layoutInflater.inflate(R.layout.episode_result, null)
+            if (it.thumb != null) {
+                val glideUrl = GlideUrl(it.thumb)
+                context?.let {
+                    Glide.with(it)
+                        .load(glideUrl)
+                        .into(card.imageView)
+                }
+            }
+
+            val epIndex = epNum
+            card.imageView.setOnClickListener {
+                MainActivity.loadPlayer(epIndex, index, data)
+            }
+
+            epNum++
+            var title = it.title
+            if (title == null || title?.replace(" ", "") == "") {
+                title = "Episode " + epNum
+            }
+            card.cardTitle.text = title
+            title_season_cards.addView(card)
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,7 +84,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         val glideUrl =
             GlideUrl("https://fastani.net/" + data.bannerImage) { FastAniApi.currentHeaders }
 
-        if(data.trailer != null) {
+        if (data.trailer != null) {
             title_background.setOnLongClickListener {
                 Toast.makeText(context, data.title.english + " - Trailer", Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
@@ -59,8 +94,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 //TODO headers for trailers
                 MainActivity.loadPlayer(data.title.english + " - Trailer", "https://fastani.net/" + data.trailer!!)
             }
-        }
-        else {
+        } else {
             title_trailer_btt.alpha = 0f
         }
 
@@ -68,6 +102,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         for (i in 1..data.cdnData.seasons.size) {
             seasonsTxt.add("Season " + i)
         }
+        loadSeason(0)
         /*
         val arrayAdapter = ArrayAdapter(context, R.layout.s,    arrayOf("Season 1", "season 2") )
         title_seasons.adapter = arrayAdapter*/

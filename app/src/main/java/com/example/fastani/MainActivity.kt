@@ -3,6 +3,7 @@ package com.example.fastani
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.NavController
@@ -18,6 +19,7 @@ import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
 import com.example.fastani.ui.PlayerData
 import com.example.fastani.ui.PlayerFragment
+import com.example.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.example.fastani.ui.result.ResultFragment
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -29,6 +31,31 @@ class MainActivity : AppCompatActivity() {
         var navController: NavController? = null
         var statusHeight: Int = 0
         var activity: MainActivity? = null
+
+         fun hideSystemUI() {
+            // Enables regular immersive mode.
+            // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
+            // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            MainActivity.activity!!.getWindow().decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    // Set the content to appear under the system bars so that the
+                    // content doesn't resize when the system bars hide and show.
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    // Hide the nav bar and status bar
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    )
+        }
+
+
+        // Shows the system bars by removing all the flags
+// except for the ones that make the content appear under the system bars.
+         fun showSystemUI() {
+            MainActivity.activity!!.getWindow().decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        }
 
         fun loadPlayer(episodeIndex: Int, seasonIndex : Int,card : FastAniApi.Card) {
            loadPlayer(PlayerData(
@@ -66,6 +93,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        println("BACK PRESSED!!!!")
         if(supportFragmentManager.fragments.size > 2) {
             val currentFragment = supportFragmentManager.fragments.last()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -113,7 +141,6 @@ class MainActivity : AppCompatActivity() {
         thread {
             FastAniApi.init()
         }
-
 
         navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each

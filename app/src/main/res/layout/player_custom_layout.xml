@@ -4,9 +4,12 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
+              android:id="@+id/player_holder"
               android:paddingStart="20dp"
               android:paddingEnd="20dp"
-              tools:targetApi="28">
+              tools:targetApi="28"
+              android:screenOrientation="landscape"
+>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

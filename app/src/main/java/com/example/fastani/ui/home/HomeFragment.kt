@@ -125,9 +125,6 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
 
-
-
-
         main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE
             val gray: Int = Color.argb(fade, 0f, fade, 0f)
