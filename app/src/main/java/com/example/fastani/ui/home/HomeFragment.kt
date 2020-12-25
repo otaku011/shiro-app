@@ -44,6 +44,7 @@ class HomeFragment : Fragment() {
             trendingScrollView.removeAllViews()
             recentScrollView.removeAllViews()
 
+
             val cardInfo = data?.homeSlidesData?.get(0)
             val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
@@ -63,6 +64,10 @@ class HomeFragment : Fragment() {
             main_name.text = cardInfo?.title?.english
 
             main_genres.text = cardInfo?.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
+
+            main_watch_button.setOnClickListener  {
+                MainActivity.loadPage(cardInfo!!)
+            }
 
             data?.trendingData?.forEach { cardInfo ->
                 val card: View = layoutInflater.inflate(R.layout.home_card, null)
@@ -119,6 +124,8 @@ class HomeFragment : Fragment() {
                 ?.replace(R.id.homeRoot, PlayerFragment())
                 ?.commit()
         }
+
+
 
         main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
             val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE

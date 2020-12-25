@@ -115,7 +115,10 @@
                         android:background="@drawable/button_bg"
                         android:backgroundTint="@color/colorPrimary"
                         android:textColor="@color/textColor"
-                        android:text="WATCH ">
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:id="@+id/main_watch_button"
+                        android:text="@string/main_watch_button_text">
                 </Button>
 
                 <!--

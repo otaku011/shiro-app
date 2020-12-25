@@ -58,6 +58,13 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             //TODO load trailer
         }
 
+        var seasonsTxt: MutableList<String> = mutableListOf<String>()
+        for (i in 1..data.cdnData.seasons.size) {
+            seasonsTxt.add("Season " + i)
+        }
+        /*
+        val arrayAdapter = ArrayAdapter(context, R.layout.s,    arrayOf("Season 1", "season 2") )
+        title_seasons.adapter = arrayAdapter*/
 
         context?.let {
             GlideApp.with(it)
