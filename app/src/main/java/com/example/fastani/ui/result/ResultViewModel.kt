@@ -1,4 +1,4 @@
-package com.example.fastani.ui.home
+package com.example.fastani.ui.result
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +10,5 @@ import com.example.fastani.FastAniApi.Companion.requestHome
 import kotlinx.coroutines.launch
 
 class ResultViewModel : ViewModel() {
-
 
 }

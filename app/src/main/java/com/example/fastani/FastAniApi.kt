@@ -21,10 +21,10 @@ class FastAniApi {
     data class Token(val headers: Map<String, String>, val cookies: CookieJar)
     data class Title(val romaji: String, val english: String, val native: String)
     data class EndDate(val year: Int, val month: Int, val day: Int)
-    data class FullEpisode(val file: String, val title: String, val thumb: String)
+    data class FullEpisode(val file: String, val title: String?, val thumb: String?)
     data class Episode(val file: String)
     data class CoverImage(val large: String)
-    data class Seasons(val episodes: List<Episode>)
+    data class Seasons(val episodes: List<FullEpisode>)
     data class CdnData(val seasons: List<Seasons>)
     data class Card(
         val title: Title,

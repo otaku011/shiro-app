@@ -22,7 +22,7 @@ import com.example.fastani.FastAniApi.Card
 import com.example.fastani.MainActivity
 import com.example.fastani.MainActivity.Companion.activity
 import com.example.fastani.R
-import com.example.fastani.ui.home.ResultFragment
+import com.example.fastani.ui.result.ResultFragment
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.math.roundToInt
 
@@ -76,7 +76,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             cardView.setOnClickListener {
                 activity?.supportFragmentManager?.beginTransaction()
-                    ?.replace(R.id.homeRoot, ResultFragment())
+                    ?.replace(R.id.homeRoot, ResultFragment(card))
                     ?.commit()
                  /*MainActivity.loadPage(card)*/
             }

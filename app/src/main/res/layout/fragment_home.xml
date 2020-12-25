@@ -18,7 +18,8 @@
     <ScrollView android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/main_scroll">
-        <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        <FrameLayout android:layout_width="match_parent"
+                     android:layout_height="match_parent"
                      android:paddingBottom="100dp"
         >
             <ImageView

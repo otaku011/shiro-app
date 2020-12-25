@@ -15,7 +15,7 @@ import kotlin.concurrent.thread
 import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
 import com.example.fastani.ui.PlayerFragment
-import com.example.fastani.ui.home.ResultFragment
+import com.example.fastani.ui.result.ResultFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         fun loadPage(card: FastAniApi.Card) {
 
             activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.homeRoot, ResultFragment())
+                ?.replace(R.id.homeRoot, ResultFragment(card))
                 ?.commit()
             /*
             activity?.runOnUiThread {

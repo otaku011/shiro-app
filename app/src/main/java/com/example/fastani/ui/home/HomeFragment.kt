@@ -103,7 +103,9 @@ class HomeFragment : Fragment() {
                 //}
             }
 
+            main_load.alpha = 0f
             main_scroll.alpha = 1f
+            main_layout.setPadding(0,MainActivity.statusHeight,0,0)
         }
     }
 
