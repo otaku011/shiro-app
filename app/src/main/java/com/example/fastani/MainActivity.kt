@@ -1,5 +1,6 @@
 package com.example.fastani
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if(supportFragmentManager.fragments.size > 2) {
             val currentFragment = supportFragmentManager.fragments.last()
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             supportFragmentManager.beginTransaction().remove(currentFragment).commit()
         }
         else {

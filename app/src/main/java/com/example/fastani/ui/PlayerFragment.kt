@@ -1,5 +1,6 @@
 package com.example.fastani.ui
 
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -46,10 +47,10 @@ class PlayerFragment : Fragment() {
         .setMimeType(MimeTypes.APPLICATION_MP4)
         .build()
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        println("GGGGGGGGGGG")
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
         if (savedInstanceState != null) {
             currentWindow = savedInstanceState.getInt(STATE_RESUME_WINDOW)
             playbackPosition = savedInstanceState.getLong(STATE_RESUME_POSITION)
@@ -58,7 +59,7 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun releasePlayer(){
+    private fun releasePlayer() {
         isPlayerPlaying = exoPlayer.playWhenReady
         playbackPosition = exoPlayer.currentPosition
         currentWindow = exoPlayer.currentWindowIndex
@@ -73,7 +74,7 @@ class PlayerFragment : Fragment() {
         super.onSaveInstanceState(outState)
     }
 
-    private fun initPlayer(){
+    private fun initPlayer() {
         exoPlayer = SimpleExoPlayer.Builder(this.requireContext()).build().apply {
             playWhenReady = isPlayerPlaying
             seekTo(currentWindow, playbackPosition)
