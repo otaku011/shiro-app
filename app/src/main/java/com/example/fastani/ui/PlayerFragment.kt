@@ -7,8 +7,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
+import android.view.animation.RotateAnimation
 import com.example.fastani.R
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.SeekParameters
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
@@ -17,6 +20,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.player.*
+import kotlinx.android.synthetic.main.player_custom_layout.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -49,7 +53,18 @@ class PlayerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        exo_rew.setOnClickListener {
+            val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
+            exo_rew.startAnimation(rotateLeft)
+            exoPlayer.seekTo(maxOf(exoPlayer.currentPosition - 10000L, 0L))
+        }
+        exo_ffwd.setOnClickListener {
+            val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
+            exo_ffwd.startAnimation(rotateRight)
+            exoPlayer.seekTo(minOf(exoPlayer.currentPosition + 10000L, exoPlayer.duration))
+        }
 
         if (savedInstanceState != null) {
             currentWindow = savedInstanceState.getInt(STATE_RESUME_WINDOW)
