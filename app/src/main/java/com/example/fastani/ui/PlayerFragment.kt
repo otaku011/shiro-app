@@ -28,17 +28,64 @@ const val STATE_PLAYER_PLAYING = "playerOnPlay"
  * create an instance of this fragment.
  */
 
-class PlayerFragment() : Fragment() {
+// TITLE AND URL OR CARD MUST BE PROVIDED
+// EPISODE AND SEASON SHOULD START AT 0
+data class PlayerData(
+    val title: String?,
+    val url: String?,
+
+    val episodeIndex: Int?,
+    val seasonIndex: Int?,
+    val card: FastAniApi.Card?,
+)
+
+class PlayerFragment(data: PlayerData) : Fragment() {
+    var data: PlayerData = data
+
     private lateinit var exoPlayer: SimpleExoPlayer
-    private val url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+
+    // private val url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     private var currentWindow = 0
     private var playbackPosition: Long = 0
     private var isFullscreen = false
     private var isPlayerPlaying = true
     private val mediaItem = MediaItem.Builder()
-        .setUri(url)
+        .setUri(getCurrentUrl())
         .setMimeType(MimeTypes.APPLICATION_MP4)
         .build()
+
+    fun canPlayNextEpisode(): Boolean {
+        if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
+            return false
+        }
+        return try {
+            data.card!!.cdnData.seasons[data.seasonIndex!!].episodes.size > (data.episodeIndex!! + 1)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun getCurrentEpisode(): FastAniApi.FullEpisode {
+        return data.card!!.cdnData.seasons[data.seasonIndex!!].episodes[data.episodeIndex!!]
+    }
+
+    fun getCurrentTitle(): String {
+        if (data.title != null) return data.title!!
+
+        val isMovie: Boolean = data.card!!.episodes == 1 && data.card!!.status == "FINISHED"
+        // data.card!!.cdnData.seasons.size == 1 && data.card!!.cdnData.seasons[0].episodes.size == 1
+        var preTitle = ""
+        if (isMovie) {
+            preTitle = "S${data.seasonIndex!! + 1}E:${data.episodeIndex} · "
+        }
+        return preTitle + getCurrentEpisode().title!!
+    }
+
+    fun getCurrentUrl(): String {
+        println("MAN::: " + data.url)
+        if (data.url != null) return data.url!!
+        return getCurrentEpisode().file
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,7 +94,7 @@ class PlayerFragment() : Fragment() {
             FastAniApi.USER_AGENT
         )*/
 
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        // activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
             exo_rew.startAnimation(rotateLeft)
@@ -130,7 +177,7 @@ class PlayerFragment() : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.player, container, false)

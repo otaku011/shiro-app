@@ -38,7 +38,7 @@
         />
 
         <ImageView
-
+                android:id="@+id/title_trailer_btt"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:minHeight="200dp"

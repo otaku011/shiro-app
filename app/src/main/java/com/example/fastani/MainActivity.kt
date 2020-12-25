@@ -16,6 +16,7 @@ import kotlin.concurrent.thread
 
 import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
+import com.example.fastani.ui.PlayerData
 import com.example.fastani.ui.PlayerFragment
 import com.example.fastani.ui.result.ResultFragment
 
@@ -28,6 +29,25 @@ class MainActivity : AppCompatActivity() {
         var navController: NavController? = null
         var statusHeight: Int = 0
         var activity: MainActivity? = null
+
+        fun loadPlayer(episodeIndex: Int, seasonIndex : Int,card : FastAniApi.Card) {
+           loadPlayer(PlayerData(
+               null,null,
+               episodeIndex,
+               seasonIndex,
+               card))
+        }
+
+        fun loadPlayer(title: String, url : String) {
+            loadPlayer(PlayerData(title,url,null,null,null))
+        }
+
+        private fun loadPlayer(data : PlayerData) {
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(R.id.homeRoot, PlayerFragment(
+                    data))
+                ?.commit()
+        }
 
         fun loadPage(card: FastAniApi.Card) {
 

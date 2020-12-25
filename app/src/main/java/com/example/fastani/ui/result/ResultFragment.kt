@@ -49,13 +49,19 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         val glideUrl =
             GlideUrl("https://fastani.net/" + data.bannerImage) { FastAniApi.currentHeaders }
 
-        title_background.setOnLongClickListener {
-            Toast.makeText(context, data.title.english + " Trailer", Toast.LENGTH_SHORT).show()
-            return@setOnLongClickListener true
-        }
+        if(data.trailer != null) {
+            title_background.setOnLongClickListener {
+                Toast.makeText(context, data.title.english + " - Trailer", Toast.LENGTH_SHORT).show()
+                return@setOnLongClickListener true
+            }
 
-        title_background.setOnClickListener() {
-            //TODO load trailer
+            title_background.setOnClickListener() {
+                //TODO headers for trailers
+                MainActivity.loadPlayer(data.title.english + " - Trailer", "https://fastani.net/" + data.trailer!!)
+            }
+        }
+        else {
+            title_trailer_btt.alpha = 0f
         }
 
         var seasonsTxt: MutableList<String> = mutableListOf<String>()

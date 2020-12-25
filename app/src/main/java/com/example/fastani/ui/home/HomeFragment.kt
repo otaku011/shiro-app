@@ -16,6 +16,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.*
 import com.example.fastani.FastAniApi.Companion.requestHome
 import com.example.fastani.ui.GlideApp
+import com.example.fastani.ui.PlayerData
 import com.example.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
@@ -44,7 +45,6 @@ class HomeFragment : Fragment() {
             trendingScrollView.removeAllViews()
             recentScrollView.removeAllViews()
 
-
             val cardInfo = data?.homeSlidesData?.get(0)
             val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
@@ -67,6 +67,11 @@ class HomeFragment : Fragment() {
 
             main_watch_button.setOnClickListener  {
                 MainActivity.loadPage(cardInfo!!)
+            }
+
+            //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            main_poster.setOnClickListener {
+                MainActivity.loadPlayer(0,0,cardInfo!!)
             }
 
             data?.trendingData?.forEach { cardInfo ->
@@ -119,11 +124,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
-        main_poster.setOnClickListener {
-            activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.homeRoot, PlayerFragment())
-                ?.commit()
-        }
+
 
 
 
