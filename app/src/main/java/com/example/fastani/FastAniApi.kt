@@ -7,9 +7,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 
-
-const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
-
 class FastAniApi {
     data class HomePageResponse(
         val animeData: AnimeData,
@@ -47,6 +44,7 @@ class FastAniApi {
     data class SearchResponse(val animeData: AnimeData)
 
     companion object {
+        const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
         private val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
