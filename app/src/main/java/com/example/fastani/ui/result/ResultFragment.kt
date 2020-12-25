@@ -28,6 +28,7 @@ const val DESCRIPT_LENGTH = 200
 
 class ResultFragment(data: FastAniApi.Card) : Fragment() {
     var data: FastAniApi.Card = data
+    val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
     private lateinit var resultViewModel: ResultViewModel
 
     override fun onCreateView(
@@ -63,6 +64,9 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             var title = it.title
             if (title == null || title?.replace(" ", "") == "") {
                 title = "Episode " + epNum
+            }
+            if(!isMovie) {
+                title = epNum.toString() + ". " + title
             }
             card.cardTitle.text = title
             title_season_cards.addView(card)
