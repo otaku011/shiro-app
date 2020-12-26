@@ -109,8 +109,7 @@ class MainActivity : AppCompatActivity() {
                     if ((nextPro.pos * 100) / dur > maxValue) {
                         seasonIndex = next.seasonIndex
                         episodeIndex = next.episodeIndex
-                    }
-                    else {
+                    } else {
                         canContinue = false
                         isFound = true
                     }
@@ -202,6 +201,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         println("BACK PRESSED!!!!")
+
         if (supportFragmentManager.fragments.size > 2) {
             val currentFragment = supportFragmentManager.fragments.last()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT

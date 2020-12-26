@@ -104,6 +104,8 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         // DON'T SAVE DATA OF TRAILERS
 
         isInPlayer = false
+        MainActivity.showSystemUI()
+
         super.onDestroy()
 
         //MainActivity.showSystemUI()
