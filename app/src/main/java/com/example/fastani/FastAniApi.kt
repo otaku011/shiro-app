@@ -35,6 +35,7 @@ class FastAniApi {
         val coverImage: CoverImage,
         val bannerImage: String,
         val anilistId: String,
+        val id : String,
         val description: String,
         val cdnData: CdnData,
         val genres: List<String>,

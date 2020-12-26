@@ -21,6 +21,7 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
+import java.lang.Exception
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
 const val STATE_RESUME_POSITION = "resumePosition"
@@ -67,10 +68,10 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
             return false
         }
-        return try {
-            data.card!!.cdnData.seasons[data.seasonIndex!!].episodes.size > (data.episodeIndex!! + 1)
+        try {
+            return MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!).isFound
         } catch (e: Exception) {
-            false
+            return false
         }
     }
 

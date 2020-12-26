@@ -25,6 +25,31 @@ import com.example.fastani.ui.result.ResultFragment
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
 
+data class EpisodePosDurInfo(
+    val pos: Long,
+    val dur: Long,
+)
+
+
+data class LastEpisodeInfo(
+    val pos: Long,
+    val dur: Long,
+    val id: String,
+    val aniListId: String,
+    val episodeIndex: Int,
+    val seasonIndex: Int,
+    val episode: FastAniApi.FullEpisode,
+    val coverImage: FastAniApi.CoverImage,
+    val title: FastAniApi.Title,
+    val bannerImage: String,
+)
+
+data class NextEpisode(
+    val isFound: Boolean,
+    val episodeIndex: Int,
+    val seasonIndex: Int,
+)
+
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -32,7 +57,89 @@ class MainActivity : AppCompatActivity() {
         var statusHeight: Int = 0
         var activity: MainActivity? = null
 
-         fun hideSystemUI() {
+        fun getViewKey(data: PlayerData): String {
+            return getViewKey(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
+        }
+
+        fun getViewKey(aniListId: String, seasonIndex: Int, episodeIndex: Int): String {
+            return aniListId + "S" + seasonIndex + "E" + episodeIndex
+        }
+
+        fun getViewPosDur(aniListId: String, seasonIndex: Int, episodeIndex: Int): EpisodePosDurInfo {
+            val key = getViewKey(aniListId, seasonIndex, episodeIndex)
+
+            return EpisodePosDurInfo(
+                DataStore.getKey<Long>(VIEW_POS_KEY, key, -1L)!!,
+                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!)
+        }
+
+        fun canPlayNextEpisode(card: FastAniApi.Card, seasonIndex: Int, episodeIndex: Int): NextEpisode {
+            val canNext = card.cdnData.seasons[seasonIndex].episodes.size > (episodeIndex + 1)
+
+            return if (!canNext) {
+                if (card.cdnData.seasons.size > (seasonIndex + 1)) {
+                    NextEpisode(true, 0, seasonIndex + 1)
+                } else {
+                    NextEpisode(false, 0, 0)
+                }
+            } else {
+                NextEpisode(true, episodeIndex, seasonIndex)
+            }
+        }
+
+        fun setViewPosDur(data: PlayerData, pos: Long, dur: Long) {
+            val key = getViewKey(data)
+            DataStore.setKey(VIEW_POS_KEY, key, pos)
+            DataStore.setKey(VIEW_DUR_KEY, key, dur)
+
+            // HANDLES THE LOGIC FOR NEXT EPISODE
+            var episodeIndex = data.episodeIndex!!
+            var seasonIndex = data.seasonIndex!!
+            val maxValue = 95
+            var canContinue: Boolean = (pos * 100 / dur) > maxValue
+            var isFound: Boolean = true
+            var _pos = pos
+            var _dur = dur
+
+            val card = data.card!!
+            while (canContinue) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
+                val next = canPlayNextEpisode(card, seasonIndex, episodeIndex)
+                if (next.isFound) {
+                    val nextPro = getViewPosDur(card.anilistId, next.seasonIndex, next.episodeIndex)
+                    if ((nextPro.pos * 100) / dur > maxValue) {
+                        seasonIndex = next.seasonIndex
+                        episodeIndex = next.episodeIndex
+                    }
+                    else {
+                        canContinue = false
+                        isFound = true
+                    }
+                } else {
+                    canContinue = false
+                    isFound = false
+                }
+            }
+            if (!isFound) return
+
+            DataStore.setKey(
+                VIEW_LST_KEY,
+                data.card.anilistId,
+                LastEpisodeInfo(
+                    _pos,
+                    _dur,
+                    card.id,
+                    card.anilistId,
+                    episodeIndex,
+                    seasonIndex,
+                    card.cdnData.seasons[episodeIndex].episodes[seasonIndex],
+                    card.coverImage,
+                    card.title,
+                    card.bannerImage
+                )
+            )
+        }
+
+        fun hideSystemUI() {
             // Enables regular immersive mode.
             // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
             // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -51,25 +158,25 @@ class MainActivity : AppCompatActivity() {
 
         // Shows the system bars by removing all the flags
 // except for the ones that make the content appear under the system bars.
-         fun showSystemUI() {
+        fun showSystemUI() {
             MainActivity.activity!!.getWindow().decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
         }
 
-        fun loadPlayer(episodeIndex: Int, seasonIndex : Int,card : FastAniApi.Card) {
-           loadPlayer(PlayerData(
-               null,null,
-               episodeIndex,
-               seasonIndex,
-               card))
+        fun loadPlayer(episodeIndex: Int, seasonIndex: Int, card: FastAniApi.Card) {
+            loadPlayer(PlayerData(
+                null, null,
+                episodeIndex,
+                seasonIndex,
+                card))
         }
 
-        fun loadPlayer(title: String, url : String) {
-            loadPlayer(PlayerData(title,url,null,null,null))
+        fun loadPlayer(title: String, url: String) {
+            loadPlayer(PlayerData(title, url, null, null, null))
         }
 
-        private fun loadPlayer(data : PlayerData) {
+        private fun loadPlayer(data: PlayerData) {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.homeRoot, PlayerFragment(
                     data))
@@ -94,12 +201,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         println("BACK PRESSED!!!!")
-        if(supportFragmentManager.fragments.size > 2) {
+        if (supportFragmentManager.fragments.size > 2) {
             val currentFragment = supportFragmentManager.fragments.last()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             supportFragmentManager.beginTransaction().remove(currentFragment).commit()
-        }
-        else {
+        } else {
             super.onBackPressed()
         }
     }

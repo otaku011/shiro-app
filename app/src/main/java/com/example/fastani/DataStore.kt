@@ -7,8 +7,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 
 const val PREFERENCES_NAME: String = "rebuild_preference"
-const val VIEW_POS_KEY: String = "view_pos"
-const val VIEW_DUR_KEY: String = "view_dur"
+const val VIEW_POS_KEY: String = "view_pos" // VIDEO POSITION
+const val VIEW_DUR_KEY: String = "view_dur" // VIDEO DURATION
+const val VIEW_LST_KEY: String = "view_lst" // LAST WATCHED, ONE PER TITLE ID
 
 object DataStore {
 
@@ -31,6 +32,11 @@ object DataStore {
 
     fun getFolderName(folder: String, path: String): String {
         return "${folder}/${path}"
+    }
+
+    fun getKeys(path: String) {
+        val keys = getSharedPrefs().all.keys
+        
     }
 
     fun <T> setKey(path: String, value: T) {
