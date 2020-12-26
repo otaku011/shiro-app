@@ -18,7 +18,7 @@ import com.example.fastani.FastAniApi
 import com.example.fastani.MainActivity
 import com.example.fastani.toPx
 import com.example.fastani.ui.ResAdapter
-import kotlinx.android.synthetic.main.fragment_dashboard.*
+import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread
 
 class SearchFragment : Fragment() {
@@ -93,10 +93,11 @@ class SearchFragment : Fragment() {
         activity?.window?.setSoftInputMode(
             WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
         )
-        return inflater.inflate(R.layout.fragment_dashboard, container, false)
+        return inflater.inflate(R.layout.fragment_search, container, false)
     }
 
     override fun onStop() {
+        super.onStop()
         activity?.window?.setSoftInputMode(
             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
         )

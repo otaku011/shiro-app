@@ -47,7 +47,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
         when (holder) {
 
             is CardViewHolder -> {
-                holder.bind(cardList.get(position))
+                holder.bind(cardList[position])
             }
 
         }

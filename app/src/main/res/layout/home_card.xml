@@ -15,6 +15,9 @@
             app:cardBackgroundColor="@color/darkBar"
     >
         <ImageView
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
                 android:layout_width="95dp"
                 android:layout_height="150dp"
                 android:scaleType="centerCrop"

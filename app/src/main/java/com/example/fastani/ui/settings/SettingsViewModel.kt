@@ -1,4 +1,4 @@
-package com.example.fastani.ui.notifications
+package com.example.fastani.ui.settings
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

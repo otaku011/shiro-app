@@ -41,7 +41,6 @@
                     android:orientation="vertical">
 
 
-
                 <androidx.cardview.widget.CardView
                         android:layout_marginTop="10dp"
                         android:layout_width="200dp"
@@ -63,7 +62,8 @@
                     >
                     </ImageView>
 
-                </androidx.cardview.widget.CardView>ö
+                </androidx.cardview.widget.CardView>
+                ö
                 <TextView
                         android:id="@+id/main_name"
                         android:layout_width="match_parent"

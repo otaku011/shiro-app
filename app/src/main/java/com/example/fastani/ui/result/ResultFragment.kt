@@ -1,12 +1,12 @@
 package com.example.fastani.ui.result
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
@@ -17,18 +17,18 @@ import com.example.fastani.R
 import com.example.fastani.toPx
 import com.example.fastani.ui.GlideApp
 import kotlinx.android.synthetic.main.episode_result.view.*
-import kotlinx.android.synthetic.main.fragment_dashboard.*
+import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.search_result.view.*
 
-const val DESCRIPT_LENGTH = 200
+const val DESCRIPTION_LENGTH = 200
 
 class ResultFragment(data: FastAniApi.Card) : Fragment() {
     var data: FastAniApi.Card = data
-    val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
+    private val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
     private lateinit var resultViewModel: ResultViewModel
 
     override fun onCreateView(
@@ -41,17 +41,21 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
-    fun loadSeason(index: Int) {
+    private fun loadSeason(index: Int) {
+        title_season_cards.removeAllViews()
         var epNum = 0
-        data.cdnData.seasons[index].episodes.forEach {
+        data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
 
             val card: View = layoutInflater.inflate(R.layout.episode_result, null)
-            if (it.thumb != null) {
-                val glideUrl = GlideUrl(it.thumb)
-                context?.let {
-                    Glide.with(it)
-                        .load(glideUrl)
-                        .into(card.imageView)
+            if (fullEpisode.thumb != null) {
+                // Can be "N/A"
+                if (fullEpisode.thumb.startsWith("http")) {
+                    val glideUrl = GlideUrl(fullEpisode.thumb)
+                    context?.let {
+                        Glide.with(it)
+                            .load(glideUrl)
+                            .into(card.imageView)
+                    }
                 }
             }
 
@@ -61,12 +65,12 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             }
 
             epNum++
-            var title = it.title
-            if (title == null || title?.replace(" ", "") == "") {
-                title = "Episode " + epNum
+            var title = fullEpisode.title
+            if (title == null || title.replace(" ", "") == "") {
+                title = "Episode $epNum"
             }
-            if(!isMovie) {
-                title = epNum.toString() + ". " + title
+            if (!isMovie) {
+                title = "$epNum. $title"
             }
             card.cardTitle.text = title
             title_season_cards.addView(card)
@@ -85,6 +89,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             title_holder.paddingRight,
             0,
         )
+
         val glideUrl =
             GlideUrl("https://fastani.net/" + data.bannerImage) { FastAniApi.currentHeaders }
 
@@ -95,21 +100,29 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             }
 
             title_background.setOnClickListener() {
-                //TODO headers for trailers
                 MainActivity.loadPlayer(data.title.english + " - Trailer", "https://fastani.net/" + data.trailer!!)
             }
         } else {
             title_trailer_btt.alpha = 0f
         }
 
-        var seasonsTxt: MutableList<String> = mutableListOf<String>()
-        for (i in 1..data.cdnData.seasons.size) {
-            seasonsTxt.add("Season " + i)
+        // SEASON SELECTOR
+        val seasonsTxt = data.cdnData.seasons.mapIndexed { i: Int, _: FastAniApi.Seasons -> "Season ${i + 1}" }
+        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, seasonsTxt)
+        spinner.adapter = arrayAdapter
+        class SpinnerClickListener : AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
+            override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {}
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                loadSeason(p2)
+            }
         }
+        if (data.cdnData.seasons.size <= 1){
+            spinner.background = null
+            spinner.isEnabled = false
+        }
+        spinner.onItemSelectedListener = SpinnerClickListener()
         loadSeason(0)
-        /*
-        val arrayAdapter = ArrayAdapter(context, R.layout.s,    arrayOf("Season 1", "season 2") )
-        title_seasons.adapter = arrayAdapter*/
 
         context?.let {
             GlideApp.with(it)
@@ -119,8 +132,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
 
         title_name.text = data.title.english
         var descript = data.description
-        if (descript.length > DESCRIPT_LENGTH) {
-            descript = descript.substring(0, DESCRIPT_LENGTH)
+        if (descript.length > DESCRIPTION_LENGTH) {
+            descript = descript.substring(0, DESCRIPTION_LENGTH)
                 .replace("<br>", "")
                 .replace("<i>", "")
                 .replace("</i>", "")
@@ -130,8 +143,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         title_duration.text = data.duration.toString() + "min"
         var ratTxt = (data.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
         if (!ratTxt.contains('.')) ratTxt += ".0"
-        title_rating.text = "Rated: " + ratTxt
+        title_rating.text = "Rated: $ratTxt"
         title_genres.text = data.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
-
     }
 }

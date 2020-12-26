@@ -74,6 +74,7 @@ class FastAniApi {
         }
 
         //search via http get request, NOT INSTANT
+        // ONLY PAGE 1
         fun search(query: String, page: Int = 1): SearchResponse? {
             // Tags and years can be added
             val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
