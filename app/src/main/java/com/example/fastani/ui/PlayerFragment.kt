@@ -187,7 +187,6 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     }
 
     override fun onResume() {
-        MainActivity.activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         super.onResume()
         if (Util.SDK_INT <= 23) {
             initPlayer()

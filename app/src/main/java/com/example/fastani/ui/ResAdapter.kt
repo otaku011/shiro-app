@@ -76,7 +76,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             cardView.setOnClickListener {
                 activity?.supportFragmentManager?.beginTransaction()
-                    ?.replace(R.id.homeRoot, ResultFragment(card))
+                    ?.add(R.id.homeRoot, ResultFragment(card))
                     ?.commit()
                  /*MainActivity.loadPage(card)*/
             }
