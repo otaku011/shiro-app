@@ -236,6 +236,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/title_season_cards"
+sff                        android:layout_marginBottom="20dp"
                         android:orientation="vertical"
                 >
                 </LinearLayout>
