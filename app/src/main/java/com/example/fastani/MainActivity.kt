@@ -178,9 +178,10 @@ class MainActivity : AppCompatActivity() {
 
         private fun loadPlayer(data: PlayerData) {
             activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.homeRoot, PlayerFragment(
+                ?.add(R.id.videoRoot, PlayerFragment(
                     data))
                 ?.commit()
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         }
 
         fun loadPage(card: FastAniApi.Card) {
@@ -210,7 +211,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getStatusBarHeight(): Int {
+    private fun getStatusBarHeight(): Int {
         var result = 0
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
         if (resourceId > 0) {
