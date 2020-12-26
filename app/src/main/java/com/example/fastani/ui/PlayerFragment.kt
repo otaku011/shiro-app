@@ -103,25 +103,10 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        MainActivity.activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-
         super.onViewCreated(view, savedInstanceState)
         isInPlayer = true
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
         MainActivity.hideSystemUI()
-
-        fun dataSourceFactory(): HttpDataSource {
-            val dataSource = DefaultHttpDataSourceFactory().createDataSource()
-            // Set a custom authentication request header.
-            dataSource.setRequestProperty("Header", "Value");
-            return dataSource;
-        }
-        /*dataSourceFactory = DefaultMediaSourceFactory(
-            requireContext(),
-            FastAniApi.USER_AGENT
-        )*/
-
-        //MainActivity.activity!!.getWindow().setFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
@@ -163,9 +148,9 @@ class PlayerFragment(data: PlayerData) : Fragment() {
             override fun createDataSource(): DataSource {
                 val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
                 FastAniApi.currentHeaders?.forEach {
-                    dataSource.setRequestProperty(it.key, it.value);
+                    dataSource.setRequestProperty(it.key, it.value)
                 }
-                return dataSource;
+                return dataSource
             }
         }
 
@@ -190,6 +175,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     }
 
     override fun onResume() {
+        MainActivity.activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         super.onResume()
         if (Util.SDK_INT <= 23) {
             initPlayer()

@@ -12,7 +12,7 @@
             android:layout_marginBottom="2dp"
             android:elevation="10dp"
             app:cardCornerRadius="2dp"
-            app:cardBackgroundColor="@android:color/white"
+            app:cardBackgroundColor="@color/darkBar"
     >
         <ImageView
                 android:layout_width="95dp"

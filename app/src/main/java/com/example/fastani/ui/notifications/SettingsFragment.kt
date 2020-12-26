@@ -9,19 +9,19 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import com.example.fastani.R
 
-class NotificationsFragment : PreferenceFragmentCompat() {
+class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings, rootKey)
         val autoDarkMode = findPreference("auto_dark_mode") as SwitchPreferenceCompat?
         val darkMode = findPreference("dark_mode") as SwitchPreferenceCompat?
-        darkMode?.isEnabled = autoDarkMode?.isChecked != true
+        //darkMode?.isEnabled = autoDarkMode?.isChecked != true
         darkMode?.isChecked =
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
         autoDarkMode?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { preference: Preference, any: Any ->
-                darkMode?.isEnabled = any != true
+                //darkMode?.isEnabled = any != true
                 if (any == true) {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                     val isDarkMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK

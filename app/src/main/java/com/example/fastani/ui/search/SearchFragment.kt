@@ -1,7 +1,6 @@
-package com.example.fastani.ui.dashboard
+package com.example.fastani.ui.search
 
 import android.annotation.SuppressLint
-import android.content.res.Resources
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.Transition
@@ -13,22 +12,18 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fastani.R
 import com.example.fastani.FastAniApi
 import com.example.fastani.MainActivity
 import com.example.fastani.toPx
-import com.example.fastani.ui.GridAdapter
 import com.example.fastani.ui.ResAdapter
 import kotlinx.android.synthetic.main.fragment_dashboard.*
-import kotlinx.android.synthetic.main.fragment_home.*
 import kotlin.concurrent.thread
 
-class DashboardFragment : Fragment() {
+class SearchFragment : Fragment() {
 
-    private lateinit var dashboardViewModel: DashboardViewModel
+    private lateinit var searchViewModel: SearchViewModel
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,7 +46,7 @@ class DashboardFragment : Fragment() {
 
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                progress_bar.visibility = View.VISIBLE;
+                progress_bar.visibility = View.VISIBLE
                 (cardSpace.adapter as ResAdapter).cardList.clear()
 
                 thread {
@@ -66,7 +61,7 @@ class DashboardFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                println(newText);
+                println(newText)
                 return true
             }
         })
@@ -75,7 +70,7 @@ class DashboardFragment : Fragment() {
                 LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
                 60.toPx // view height
             )
-            val transition: Transition = ChangeBounds();
+            val transition: Transition = ChangeBounds()
             transition.duration = 100 // DURATION OF ANIMATION IN MS
 
             TransitionManager.beginDelayedTransition(main_search, transition)
@@ -93,10 +88,17 @@ class DashboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        dashboardViewModel =
-            ViewModelProviders.of(this).get(DashboardViewModel::class.java)
-
-
+        searchViewModel =
+            ViewModelProviders.of(this).get(SearchViewModel::class.java)
+        activity?.window?.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+        )
         return inflater.inflate(R.layout.fragment_dashboard, container, false)
+    }
+
+    override fun onStop() {
+        activity?.window?.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
+        )
     }
 }

@@ -7,12 +7,25 @@
             android:title="Theme"
     >
         <SwitchPreferenceCompat
-                app:defaultValue="true"
+                android:enabled="false"
+                app:defaultValue="false"
                 android:key="auto_dark_mode"
                 app:title="Automatic dark mode"
                 android:summary="Based on phone theme"/>
         <SwitchPreferenceCompat
+                app:defaultValue="true"
+                android:enabled="false"
                 android:key="dark_mode"
                 app:title="Dark mode"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+            android:key="info"
+            android:title="Info"
+    >
+        <Preference
+                app:key="feedback"
+                app:title="Version"
+                app:summary="@string/version_code"/>
+
     </PreferenceCategory>
 </PreferenceScreen>

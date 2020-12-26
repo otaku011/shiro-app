@@ -83,7 +83,7 @@ class FastAniApi {
             return response?.text?.let { mapper.readValue(it) }
         }
 
-        var cachedHome: HomePageResponse? = null;
+        var cachedHome: HomePageResponse? = null
 
         fun requestHome(canBeCached: Boolean = true): HomePageResponse? {
             if (currentToken == null) return null
@@ -101,13 +101,13 @@ class FastAniApi {
             val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
             cachedHome = res
             onHomeFetched.invoke(res)
-            return res;
+            return res
         }
 
         var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
 
-        var onHomeFetched = Event<HomePageResponse?>();
+        var onHomeFetched = Event<HomePageResponse?>()
 
         fun init() {
             if (currentToken != null) return

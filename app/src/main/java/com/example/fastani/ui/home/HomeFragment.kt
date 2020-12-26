@@ -133,7 +133,7 @@ class HomeFragment : Fragment() {
         homeViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
-        /*FastAniApi.onHomeFetched += ::homeLoaded;
+        /*FastAniApi.onHomeFetched += ::homeLoaded
         thread {
             // NOTE THAT THIS WILL RESULT IN NOTHING ON FIRST LOAD BECAUSE TOKEN IS NOT LAODED
             requestHome(true)

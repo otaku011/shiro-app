@@ -29,7 +29,7 @@ import kotlin.math.roundToInt
 class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
     var cardList = ArrayList<Card>()
     var context: Context? = null
-    var resView: AutofitRecyclerView? = null;
+    var resView: AutofitRecyclerView? = null
 
     constructor(context: Context, foodsList: ArrayList<Card>, resView: AutofitRecyclerView) : super() {
         this.context = context
@@ -59,7 +59,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     class CardViewHolder
     constructor(itemView: View, _context: Context, resView: AutofitRecyclerView) : RecyclerView.ViewHolder(itemView) {
-        val context = _context;
+        val context = _context
         val cardView = itemView.imageView
         val coverHeight: Int = (resView.itemWidth / 0.68).roundToInt()
         fun bind(card: Card) {
