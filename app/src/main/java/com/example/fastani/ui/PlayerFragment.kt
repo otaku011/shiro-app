@@ -48,6 +48,7 @@ data class PlayerData(
 class PlayerFragment(data: PlayerData) : Fragment() {
     companion object {
         var isInPlayer: Boolean = false
+        var onLeftPlayer = Event<Boolean>()
     }
 
     private var data: PlayerData = data
@@ -104,6 +105,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         // DON'T SAVE DATA OF TRAILERS
 
         isInPlayer = false
+        onLeftPlayer.invoke(true)
         MainActivity.showSystemUI()
 
         super.onDestroy()
@@ -212,6 +214,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
             releasePlayer()
         }
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

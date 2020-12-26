@@ -21,6 +21,7 @@ import com.example.fastani.ui.PlayerData
 import com.example.fastani.ui.PlayerFragment
 import com.example.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.example.fastani.ui.result.ResultFragment
+import com.example.fastani.ui.result.ResultFragment.Companion.isInResults
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
@@ -83,7 +84,7 @@ class MainActivity : AppCompatActivity() {
                     NextEpisode(false, 0, 0)
                 }
             } else {
-                NextEpisode(true, episodeIndex, seasonIndex)
+                NextEpisode(true, episodeIndex + 1, seasonIndex)
             }
         }
 
@@ -106,10 +107,9 @@ class MainActivity : AppCompatActivity() {
                 val next = canPlayNextEpisode(card, seasonIndex, episodeIndex)
                 if (next.isFound) {
                     val nextPro = getViewPosDur(card.anilistId, next.seasonIndex, next.episodeIndex)
-                    if ((nextPro.pos * 100) / dur > maxValue) {
-                        seasonIndex = next.seasonIndex
-                        episodeIndex = next.episodeIndex
-                    } else {
+                    seasonIndex = next.seasonIndex
+                    episodeIndex = next.episodeIndex
+                    if ((nextPro.pos * 100) / dur <= maxValue) {
                         canContinue = false
                         isFound = true
                     }
@@ -118,6 +118,7 @@ class MainActivity : AppCompatActivity() {
                     isFound = false
                 }
             }
+
             if (!isFound) return
 
             DataStore.setKey(
@@ -130,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                     card.anilistId,
                     episodeIndex,
                     seasonIndex,
-                    card.cdnData.seasons[episodeIndex].episodes[seasonIndex],
+                    card.cdnData.seasons[seasonIndex].episodes[episodeIndex],
                     card.coverImage,
                     card.title,
                     card.bannerImage
@@ -202,7 +203,7 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         println("BACK PRESSED!!!!")
 
-        if (supportFragmentManager.fragments.size > 2) {
+        if (isInResults || isInPlayer) {
             val currentFragment = supportFragmentManager.fragments.last()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             supportFragmentManager.beginTransaction().remove(currentFragment).commit()

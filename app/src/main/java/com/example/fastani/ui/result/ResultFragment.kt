@@ -16,6 +16,7 @@ import com.example.fastani.MainActivity
 import com.example.fastani.R
 import com.example.fastani.toPx
 import com.example.fastani.ui.GlideApp
+import com.example.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -28,6 +29,11 @@ const val DESCRIPTION_LENGTH = 200
 
 class ResultFragment(data: FastAniApi.Card) : Fragment() {
     var data: FastAniApi.Card = data
+
+    companion object {
+        var isInResults: Boolean = false
+    }
+
     private val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
     private lateinit var resultViewModel: ResultViewModel
 
@@ -42,6 +48,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     }
 
     private fun loadSeason(index: Int) {
+        currentSeasonIndex = index
         title_season_cards.removeAllViews()
         var epNum = 0
         data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
@@ -77,11 +84,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
             println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
             if (pro.dur > 0 && pro.pos > 0) {
-                var progress : Int = (pro.pos * 100L / pro.dur).toInt()
-                if(progress < 5) {
+                var progress: Int = (pro.pos * 100L / pro.dur).toInt()
+                if (progress < 5) {
                     progress = 5
-                }
-                else if(progress > 95) {
+                } else if (progress > 95) {
                     progress = 100
                 }
                 card.video_progress.progress = progress
@@ -93,9 +99,23 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        PlayerFragment.onLeftPlayer -= ::OnLeftVideoPlayer
+        isInResults = false
+    }
+
+    fun OnLeftVideoPlayer(event: Boolean) {
+        loadSeason(currentSeasonIndex)
+    }
+
+    var currentSeasonIndex: Int = 0
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        isInResults = true
+        PlayerFragment.onLeftPlayer += ::OnLeftVideoPlayer
 
         view.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
 
@@ -130,6 +150,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {}
             override fun onNothingSelected(p0: AdapterView<*>?) {}
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+
                 loadSeason(p2)
             }
         }
@@ -138,7 +159,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             spinner.isEnabled = false
         }
         spinner.onItemSelectedListener = SpinnerClickListener()
-       // loadSeason(0)
+        // loadSeason(0)
 
         context?.let {
             GlideApp.with(it)
