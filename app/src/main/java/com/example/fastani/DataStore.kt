@@ -10,6 +10,8 @@ const val PREFERENCES_NAME: String = "rebuild_preference"
 const val VIEW_POS_KEY: String = "view_pos" // VIDEO POSITION
 const val VIEW_DUR_KEY: String = "view_dur" // VIDEO DURATION
 const val VIEW_LST_KEY: String = "view_lst" // LAST WATCHED, ONE PER TITLE ID
+const val BOOKMARK_KEY: String = "bookmark" // BOOKMARK/FAVORITE BookmarkedTitle
+const val VIEWSTATE_KEY: String = "viewstate" // BOOKMARK/FAVORITE BookmarkedTitle
 
 object DataStore {
 
@@ -36,7 +38,29 @@ object DataStore {
 
     fun getKeys(path: String) {
         val keys = getSharedPrefs().all.keys
-        
+    }
+
+
+    fun removeKey(folder: String, path: String) {
+        removeKey(getFolderName(folder, path))
+    }
+
+    fun containsKey(folder: String, path: String): Boolean {
+        return containsKey(getFolderName(folder, path))
+    }
+
+    fun containsKey(path: String): Boolean {
+        val prefs = getSharedPrefs()
+        return prefs.contains(path)
+    }
+
+    fun removeKey(path: String) {
+        val prefs = getSharedPrefs()
+        if (prefs.contains(path)) {
+            val editor: SharedPreferences.Editor = prefs.edit()
+            editor.remove(path)
+            editor.apply()
+        }
     }
 
     fun <T> setKey(path: String, value: T) {

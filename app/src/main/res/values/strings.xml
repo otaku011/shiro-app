@@ -12,4 +12,10 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="main_watch_button_text">WATCH</string>
+    <string name="bookmark_btt">Bookmark</string>
+    <string name="bookmark_btt_hint">Toggle Bookmark</string>
+    <string name="viewstate_btt">Mark episodes seen</string>
+    <string name="viewstate_btt_hint">Toggle Viewstate</string>
+    <string name="anilist_btt">Open Anilist</string>
+    <string name="anilist_btt_hint">Open Anilist</string>
 </resources>

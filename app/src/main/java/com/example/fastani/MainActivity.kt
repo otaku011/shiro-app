@@ -31,7 +31,6 @@ data class EpisodePosDurInfo(
     val dur: Long,
 )
 
-
 data class LastEpisodeInfo(
     val pos: Long,
     val dur: Long,
@@ -49,6 +48,10 @@ data class NextEpisode(
     val isFound: Boolean,
     val episodeIndex: Int,
     val seasonIndex: Int,
+)
+
+data class BookmarkedTitle(
+    val id: String
 )
 
 class MainActivity : AppCompatActivity() {

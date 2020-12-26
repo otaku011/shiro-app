@@ -65,21 +65,24 @@
             >
 
                 <TextView
-                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Attack on titan"
                         android:id="@+id/title_name"
+                        android:layout_gravity="center_vertical|start"
                         android:textColor="@color/textColor"
-                        android:paddingBottom="6dp"
                         android:textFontWeight="900"
                         android:textSize="20sp"
                 >
                 </TextView>
+
+
                 <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:paddingBottom="6dp"
                 >
+
                     <TextView
                             android:id="@+id/title_rating"
                             android:layout_width="wrap_content"
@@ -123,6 +126,85 @@ Flash forward to the present and the city has not seen a titan in over 100 years
 (Source: MangaHelpers) ">
 
                 </TextView>
+                <LinearLayout
+
+                        android:paddingTop="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingBottom="6dp"
+                >
+                    <LinearLayout
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                    >
+                        <ImageView
+                                android:background="?android:attr/selectableItemBackgroundBorderless"
+                                android:id="@+id/title_bookmark"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:elevation="10dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:src="@drawable/outlined_heart"
+
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/bookmark_btt_hint"/>
+                        <TextView android:text="@string/bookmark_btt"
+                                  android:layout_gravity="center" android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content">
+                        </TextView>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                    >
+                        <ImageView
+                                android:background="?android:attr/selectableItemBackgroundBorderless"
+                                android:id="@+id/title_viewstate"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:elevation="10dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:src="@drawable/outlined_viewstate"
+
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/viewstate_btt_hint"/>
+                        <TextView android:text="@string/viewstate_btt"
+                                  android:layout_gravity="center" android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content">
+                        </TextView>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                        <ImageView
+                                android:background="?android:attr/selectableItemBackgroundBorderless"
+                                android:id="@+id/title_anilist"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:elevation="10dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:src="@drawable/ic_anilist_icon"
+
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/anilist_btt_hint"/>
+                        <TextView android:text="@string/anilist_btt"
+                                  android:layout_gravity="center" android:layout_width="wrap_content"
+                                  android:layout_height="wrap_content">
+                        </TextView>
+                    </LinearLayout>
+                </LinearLayout>
+
                 <Spinner
                         android:id="@+id/spinner"
                         android:layout_width="wrap_content"

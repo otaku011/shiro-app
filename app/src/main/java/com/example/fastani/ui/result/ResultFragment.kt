@@ -4,17 +4,16 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.example.fastani.FastAniApi
-import com.example.fastani.MainActivity
-import com.example.fastani.R
-import com.example.fastani.toPx
+import com.example.fastani.*
 import com.example.fastani.ui.GlideApp
 import com.example.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
@@ -29,9 +28,11 @@ const val DESCRIPTION_LENGTH = 200
 
 class ResultFragment(data: FastAniApi.Card) : Fragment() {
     var data: FastAniApi.Card = data
+    var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data.anilistId)
 
     companion object {
         var isInResults: Boolean = false
+        var isViewState: Boolean = false
     }
 
     private val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
@@ -47,6 +48,34 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
+    private fun ToggleViewState(_isViewState: Boolean) {
+        isViewState = _isViewState
+        if (isViewState) {
+            title_viewstate.setImageResource(R.drawable.filled_viewstate)
+        } else {
+            title_viewstate.setImageResource(R.drawable.outlined_viewstate)
+        }
+    }
+
+    private fun ToggleHeartVisual(_isBookmarked: Boolean) {
+        if (_isBookmarked) {
+            title_bookmark.setImageResource(R.drawable.filled_heart)
+        } else {
+            title_bookmark.setImageResource(R.drawable.outlined_heart)
+        }
+    }
+
+    private fun ToggleHeart(_isBookmarked: Boolean) {
+        this.isBookmarked = _isBookmarked
+        ToggleHeartVisual(_isBookmarked)
+        if (_isBookmarked) {
+            DataStore.setKey<BookmarkedTitle>(BOOKMARK_KEY, data.anilistId, BookmarkedTitle(data.id))
+        } else {
+            DataStore.removeKey(BOOKMARK_KEY, data.anilistId)
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     private fun loadSeason(index: Int) {
         currentSeasonIndex = index
         title_season_cards.removeAllViews()
@@ -71,6 +100,18 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             card.imageView.setOnClickListener {
                 MainActivity.loadPlayer(epIndex, index, data)
             }
+            val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
+
+            card.setOnClickListener {
+                if (isViewState) {
+                    if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                        DataStore.removeKey(VIEWSTATE_KEY, key)
+                    } else {
+                        DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                    }
+                    loadSeason(index)
+                }
+            }
 
             var title = fullEpisode.title
             if (title == null || title.replace(" ", "") == "") {
@@ -80,6 +121,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 title = "$epNum. $title"
             }
             card.cardTitle.text = title
+            if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                card.cardBg.setCardBackgroundColor(ContextCompat.getColor(MainActivity.activity!!.applicationContext,
+                    R.color.colorPrimaryMegaDark))
+            }
 
             val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
             println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
@@ -115,7 +160,17 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
+        isViewState = false
         PlayerFragment.onLeftPlayer += ::OnLeftVideoPlayer
+        ToggleHeartVisual(isBookmarked)
+
+        title_bookmark.setOnClickListener {
+            ToggleHeart(!isBookmarked)
+        }
+
+        title_viewstate.setOnClickListener {
+            ToggleViewState(!isViewState)
+        }
 
         view.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
 
@@ -150,7 +205,6 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {}
             override fun onNothingSelected(p0: AdapterView<*>?) {}
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-
                 loadSeason(p2)
             }
         }
