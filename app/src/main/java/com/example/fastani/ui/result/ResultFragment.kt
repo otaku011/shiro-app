@@ -48,6 +48,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
+    /*
     private fun ToggleViewState(_isViewState: Boolean) {
         isViewState = _isViewState
         if (isViewState) {
@@ -55,7 +56,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         } else {
             title_viewstate.setImageResource(R.drawable.outlined_viewstate)
         }
-    }
+    }*/
 
     private fun ToggleHeartVisual(_isBookmarked: Boolean) {
         if (_isBookmarked) {
@@ -102,6 +103,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             }
             val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
 
+            /*
             card.setOnClickListener {
                 if (isViewState) {
                     if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
@@ -111,7 +113,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     }
                     loadSeason(index)
                 }
-            }
+            }*/
 
             var title = fullEpisode.title
             if (title == null || title.replace(" ", "") == "") {
@@ -121,10 +123,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 title = "$epNum. $title"
             }
             card.cardTitle.text = title
-            if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+            /*if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                 card.cardBg.setCardBackgroundColor(ContextCompat.getColor(MainActivity.activity!!.applicationContext,
                     R.color.colorPrimaryMegaDark))
-            }
+            }*/
 
             val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
             println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
@@ -168,9 +170,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             ToggleHeart(!isBookmarked)
         }
 
+        /*
         title_viewstate.setOnClickListener {
             ToggleViewState(!isViewState)
-        }
+        }*/
 
         view.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
 
