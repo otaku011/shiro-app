@@ -17,8 +17,6 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/background"
         >
-
-
             <ImageButton
                     android:id="@+id/title_background"
                     android:layout_width="match_parent"
