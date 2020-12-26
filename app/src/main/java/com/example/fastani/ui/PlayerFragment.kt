@@ -9,9 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
-import com.example.fastani.FastAniApi
-import com.example.fastani.MainActivity
-import com.example.fastani.R
+import com.example.fastani.*
+import com.example.fastani.MainActivity.Companion.getViewKey
+import com.example.fastani.MainActivity.Companion.getViewPosDur
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
@@ -97,8 +97,14 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        if (data.card != null && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0) {
+            MainActivity.setViewPosDur(data, exoPlayer.currentPosition, exoPlayer.duration)
+        }
+        // DON'T SAVE DATA OF TRAILERS
+
         isInPlayer = false
+        super.onDestroy()
+
         //MainActivity.showSystemUI()
     }
 
@@ -168,6 +174,12 @@ class PlayerFragment(data: PlayerData) : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        if (data.card != null) {
+            val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
+            if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
+                playbackPosition = pro.pos
+            }
+        }
         if (Util.SDK_INT > 23) {
             initPlayer()
             if (player_view != null) player_view.onResume()

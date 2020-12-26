@@ -7,8 +7,11 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 
 const val PREFERENCES_NAME: String = "rebuild_preference"
+const val VIEW_POS_KEY: String = "view_pos"
+const val VIEW_DUR_KEY: String = "view_dur"
 
 object DataStore {
+
     val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 

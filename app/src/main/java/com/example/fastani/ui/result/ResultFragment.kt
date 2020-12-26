@@ -45,6 +45,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         title_season_cards.removeAllViews()
         var epNum = 0
         data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
+            val epIndex = epNum
+            epNum++
 
             val card: View = layoutInflater.inflate(R.layout.episode_result, null)
             if (fullEpisode.thumb != null) {
@@ -59,12 +61,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 }
             }
 
-            val epIndex = epNum
             card.imageView.setOnClickListener {
                 MainActivity.loadPlayer(epIndex, index, data)
             }
 
-            epNum++
             var title = fullEpisode.title
             if (title == null || title.replace(" ", "") == "") {
                 title = "Episode $epNum"
@@ -73,6 +73,22 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 title = "$epNum. $title"
             }
             card.cardTitle.text = title
+
+            val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
+            println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
+            if (pro.dur > 0 && pro.pos > 0) {
+                var progress : Int = (pro.pos * 100L / pro.dur).toInt()
+                if(progress < 5) {
+                    progress = 5
+                }
+                else if(progress > 95) {
+                    progress = 100
+                }
+                card.video_progress.progress = progress
+            } else {
+                card.video_progress.alpha = 0f
+            }
+
             title_season_cards.addView(card)
         }
     }
@@ -117,12 +133,12 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 loadSeason(p2)
             }
         }
-        if (data.cdnData.seasons.size <= 1){
+        if (data.cdnData.seasons.size <= 1) {
             spinner.background = null
             spinner.isEnabled = false
         }
         spinner.onItemSelectedListener = SpinnerClickListener()
-        loadSeason(0)
+       // loadSeason(0)
 
         context?.let {
             GlideApp.with(it)
