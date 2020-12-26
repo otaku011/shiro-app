@@ -14,7 +14,9 @@ import com.example.fastani.MainActivity
 import com.example.fastani.R
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.source.MediaSourceFactory
+import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.player.*
@@ -43,13 +45,13 @@ data class PlayerData(
 )
 
 class PlayerFragment(data: PlayerData) : Fragment() {
-    var data: PlayerData = data
     companion object {
-        var isInPlayer : Boolean = false
+        var isInPlayer: Boolean = false
     }
 
-
+    private var data: PlayerData = data
     private lateinit var exoPlayer: SimpleExoPlayer
+    private lateinit var dataSourceFactory: MediaSourceFactory
 
     // private val url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     private var currentWindow = 0
@@ -72,7 +74,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         }
     }
 
-    fun getCurrentEpisode(): FastAniApi.FullEpisode {
+    private fun getCurrentEpisode(): FastAniApi.FullEpisode {
         return data.card!!.cdnData.seasons[data.seasonIndex!!].episodes[data.episodeIndex!!]
     }
 
@@ -88,7 +90,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         return preTitle + getCurrentEpisode().title!!
     }
 
-    fun getCurrentUrl(): String {
+    private fun getCurrentUrl(): String {
         println("MAN::: " + data.url)
         if (data.url != null) return data.url!!
         return getCurrentEpisode().file
@@ -108,11 +110,18 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
         MainActivity.hideSystemUI()
 
-        /*dataSourceFactory = DefaultDataSourceFactory(
+        fun dataSourceFactory(): HttpDataSource {
+            val dataSource = DefaultHttpDataSourceFactory().createDataSource()
+            // Set a custom authentication request header.
+            dataSource.setRequestProperty("Header", "Value");
+            return dataSource;
+        }
+        /*dataSourceFactory = DefaultMediaSourceFactory(
             requireContext(),
             FastAniApi.USER_AGENT
         )*/
-      //MainActivity.activity!!.getWindow().setFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        //MainActivity.activity!!.getWindow().setFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
@@ -149,12 +158,26 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     }
 
     private fun initPlayer() {
-        exoPlayer = SimpleExoPlayer.Builder(this.requireContext()).build().apply {
-            playWhenReady = isPlayerPlaying
-            seekTo(currentWindow, playbackPosition)
-            setMediaItem(mediaItem, false)
-            prepare()
+        // NEEDED FOR HEADERS
+        class CustomFactory : DataSource.Factory {
+            override fun createDataSource(): DataSource {
+                val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
+                FastAniApi.currentHeaders?.forEach {
+                    dataSource.setRequestProperty(it.key, it.value);
+                }
+                return dataSource;
+            }
         }
+
+        exoPlayer =
+            SimpleExoPlayer.Builder(this.requireContext())
+                .setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
+                .build().apply {
+                    playWhenReady = isPlayerPlaying
+                    seekTo(currentWindow, playbackPosition)
+                    setMediaItem(mediaItem, false)
+                    prepare()
+                }
         player_view.player = exoPlayer
     }
 
