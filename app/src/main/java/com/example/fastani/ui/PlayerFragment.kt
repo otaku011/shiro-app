@@ -2,6 +2,7 @@ package com.example.fastani.ui
 
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -22,6 +23,9 @@ import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.lang.Exception
+import android.view.animation.AlphaAnimation
+import androidx.core.content.res.ResourcesCompat
+
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
 const val STATE_RESUME_POSITION = "resumePosition"
@@ -51,6 +55,8 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         var onLeftPlayer = Event<Boolean>()
     }
 
+    private var isLocked = false
+    private var isShowing = true
     private var data: PlayerData = data
     private lateinit var exoPlayer: SimpleExoPlayer
     private lateinit var dataSourceFactory: MediaSourceFactory
@@ -113,10 +119,50 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         //MainActivity.showSystemUI()
     }
 
+    fun updateLock() {
+        video_locked_img.setImageResource(if (isLocked) R.drawable.video_locked else R.drawable.video_unlocked)
+        video_locked_img.setColorFilter(if (isLocked) ResourcesCompat.getColor(getResources(),
+            R.color.colorAccent,
+            null) else Color.WHITE)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        updateLock()
+        video_lock.setOnClickListener {
+            isLocked = !isLocked
+            updateLock()
+        }
+
+        player_holder.setOnClickListener {
+            isShowing = !isShowing
+            val fadeTo = if (isShowing) 1f else 0f
+            val fadeAnimation = AlphaAnimation(1 - fadeTo, fadeTo)
+            fadeAnimation.duration = 100
+            fadeAnimation.fillAfter = true
+            if (!isLocked && isShowing) {
+                video_lock_holder.startAnimation(fadeAnimation)
+            }
+            video_holder.startAnimation(fadeAnimation)
+
+            exo_pause.isClickable = isShowing
+            exo_pause.isFocusable = isShowing
+            exo_ffwd.isClickable = isShowing
+            exo_ffwd.isFocusable = isShowing
+            exo_prev.isClickable = isShowing
+            exo_prev.isFocusable = isShowing
+            video_lock.isClickable = isShowing
+            video_lock.isFocusable = isShowing
+            video_go_back.isClickable = isShowing
+            video_go_back.isFocusable = isShowing
+            exo_progress.isClickable = isShowing
+            exo_progress.isFocusable = isShowing
+        }
+
         isInPlayer = true
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
+        video_title.text = getCurrentTitle()
         MainActivity.hideSystemUI()
         video_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
