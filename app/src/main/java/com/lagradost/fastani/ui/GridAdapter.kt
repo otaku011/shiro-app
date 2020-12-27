@@ -1,4 +1,4 @@
-package com.example.fastani.ui
+package com.lagradost.fastani.ui
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -9,9 +9,9 @@ import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.example.fastani.FastAniApi
-import com.example.fastani.FastAniApi.Card
-import com.example.fastani.R
+import com.lagradost.fastani.FastAniApi
+import com.lagradost.fastani.FastAniApi.Card
+import com.lagradost.fastani.R
 import kotlinx.android.synthetic.main.search_result.view.*
 
 class GridAdapter : BaseAdapter {

@@ -1,4 +1,4 @@
-package com.example.fastani.ui.result
+package com.lagradost.fastani.ui.result
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -13,11 +13,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.example.fastani.*
-import com.example.fastani.DataStore.setKey
-import com.example.fastani.FastAniApi.Companion.requestHome
-import com.example.fastani.ui.GlideApp
-import com.example.fastani.ui.PlayerFragment
+import com.lagradost.fastani.*
+import com.lagradost.fastani.DataStore.setKey
+import com.lagradost.fastani.FastAniApi.Companion.requestHome
+import com.lagradost.fastani.ui.GlideApp
+import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.fragment_home.*

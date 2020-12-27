@@ -1,4 +1,4 @@
-package com.example.fastani
+package com.lagradost.fastani
 
 class Event<T> {
     private val observers = mutableSetOf<(T) -> Unit>()

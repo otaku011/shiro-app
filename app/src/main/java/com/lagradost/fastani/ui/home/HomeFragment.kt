@@ -1,4 +1,4 @@
-package com.example.fastani.ui.home
+package com.lagradost.fastani.ui.home
 
 import android.content.Context
 import android.content.res.Resources
@@ -17,13 +17,13 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.load.model.GlideUrl
-import com.example.fastani.*
-import com.example.fastani.DataStore.getSharedPrefs
-import com.example.fastani.FastAniApi.Companion.getCardById
-import com.example.fastani.FastAniApi.Companion.requestHome
-import com.example.fastani.ui.GlideApp
-import com.example.fastani.ui.PlayerData
-import com.example.fastani.ui.PlayerFragment
+import com.lagradost.fastani.*
+import com.lagradost.fastani.DataStore.getSharedPrefs
+import com.lagradost.fastani.FastAniApi.Companion.getCardById
+import com.lagradost.fastani.FastAniApi.Companion.requestHome
+import com.lagradost.fastani.ui.GlideApp
+import com.lagradost.fastani.ui.PlayerData
+import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlin.concurrent.thread

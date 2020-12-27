@@ -1,4 +1,4 @@
-package com.example.fastani.ui
+package com.lagradost.fastani.ui
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -17,12 +17,12 @@ import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.example.fastani.FastAniApi
-import com.example.fastani.FastAniApi.Card
-import com.example.fastani.MainActivity
-import com.example.fastani.MainActivity.Companion.activity
-import com.example.fastani.R
-import com.example.fastani.ui.result.ResultFragment
+import com.lagradost.fastani.FastAniApi
+import com.lagradost.fastani.FastAniApi.Card
+import com.lagradost.fastani.MainActivity
+import com.lagradost.fastani.MainActivity.Companion.activity
+import com.lagradost.fastani.R
+import com.lagradost.fastani.ui.result.ResultFragment
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.math.roundToInt
 

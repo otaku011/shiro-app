@@ -1,4 +1,4 @@
-package com.example.fastani.ui.search
+package com.lagradost.fastani.ui.search
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -13,11 +13,11 @@ import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
-import com.example.fastani.R
-import com.example.fastani.FastAniApi
-import com.example.fastani.MainActivity
-import com.example.fastani.toPx
-import com.example.fastani.ui.ResAdapter
+import com.lagradost.fastani.R
+import com.lagradost.fastani.FastAniApi
+import com.lagradost.fastani.MainActivity
+import com.lagradost.fastani.toPx
+import com.lagradost.fastani.ui.ResAdapter
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread
 

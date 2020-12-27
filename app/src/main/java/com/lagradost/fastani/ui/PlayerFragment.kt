@@ -1,4 +1,4 @@
-package com.example.fastani.ui
+package com.lagradost.fastani.ui
 
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
@@ -10,9 +10,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
-import com.example.fastani.*
-import com.example.fastani.MainActivity.Companion.getViewKey
-import com.example.fastani.MainActivity.Companion.getViewPosDur
+import com.lagradost.fastani.*
+import com.lagradost.fastani.MainActivity.Companion.getViewKey
+import com.lagradost.fastani.MainActivity.Companion.getViewPosDur
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory

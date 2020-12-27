@@ -39,7 +39,7 @@
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        <com.example.fastani.ui.AutofitRecyclerView
+        <com.lagradost.fastani.ui.AutofitRecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
@@ -51,6 +51,6 @@
                 android:id="@+id/cardSpace"
                 android:orientation="vertical"
         >
-        </com.example.fastani.ui.AutofitRecyclerView>
+        </com.lagradost.fastani.ui.AutofitRecyclerView>
     </ScrollView>
 </LinearLayout>

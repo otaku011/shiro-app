@@ -1,6 +1,6 @@
-package com.example.fastani
+package com.lagradost.fastani
 
-import com.example.fastani.ui.Stopwatch
+import com.lagradost.fastani.ui.Stopwatch
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule

@@ -1,4 +1,4 @@
-package com.example.fastani
+package com.lagradost.fastani
 
 import java.util.*
 import java.util.concurrent.ExecutorService

@@ -1,4 +1,4 @@
-package com.example.fastani.ui
+package com.lagradost.fastani.ui
 
 object Stopwatch {
     inline fun elapse(callback: () -> Unit): Long {

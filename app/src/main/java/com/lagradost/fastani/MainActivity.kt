@@ -1,4 +1,4 @@
-package com.example.fastani
+package com.lagradost.fastani
 
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -18,11 +18,11 @@ import kotlin.concurrent.thread
 
 import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
-import com.example.fastani.ui.PlayerData
-import com.example.fastani.ui.PlayerFragment
-import com.example.fastani.ui.PlayerFragment.Companion.isInPlayer
-import com.example.fastani.ui.result.ResultFragment
-import com.example.fastani.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.fastani.ui.PlayerData
+import com.lagradost.fastani.ui.PlayerFragment
+import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.fastani.ui.result.ResultFragment
+import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()

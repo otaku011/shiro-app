@@ -1,4 +1,4 @@
-package com.example.fastani.ui.settings
+package com.lagradost.fastani.ui.settings
 
 import android.content.DialogInterface
 import android.content.res.Configuration
@@ -9,13 +9,13 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
-import com.example.fastani.DataStore.getKeys
-import com.example.fastani.DataStore.removeKeys
-import com.example.fastani.DataStore.setKey
-import com.example.fastani.R
-import com.example.fastani.VIEW_DUR_KEY
-import com.example.fastani.VIEW_LST_KEY
-import com.example.fastani.VIEW_POS_KEY
+import com.lagradost.fastani.DataStore.getKeys
+import com.lagradost.fastani.DataStore.removeKeys
+import com.lagradost.fastani.DataStore.setKey
+import com.lagradost.fastani.R
+import com.lagradost.fastani.VIEW_DUR_KEY
+import com.lagradost.fastani.VIEW_LST_KEY
+import com.lagradost.fastani.VIEW_POS_KEY
 
 class SettingsFragment : PreferenceFragmentCompat() {
 

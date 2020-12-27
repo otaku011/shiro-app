@@ -1,4 +1,4 @@
-package com.example.fastani.ui
+package com.lagradost.fastani.ui
 
 import android.content.Context
 import com.bumptech.glide.GlideBuilder
