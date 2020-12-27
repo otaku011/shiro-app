@@ -7,6 +7,7 @@
     <color name="darkBar">#121212</color>
     <color name="background">#050505</color>
     <color name="textColor">#e6e6e6</color>
+    <color name="white">#FFF</color>
     <color name="textColorGray">#b0b0b0</color>
     <color name="textColorGrayWhite">#bababa</color>
     <color name="grayBackground">#333333</color>
@@ -14,4 +15,5 @@
     <color name="grayForeground">#b3b3b3</color>
     <color name="transparent">#00000000</color>
     <color name="black_overlay">#66000000</color>
+    <color name="video_ripple">#80FFFFFF</color>
 </resources>
