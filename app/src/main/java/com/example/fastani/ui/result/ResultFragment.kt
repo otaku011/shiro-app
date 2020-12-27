@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.*
+import com.example.fastani.DataStore.setKey
 import com.example.fastani.FastAniApi.Companion.requestHome
 import com.example.fastani.ui.GlideApp
 import com.example.fastani.ui.PlayerFragment
@@ -89,68 +90,72 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         currentSeasonIndex = index
         title_season_cards.removeAllViews()
         var epNum = 0
-        data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
-            val epIndex = epNum
-            epNum++
 
-            val card: View = layoutInflater.inflate(R.layout.episode_result, null)
-            if (fullEpisode.thumb != null) {
-                // Can be "N/A"
-                if (fullEpisode.thumb.startsWith("http")) {
-                    val glideUrl = GlideUrl(fullEpisode.thumb)
-                    context?.let {
-                        Glide.with(it)
-                            .load(glideUrl)
-                            .into(card.imageView)
+        // When fastani is down it doesn't report any seasons and this is needed.
+        if (data.cdnData.seasons.isNotEmpty()){
+            data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
+                val epIndex = epNum
+                epNum++
+
+                val card: View = layoutInflater.inflate(R.layout.episode_result, null)
+                if (fullEpisode.thumb != null) {
+                    // Can be "N/A"
+                    if (fullEpisode.thumb.startsWith("http")) {
+                        val glideUrl = GlideUrl(fullEpisode.thumb)
+                        context?.let {
+                            Glide.with(it)
+                                .load(glideUrl)
+                                .into(card.imageView)
+                        }
                     }
                 }
-            }
 
-            card.imageView.setOnClickListener {
-                MainActivity.loadPlayer(epIndex, index, data)
-            }
-            val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
+                card.imageView.setOnClickListener {
+                    MainActivity.loadPlayer(epIndex, index, data)
+                }
+                val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
 
-            /*
-            card.setOnClickListener {
-                if (isViewState) {
-                    if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                        DataStore.removeKey(VIEWSTATE_KEY, key)
-                    } else {
-                        DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                /*
+                card.setOnClickListener {
+                    if (isViewState) {
+                        if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                            DataStore.removeKey(VIEWSTATE_KEY, key)
+                        } else {
+                            DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                        }
+                        loadSeason(index)
                     }
-                    loadSeason(index)
+                }*/
+
+                var title = fullEpisode.title
+                if (title == null || title.replace(" ", "") == "") {
+                    title = "Episode $epNum"
                 }
-            }*/
-
-            var title = fullEpisode.title
-            if (title == null || title.replace(" ", "") == "") {
-                title = "Episode $epNum"
-            }
-            if (!isMovie) {
-                title = "$epNum. $title"
-            }
-            card.cardTitle.text = title
-            /*if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                card.cardBg.setCardBackgroundColor(ContextCompat.getColor(MainActivity.activity!!.applicationContext,
-                    R.color.colorPrimaryMegaDark))
-            }*/
-
-            val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
-            println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
-            if (pro.dur > 0 && pro.pos > 0) {
-                var progress: Int = (pro.pos * 100L / pro.dur).toInt()
-                if (progress < 5) {
-                    progress = 5
-                } else if (progress > 95) {
-                    progress = 100
+                if (!isMovie) {
+                    title = "$epNum. $title"
                 }
-                card.video_progress.progress = progress
-            } else {
-                card.video_progress.alpha = 0f
-            }
+                card.cardTitle.text = title
+                /*if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                    card.cardBg.setCardBackgroundColor(ContextCompat.getColor(MainActivity.activity!!.applicationContext,
+                        R.color.colorPrimaryMegaDark))
+                }*/
 
-            title_season_cards.addView(card)
+                val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
+                println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
+                if (pro.dur > 0 && pro.pos > 0) {
+                    var progress: Int = (pro.pos * 100L / pro.dur).toInt()
+                    if (progress < 5) {
+                        progress = 5
+                    } else if (progress > 95) {
+                        progress = 100
+                    }
+                    card.video_progress.progress = progress
+                } else {
+                    card.video_progress.alpha = 0f
+                }
+
+                title_season_cards.addView(card)
+            }
         }
     }
 

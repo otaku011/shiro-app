@@ -36,10 +36,9 @@ object DataStore {
         return "${folder}/${path}"
     }
 
-    fun getKeys(path: String): List<String> {
-        return getSharedPrefs().all.keys.filter { it.startsWith(path) }
+    fun getKeys(folder: String): List<String> {
+        return getSharedPrefs().all.keys.filter { it.startsWith(folder) }
     }
-
 
     fun removeKey(folder: String, path: String) {
         removeKey(getFolderName(folder, path))
@@ -61,6 +60,14 @@ object DataStore {
             editor.remove(path)
             editor.apply()
         }
+    }
+
+    fun removeKeys(folder: String): Int {
+        val keys = getKeys(folder)
+        keys.forEach { value ->
+            removeKey(value)
+        }
+        return keys.size
     }
 
     fun <T> setKey(path: String, value: T) {

@@ -1,5 +1,6 @@
 package com.example.fastani
 
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.res.Resources
 import android.os.Bundle
@@ -59,7 +60,6 @@ data class BookmarkedTitle(
 )
 
 class MainActivity : AppCompatActivity() {
-
     companion object {
         var navController: NavController? = null
         var statusHeight: Int = 0
@@ -78,7 +78,8 @@ class MainActivity : AppCompatActivity() {
 
             return EpisodePosDurInfo(
                 DataStore.getKey<Long>(VIEW_POS_KEY, key, -1L)!!,
-                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!)
+                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!
+            )
         }
 
         fun canPlayNextEpisode(card: FastAniApi.Card, seasonIndex: Int, episodeIndex: Int): NextEpisode {
@@ -97,8 +98,12 @@ class MainActivity : AppCompatActivity() {
 
         fun setViewPosDur(data: PlayerData, pos: Long, dur: Long) {
             val key = getViewKey(data)
-            DataStore.setKey(VIEW_POS_KEY, key, pos)
-            DataStore.setKey(VIEW_DUR_KEY, key, dur)
+            val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+
+            if (settingsManager.getBoolean("save_history", true)) {
+                DataStore.setKey(VIEW_POS_KEY, key, pos)
+                DataStore.setKey(VIEW_DUR_KEY, key, dur)
+            }
 
             // HANDLES THE LOGIC FOR NEXT EPISODE
             var episodeIndex = data.episodeIndex!!
@@ -149,7 +154,9 @@ class MainActivity : AppCompatActivity() {
         fun popCurrentPage() {
             val currentFragment = activity?.supportFragmentManager!!.fragments.last()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            activity?.supportFragmentManager!!.beginTransaction().setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit).remove(currentFragment).commit()
+            activity?.supportFragmentManager!!.beginTransaction()
+                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                .remove(currentFragment).commit()
         }
 
         fun hideSystemUI() {
@@ -178,11 +185,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun loadPlayer(episodeIndex: Int, seasonIndex: Int, card: FastAniApi.Card) {
-            loadPlayer(PlayerData(
-                null, null,
-                episodeIndex,
-                seasonIndex,
-                card))
+            loadPlayer(
+                PlayerData(
+                    null, null,
+                    episodeIndex,
+                    seasonIndex,
+                    card
+                )
+            )
         }
 
         fun loadPlayer(title: String, url: String) {
@@ -190,16 +200,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         private fun loadPlayer(data: PlayerData) {
-            activity?.supportFragmentManager?.beginTransaction()?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                ?.add(R.id.videoRoot, PlayerFragment(
-                    data))
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                ?.add(
+                    R.id.videoRoot, PlayerFragment(
+                        data
+                    )
+                )
                 ?.commit()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         }
 
         fun loadPage(card: FastAniApi.Card) {
 
-            activity?.supportFragmentManager?.beginTransaction()?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 ?.replace(R.id.homeRoot, ResultFragment(card))
                 ?.commit()
             /*
@@ -237,8 +252,9 @@ class MainActivity : AppCompatActivity() {
         activity = this
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
+
         // Setting the theme
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
+        /*
         val autoDarkMode = settingsManager.getBoolean("auto_dark_mode", true)
         val darkMode = settingsManager.getBoolean("dark_mode", false)
 
@@ -250,7 +266,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             }
-        }
+        }*/
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

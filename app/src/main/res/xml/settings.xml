@@ -27,15 +27,12 @@
                 android:key="save_history"
                 android:title="Save view history"
                 app:defaultValue="true"
-                android:enabled="false"
         >
         </SwitchPreference>
         <Preference
-                android:enabled="false"
                 app:key="clear_history"
                 android:title="Clear view history"
-        >
-        </Preference>
+        />
     </PreferenceCategory>
     <PreferenceCategory
             android:key="info"
