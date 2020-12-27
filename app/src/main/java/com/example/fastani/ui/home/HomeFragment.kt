@@ -104,19 +104,11 @@ class HomeFragment : Fragment() {
             }
             displayCardData(data?.trendingData, trendingScrollView)
             displayCardData(data?.recentlyAddedData, recentScrollView)
-            // COULD BE MORE THREADED AND SHOULD PROBABLY BE IN API FOR LOADING AT SAME TIME
-            // MAIN SHOULD ALSO BE REFRESHED WHEN CHANGE IN FAV
-            thread {
-                val keys = DataStore.getKeys(BOOKMARK_KEY)
-                val values = keys.map {
-                    DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
-                }
-                activity!!.runOnUiThread {
-                    if (values.isNotEmpty()) {
-                        favouriteRoot.visibility = VISIBLE
-                        displayCardData(values, favouriteScrollView)
-                    }
-                }
+
+            // RELOAD ON NEW FAV!
+            if (data?.favorites?.isNotEmpty() == true) {
+                favouriteRoot.visibility = VISIBLE
+                displayCardData(data.favorites, favouriteScrollView)
             }
             main_load.alpha = 0f
             main_scroll.alpha = 1f

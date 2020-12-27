@@ -13,6 +13,7 @@ class FastAniApi {
         val homeSlidesData: List<Card>,
         val recentlyAddedData: List<Card>,
         val trendingData: List<Card>,
+        var favorites: List<Card?>?
     )
 
     data class Token(val headers: Map<String, String>, val cookies: CookieJar)
@@ -35,7 +36,7 @@ class FastAniApi {
         val coverImage: CoverImage,
         val bannerImage: String,
         val anilistId: String,
-        val id : String,
+        val id: String,
         val description: String,
         val cdnData: CdnData,
         val genres: List<String>,
@@ -108,6 +109,13 @@ class FastAniApi {
             val url = "https://fastani.net/api/data"
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
             val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
+
+            // FAV
+            val keys = DataStore.getKeys(BOOKMARK_KEY)
+            res?.favorites = keys.map {
+                DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+            }
+
             cachedHome = res
             onHomeFetched.invoke(res)
             return res
@@ -127,7 +135,7 @@ class FastAniApi {
             println("DDADA::::: " + tKey)*/
 
             currentToken = getToken()
-            if(currentToken != null) {
+            if (currentToken != null) {
                 currentHeaders = currentToken?.headers?.toMutableMap()
                 currentHeaders?.set("Cookie", "")
                 currentToken?.cookies?.forEach {
