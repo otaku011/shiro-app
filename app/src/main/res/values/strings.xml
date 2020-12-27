@@ -18,4 +18,5 @@
     <string name="viewstate_btt_hint">Toggle Viewstate</string>
     <string name="anilist_btt">Open Anilist</string>
     <string name="anilist_btt_hint">Open Anilist</string>
+    <string name="home_recently_added">Recently Added</string>
 </resources>

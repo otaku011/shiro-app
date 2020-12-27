@@ -1,11 +1,14 @@
 package com.example.fastani.ui.home
 
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.*
+import android.view.View.VISIBLE
 import android.widget.AbsListView
+import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Toast
 import androidx.annotation.ColorInt
@@ -14,6 +17,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.*
+import com.example.fastani.DataStore.getSharedPrefs
+import com.example.fastani.FastAniApi.Companion.getCardById
 import com.example.fastani.FastAniApi.Companion.requestHome
 import com.example.fastani.ui.GlideApp
 import com.example.fastani.ui.PlayerData
@@ -65,59 +70,57 @@ class HomeFragment : Fragment() {
 
             main_genres.text = cardInfo?.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
 
-            main_watch_button.setOnClickListener  {
+            main_watch_button.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
             }
 
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
             main_poster.setOnClickListener {
-                MainActivity.loadPlayer(0,0,cardInfo!!)
+                MainActivity.loadPlayer(0, 0, cardInfo!!)
             }
-
-            data?.trendingData?.forEach { cardInfo ->
-                val card: View = layoutInflater.inflate(R.layout.home_card, null)
-                val glideUrl =
-                    GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-                //  activity?.runOnUiThread {
-                context?.let {
-                    GlideApp.with(it)
-                        .load(glideUrl)
-                        .into(card.imageView)
+            fun displayCardData(data: List<FastAniApi.Card?>?, scrollView: LinearLayout) {
+                data?.forEach { cardInfo ->
+                    val card: View = layoutInflater.inflate(R.layout.home_card, null)
+                    val glideUrl =
+                        GlideUrl("https://fastani.net/" + cardInfo?.coverImage?.large) { FastAniApi.currentHeaders }
+                    //  activity?.runOnUiThread {
+                    context?.let {
+                        GlideApp.with(it)
+                            .load(glideUrl)
+                            .into(card.imageView)
+                    }
+                    card.imageView.setOnLongClickListener {
+                        Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
+                        return@setOnLongClickListener true
+                    }
+                    card.imageView.setOnClickListener {
+                        if (cardInfo != null) {
+                            MainActivity.loadPage(cardInfo)
+                        }
+                    }
+                    scrollView.addView(card)
+                    // }
                 }
-                card.imageView.setOnLongClickListener {
-                    Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
-                    return@setOnLongClickListener true
-                }
-                card.imageView.setOnClickListener{
-                    MainActivity.loadPage(cardInfo)
-                }
-                trendingScrollView.addView(card)
-                // }
             }
-            data?.recentlyAddedData?.forEach { cardInfo ->
-                val card: View = layoutInflater.inflate(R.layout.home_card, null)
-                val glideUrl =
-                    GlideUrl("https://fastani.net/" + cardInfo.coverImage.large) { FastAniApi.currentHeaders }
-                // activity?.runOnUiThread {
-                context?.let {
-                    GlideApp.with(it)
-                        .load(glideUrl)
-                        .into(card.imageView)
+            displayCardData(data?.trendingData, trendingScrollView)
+            displayCardData(data?.recentlyAddedData, recentScrollView)
+            // COULD BE MORE THREADED AND SHOULD PROBABLY BE IN API FOR LOADING AT SAME TIME
+            // MAIN SHOULD ALSO BE REFRESHED WHEN CHANGE IN FAV
+            thread {
+                val keys = DataStore.getKeys(BOOKMARK_KEY)
+                val values = keys.map {
+                    DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
                 }
-                card.imageView.setOnLongClickListener {
-                    Toast.makeText(context, cardInfo.title.english, Toast.LENGTH_SHORT).show()
-                    return@setOnLongClickListener true
+                activity!!.runOnUiThread {
+                    if (values.isNotEmpty()) {
+                        favouriteRoot.visibility = VISIBLE
+                        displayCardData(values, favouriteScrollView)
+                    }
                 }
-                card.imageView.setOnClickListener{
-                    MainActivity.loadPage(cardInfo)
-                }
-                recentScrollView.addView(card)
-                //}
             }
-
             main_load.alpha = 0f
             main_scroll.alpha = 1f
-            main_layout.setPadding(0,MainActivity.statusHeight,0,0)
+            main_layout.setPadding(0, MainActivity.statusHeight, 0, 0)
         }
     }
 
@@ -133,10 +136,5 @@ class HomeFragment : Fragment() {
         homeViewModel.apiData.observe(viewLifecycleOwner) {
             homeLoaded(it)
         }
-        /*FastAniApi.onHomeFetched += ::homeLoaded
-        thread {
-            // NOTE THAT THIS WILL RESULT IN NOTHING ON FIRST LOAD BECAUSE TOKEN IS NOT LAODED
-            requestHome(true)
-        }*/
     }
 }

@@ -36,8 +36,8 @@ object DataStore {
         return "${folder}/${path}"
     }
 
-    fun getKeys(path: String) {
-        val keys = getSharedPrefs().all.keys
+    fun getKeys(path: String): List<String> {
+        return getSharedPrefs().all.keys.filter { it.startsWith(path) }
     }
 
 

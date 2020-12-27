@@ -43,6 +43,7 @@ class FastAniApi {
 
     data class AnimeData(val cards: List<Card>)
     data class SearchResponse(val animeData: AnimeData)
+    data class EpisodeResponse(val anime: Card, val nextEpisode: Int)
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -82,6 +83,12 @@ class FastAniApi {
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
+            return response?.text?.let { mapper.readValue(it) }
+        }
+
+        fun getCardById(id: String, season: Int = 1, episode: Int = 1): EpisodeResponse? {
+            val url = "https://fastani.net/api/data/anime/$id?season=$season&episode=$episode"
+            val response = currentToken?.headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
             return response?.text?.let { mapper.readValue(it) }
         }
 

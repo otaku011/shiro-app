@@ -66,31 +66,32 @@
                 <!--
                            android:background="?android:attr/selectableItemBackgroundBorderless"
                            -->
-               <LinearLayout android:layout_width="match_parent" android:orientation="horizontal" android:layout_height="wrap_content">
-                   <ImageView
+                <LinearLayout android:layout_width="match_parent" android:orientation="horizontal"
+                              android:layout_height="wrap_content">
+                    <ImageView
 
-                           android:id="@+id/title_bookmark"
-                           android:layout_width="30dp"
-                           android:layout_height="30dp"
-                           android:elevation="10dp"
-                           android:clickable="true"
-                           android:focusable="true"
-                           android:layout_marginRight="5dp"
-                           android:src="@drawable/outlined_heart"
+                            android:id="@+id/title_bookmark"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:elevation="10dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginRight="5dp"
+                            android:src="@drawable/outlined_heart"
 
-                           android:layout_gravity="center"
-                           android:contentDescription="@string/bookmark_btt_hint"/>
-                   <TextView
-                           android:layout_width="wrap_content" android:layout_height="wrap_content"
-                           android:text="Attack on titan"
-                           android:id="@+id/title_name"
-                           android:layout_gravity="center_vertical|start"
-                           android:textColor="@color/textColor"
-                           android:textFontWeight="900"
-                           android:textSize="20sp"
-                   >
-                   </TextView>
-               </LinearLayout>
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bookmark_btt_hint"/>
+                    <TextView
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Attack on titan"
+                            android:id="@+id/title_name"
+                            android:layout_gravity="center_vertical|start"
+                            android:textColor="@color/textColor"
+                            android:textFontWeight="900"
+                            android:textSize="20sp"
+                    >
+                    </TextView>
+                </LinearLayout>
 
                 <LinearLayout
                         android:layout_width="match_parent"
@@ -236,7 +237,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/title_season_cards"
-sff                        android:layout_marginBottom="20dp"
+                        android:layout_marginBottom="20dp"
                         android:orientation="vertical"
                 >
                 </LinearLayout>
