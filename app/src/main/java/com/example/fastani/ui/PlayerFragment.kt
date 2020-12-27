@@ -95,8 +95,8 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         val isMovie: Boolean = data.card!!.episodes == 1 && data.card!!.status == "FINISHED"
         // data.card!!.cdnData.seasons.size == 1 && data.card!!.cdnData.seasons[0].episodes.size == 1
         var preTitle = ""
-        if (isMovie) {
-            preTitle = "S${data.seasonIndex!! + 1}E:${data.episodeIndex} · "
+        if (!isMovie) {
+            preTitle = "S${data.seasonIndex!! + 1}:E${data.episodeIndex!! + 1} · "
         }
         return preTitle + getCurrentEpisode().title!!
     }
