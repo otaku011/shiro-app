@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.*
+import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.AbsListView
 import android.widget.LinearLayout
@@ -49,6 +50,7 @@ class HomeFragment : Fragment() {
 
             trendingScrollView.removeAllViews()
             recentScrollView.removeAllViews()
+            favouriteScrollView.removeAllViews()
 
             val cardInfo = data?.homeSlidesData?.get(0)
             val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
@@ -108,7 +110,11 @@ class HomeFragment : Fragment() {
             // RELOAD ON NEW FAV!
             if (data?.favorites?.isNotEmpty() == true) {
                 favouriteRoot.visibility = VISIBLE
+                println(data.favorites!!.map { it?.title?.english})
                 displayCardData(data.favorites, favouriteScrollView)
+            }
+            else {
+                favouriteRoot.visibility = GONE
             }
             main_load.alpha = 0f
             main_scroll.alpha = 1f
@@ -126,6 +132,7 @@ class HomeFragment : Fragment() {
             //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
         }
         homeViewModel.apiData.observe(viewLifecycleOwner) {
+            println("OBSERVED")
             homeLoaded(it)
         }
     }

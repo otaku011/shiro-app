@@ -95,11 +95,22 @@ class FastAniApi {
 
         var cachedHome: HomePageResponse? = null
 
-        fun requestHome(canBeCached: Boolean = true): HomePageResponse? {
+        private fun getFav(): List<Card?> {
+            // FAV
+            val keys = DataStore.getKeys(BOOKMARK_KEY)
+            return keys.map {
+                DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+            }
+        }
+
+        fun requestHome(canBeCached: Boolean = true, forceUpdateFav: Boolean = false): HomePageResponse? {
             if (currentToken == null) return null
 
             if (cachedHome != null && canBeCached) {
                 onHomeFetched.invoke(cachedHome)
+                if (forceUpdateFav){
+                    cachedHome?.favorites = getFav()
+                }
                 return cachedHome
             }
             return getHome()
@@ -109,13 +120,7 @@ class FastAniApi {
             val url = "https://fastani.net/api/data"
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
             val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
-
-            // FAV
-            val keys = DataStore.getKeys(BOOKMARK_KEY)
-            res?.favorites = keys.map {
-                DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
-            }
-
+            res?.favorites = getFav()
             cachedHome = res
             onHomeFetched.invoke(res)
             return res
@@ -123,7 +128,6 @@ class FastAniApi {
 
         var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
-
         var onHomeFetched = Event<HomePageResponse?>()
 
         fun init() {

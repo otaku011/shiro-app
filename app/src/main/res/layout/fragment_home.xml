@@ -7,6 +7,7 @@
         android:layout_height="match_parent"
         tools:context=".ui.home.HomeFragment"
         android:orientation="vertical"
+        android:tag="fragment_home_tag"
 >
     <ProgressBar
             android:layout_width="50dp"
@@ -19,14 +20,13 @@
                 android:layout_height="match_parent"
                 android:id="@+id/main_scroll">
         <FrameLayout android:layout_width="match_parent"
-                     android:layout_height="match_parent"
+                     android:layout_height="wrap_content"
                      android:paddingBottom="100dp"
         >
             <ImageView
                     android:id="@+id/main_backgroundImage"
                     android:layout_width="match_parent"
                     android:layout_height="520dp"
-                    android:layout_alignParentTop="true"
                     android:scaleType="centerCrop"
                     android:alpha="1"
                     android:src="@drawable/faded_bg"

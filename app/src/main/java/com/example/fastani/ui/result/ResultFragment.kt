@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.example.fastani.*
+import com.example.fastani.FastAniApi.Companion.requestHome
 import com.example.fastani.ui.GlideApp
 import com.example.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
@@ -23,6 +24,7 @@ import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.search_result.view.*
+import kotlin.concurrent.thread
 
 const val DESCRIPTION_LENGTH = 200
 
@@ -73,6 +75,9 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             DataStore.setKey<BookmarkedTitle>(BOOKMARK_KEY, data.anilistId, BookmarkedTitle(data.id))
         } else {
             DataStore.removeKey(BOOKMARK_KEY, data.anilistId)
+        }
+        thread {
+            requestHome(false)
         }
     }
 
@@ -169,6 +174,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         title_bookmark.setOnClickListener {
             ToggleHeart(!isBookmarked)
         }
+
 
         /*
         title_viewstate.setOnClickListener {
