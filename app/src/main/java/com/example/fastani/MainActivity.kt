@@ -51,7 +51,11 @@ data class NextEpisode(
 )
 
 data class BookmarkedTitle(
-    val id: String
+    val id: String,
+    val anilistId: String,
+    val description: String,
+    val title: FastAniApi.Title,
+    val coverImage: FastAniApi.CoverImage,
 )
 
 class MainActivity : AppCompatActivity() {

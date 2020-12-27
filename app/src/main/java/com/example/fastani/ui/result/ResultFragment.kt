@@ -72,7 +72,9 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         this.isBookmarked = _isBookmarked
         ToggleHeartVisual(_isBookmarked)
         if (_isBookmarked) {
-            DataStore.setKey<BookmarkedTitle>(BOOKMARK_KEY, data.anilistId, BookmarkedTitle(data.id))
+            DataStore.setKey<BookmarkedTitle>(BOOKMARK_KEY,
+                data.anilistId,
+                BookmarkedTitle(data.id, data.anilistId, data.description, data.title, data.coverImage))
         } else {
             DataStore.removeKey(BOOKMARK_KEY, data.anilistId)
         }

@@ -1,11 +1,13 @@
 package com.example.fastani
 
+import com.example.fastani.ui.Stopwatch
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
+import kotlin.concurrent.thread
 
 class FastAniApi {
     data class HomePageResponse(
@@ -13,7 +15,7 @@ class FastAniApi {
         val homeSlidesData: List<Card>,
         val recentlyAddedData: List<Card>,
         val trendingData: List<Card>,
-        var favorites: List<Card?>?
+        var favorites: List<BookmarkedTitle?>?,
     )
 
     data class Token(val headers: Map<String, String>, val cookies: CookieJar)
@@ -95,11 +97,30 @@ class FastAniApi {
 
         var cachedHome: HomePageResponse? = null
 
-        private fun getFav(): List<Card?> {
-            // FAV
+        private fun getFav(): List<BookmarkedTitle?> {
+            thread {
+                getFullFav()
+            }
             val keys = DataStore.getKeys(BOOKMARK_KEY)
+
             return keys.map {
+                DataStore.getKey<BookmarkedTitle>(it)
+            }
+        }
+
+        val fullBookmarks = hashMapOf<String, Card>()
+
+        private fun getFullFav() {
+            val keys = DataStore.getKeys(BOOKMARK_KEY)
+
+            val books = keys.pmap {
                 DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+            }
+            fullBookmarks.clear()
+            for (b in books) {
+                if (b != null) {
+                    fullBookmarks[b.anilistId] = b
+                }
             }
         }
 
@@ -108,7 +129,7 @@ class FastAniApi {
 
             if (cachedHome != null && canBeCached) {
                 onHomeFetched.invoke(cachedHome)
-                if (forceUpdateFav){
+                if (forceUpdateFav) {
                     cachedHome?.favorites = getFav()
                 }
                 return cachedHome
@@ -120,7 +141,9 @@ class FastAniApi {
             val url = "https://fastani.net/api/data"
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
             val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
+
             res?.favorites = getFav()
+
             cachedHome = res
             onHomeFetched.invoke(res)
             return res
@@ -132,11 +155,6 @@ class FastAniApi {
 
         fun init() {
             if (currentToken != null) return
-
-            /*
-            var tKey = DataStore.getKey<Int>("test","path", 1)
-            DataStore.setKey<Int>("test",tKey!!+1)
-            println("DDADA::::: " + tKey)*/
 
             currentToken = getToken()
             if (currentToken != null) {

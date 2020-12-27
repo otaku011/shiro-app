@@ -80,6 +80,36 @@ class HomeFragment : Fragment() {
             main_poster.setOnClickListener {
                 MainActivity.loadPlayer(0, 0, cardInfo!!)
             }
+            fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: LinearLayout) {
+                data?.forEach { cardInfo ->
+                    val card: View = layoutInflater.inflate(R.layout.home_card, null)
+                    val glideUrl =
+                        GlideUrl("https://fastani.net/" + cardInfo?.coverImage?.large) { FastAniApi.currentHeaders }
+                    //  activity?.runOnUiThread {
+                    context?.let {
+                        GlideApp.with(it)
+                            .load(glideUrl)
+                            .into(card.imageView)
+                    }
+                    card.imageView.setOnLongClickListener {
+                        Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
+                        return@setOnLongClickListener true
+                    }
+                    card.imageView.setOnClickListener {
+                        val _id = cardInfo?.anilistId
+                        if (FastAniApi.fullBookmarks.containsKey(_id)) {
+                            if (cardInfo != null) {
+                                MainActivity.loadPage(FastAniApi.fullBookmarks[_id]!!)
+                            }
+                        } else {
+                            Toast.makeText(context, "Loading " + cardInfo?.title?.english + "... ", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+                    scrollView.addView(card)
+                }
+            }
+
             fun displayCardData(data: List<FastAniApi.Card?>?, scrollView: LinearLayout) {
                 data?.forEach { cardInfo ->
                     val card: View = layoutInflater.inflate(R.layout.home_card, null)
@@ -101,7 +131,6 @@ class HomeFragment : Fragment() {
                         }
                     }
                     scrollView.addView(card)
-                    // }
                 }
             }
             displayCardData(data?.trendingData, trendingScrollView)
@@ -110,10 +139,9 @@ class HomeFragment : Fragment() {
             // RELOAD ON NEW FAV!
             if (data?.favorites?.isNotEmpty() == true) {
                 favouriteRoot.visibility = VISIBLE
-                println(data.favorites!!.map { it?.title?.english})
+                //println(data.favorites!!.map { it?.title?.english})
                 displayCardData(data.favorites, favouriteScrollView)
-            }
-            else {
+            } else {
                 favouriteRoot.visibility = GONE
             }
             main_load.alpha = 0f
