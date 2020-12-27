@@ -25,6 +25,9 @@ import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.lang.Exception
 import android.view.animation.AlphaAnimation
 import androidx.core.content.res.ResourcesCompat
+import android.view.MotionEvent
+
+import android.view.View.OnTouchListener
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -124,40 +127,82 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         video_locked_img.setColorFilter(if (isLocked) ResourcesCompat.getColor(getResources(),
             R.color.colorAccent,
             null) else Color.WHITE)
+
+        val isClick = !isLocked
+        exo_play.isClickable = isClick
+        exo_pause.isClickable = isClick
+        exo_ffwd.isClickable = isClick
+        exo_prev.isClickable = isClick
+        video_go_back.isClickable = isClick
+        exo_progress.isClickable = isClick
     }
 
+    fun onClickChange() {
+        isShowing = !isShowing
+
+        click_overlay.visibility = if (isShowing) View.GONE else View.VISIBLE;
+        val fadeTo = if (isShowing) 1f else 0f
+        val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
+
+        fadeAnimation.duration = 100
+        fadeAnimation.fillAfter = true
+
+        if (!isLocked) {
+            video_holder.startAnimation(fadeAnimation)
+        }
+        video_lock_holder.startAnimation(fadeAnimation)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         updateLock()
         video_lock.setOnClickListener {
             isLocked = !isLocked
+            val fadeTo = if (isLocked) 0f else 1f
+
+            val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
+            fadeAnimation.duration = 100
+            //   fadeAnimation.startOffset = 100
+            fadeAnimation.fillAfter = true
+            video_holder.startAnimation(fadeAnimation)
+
             updateLock()
+        }
+        /*
+        player_holder.setOnTouchListener(OnTouchListener { v, event -> // ignore all touch events
+            !isShowing
+        })*/
+
+        click_overlay.setOnClickListener {
+            onClickChange()
         }
 
         player_holder.setOnClickListener {
-            isShowing = !isShowing
-            val fadeTo = if (isShowing) 1f else 0f
-            val fadeAnimation = AlphaAnimation(1 - fadeTo, fadeTo)
-            fadeAnimation.duration = 100
-            fadeAnimation.fillAfter = true
-            if (!isLocked && isShowing) {
-                video_lock_holder.startAnimation(fadeAnimation)
-            }
-            video_holder.startAnimation(fadeAnimation)
+            onClickChange()
+            /*if(!isShowing) {
+                video_holder.postDelayed({
+                    video_holder.setVisibility(View.INVISIBLE);
+                    video_lock_holder.setVisibility(View.INVISIBLE);
+                }, 100);
+            }*/
 
-            exo_pause.isClickable = isShowing
-            exo_pause.isFocusable = isShowing
-            exo_ffwd.isClickable = isShowing
-            exo_ffwd.isFocusable = isShowing
-            exo_prev.isClickable = isShowing
-            exo_prev.isFocusable = isShowing
-            video_lock.isClickable = isShowing
-            video_lock.isFocusable = isShowing
-            video_go_back.isClickable = isShowing
-            video_go_back.isFocusable = isShowing
-            exo_progress.isClickable = isShowing
-            exo_progress.isFocusable = isShowing
+            //isClickable WILL CAUSE UI BUG
+            /*  exo_play.isClickable = isShowing
+
+              exo_pause.isClickable = isShowing
+              //exo_pause.isFocusable = isShowing
+              exo_ffwd.isClickable = isShowing
+              //exo_ffwd.isFocusable = isShowing
+              exo_prev.isClickable = isShowing
+              //exo_prev.isFocusable = isShowing
+              video_lock.isClickable = isShowing
+              //video_lock.isFocusable = isShowing
+              video_go_back.isClickable = isShowing
+              //video_go_back.isFocusable = isShowing
+              exo_progress.isClickable = isShowing*/
+            //  exo_progress.isFocusable = isShowing
         }
 
         isInPlayer = true
