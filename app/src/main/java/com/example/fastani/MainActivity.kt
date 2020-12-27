@@ -154,9 +154,16 @@ class MainActivity : AppCompatActivity() {
         fun popCurrentPage() {
             val currentFragment = activity?.supportFragmentManager!!.fragments.last()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            activity?.supportFragmentManager!!.beginTransaction()
-                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .remove(currentFragment).commit()
+            // No fucked animations leaving the player :)
+            if (isInPlayer) {
+                activity?.supportFragmentManager!!.beginTransaction()
+                    //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    .remove(currentFragment).commit()
+            } else {
+                activity?.supportFragmentManager!!.beginTransaction()
+                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    .remove(currentFragment).commit()
+            }
         }
 
         fun hideSystemUI() {
