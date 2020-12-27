@@ -118,6 +118,9 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         isInPlayer = true
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
         MainActivity.hideSystemUI()
+        video_go_back.setOnClickListener {
+            MainActivity.popCurrentPage()
+        }
 
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)

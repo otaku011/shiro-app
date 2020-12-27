@@ -89,8 +89,8 @@ class FastAniApi {
             return response?.text?.let { mapper.readValue(it) }
         }
 
-        fun getCardById(id: String, season: Int = 1, episode: Int = 1): EpisodeResponse? {
-            val url = "https://fastani.net/api/data/anime/$id?season=$season&episode=$episode"
+        fun getCardById(id: String): EpisodeResponse? {
+            val url = "https://fastani.net/api/data/anime/$id" //?season=$season&episode=$episode" // SPECIFYING EPISODE AND SEASON WILL ONLY GIVE 1 EPISODE
             val response = currentToken?.headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
             return response?.text?.let { mapper.readValue(it) }
         }

@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
+import kotlinx.android.synthetic.main.player_custom_layout.*
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.concurrent.thread
 
@@ -173,7 +174,12 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         PlayerFragment.onLeftPlayer += ::OnLeftVideoPlayer
         ToggleHeartVisual(isBookmarked)
 
-        title_bookmark.setOnClickListener {
+        title_go_back_holder.setPadding(0,MainActivity.statusHeight,0,0)
+        title_go_back.setOnClickListener {
+            MainActivity.popCurrentPage()
+        }
+
+        bookmark_holder.setOnClickListener {
             ToggleHeart(!isBookmarked)
         }
 

@@ -78,7 +78,8 @@ class HomeFragment : Fragment() {
 
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
             main_poster.setOnClickListener {
-                MainActivity.loadPlayer(0, 0, cardInfo!!)
+                MainActivity.loadPage(cardInfo!!)
+                // MainActivity.loadPlayer(0, 0, cardInfo!!)
             }
             fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: LinearLayout) {
                 data?.forEach { cardInfo ->

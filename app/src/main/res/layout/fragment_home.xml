@@ -112,7 +112,7 @@
                         android:elevation="10dp"
                         android:layout_height="40dp"
                         android:layout_gravity="center_horizontal"
-                        android:background="@drawable/button_bg"
+                        android:background="@drawable/button_ripple"
                         android:backgroundTint="@color/colorPrimary"
                         android:textColor="@color/textColor"
                         android:clickable="true"

@@ -17,6 +17,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/background"
         >
+
             <ImageButton
                     android:id="@+id/title_background"
                     android:layout_width="match_parent"
@@ -54,6 +55,29 @@
                     android:scaleY="0.3"
                     android:src="@drawable/nexflix_play_btt"
                     android:contentDescription="Background"/>
+            <FrameLayout
+                    android:layout_margin="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/title_go_back_holder"
+            >
+                <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/arrow_back">
+                </ImageView>
+                <ImageView
+                        android:id="@+id/title_go_back"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_gravity="center"
+                        android:focusable="true"
+                        android:clickable="true"
+                        android:background="@drawable/video_tap_button">
+                </ImageView>
+
+            </FrameLayout>
             <LinearLayout
                     android:orientation="vertical"
                     android:paddingTop="150dp"
@@ -63,27 +87,18 @@
                     android:paddingLeft="10dp"
                     android:id="@+id/title_holder"
             >
+
                 <!--
                            android:background="?android:attr/selectableItemBackgroundBorderless"
                            -->
-                <LinearLayout android:layout_width="match_parent" android:orientation="horizontal"
-                              android:layout_height="wrap_content">
-                    <ImageView
+                <FrameLayout android:layout_width="match_parent" android:orientation="horizontal"
+                              android:layout_height="wrap_content"
+>
 
-                            android:id="@+id/title_bookmark"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:elevation="10dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:layout_marginRight="5dp"
-                            android:src="@drawable/outlined_heart"
-
-                            android:layout_gravity="center"
-                            android:contentDescription="@string/bookmark_btt_hint"/>
                     <TextView
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Attack on titan"
+                            android:layout_marginRight="55dp"
                             android:id="@+id/title_name"
                             android:layout_gravity="center_vertical|start"
                             android:textColor="@color/textColor"
@@ -91,7 +106,36 @@
                             android:textSize="20sp"
                     >
                     </TextView>
-                </LinearLayout>
+                    <FrameLayout
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                    >
+                        <FrameLayout android:layout_width="wrap_content" android:layout_gravity="end" android:layout_height="wrap_content">
+                            <ImageView
+                                    android:id="@+id/title_bookmark"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:elevation="10dp"
+
+                                    android:src="@drawable/outlined_heart"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="@string/bookmark_btt_hint"/>
+                            <ImageView
+                                    android:layout_width="50dp"
+                                    android:layout_height="50dp"
+                                    android:layout_gravity="center"
+                                    android:focusable="true"
+                                    android:clickable="true"
+                                    android:id="@+id/bookmark_holder"
+                                    android:background="@drawable/video_tap_button">
+                            </ImageView>
+                        </FrameLayout>
+
+
+                    </FrameLayout>
+
+                </FrameLayout>
 
                 <LinearLayout
                         android:layout_width="match_parent"
@@ -237,7 +281,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/title_season_cards"
-                        android:layout_marginBottom="20dp"
+                        android:layout_marginBottom="25dp"
                         android:orientation="vertical"
                 >
                 </LinearLayout>

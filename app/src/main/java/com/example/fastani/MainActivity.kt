@@ -146,6 +146,12 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
+        fun popCurrentPage() {
+            val currentFragment = activity?.supportFragmentManager!!.fragments.last()
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            activity?.supportFragmentManager!!.beginTransaction().setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit).remove(currentFragment).commit()
+        }
+
         fun hideSystemUI() {
             // Enables regular immersive mode.
             // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
@@ -184,7 +190,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         private fun loadPlayer(data: PlayerData) {
-            activity?.supportFragmentManager?.beginTransaction()
+            activity?.supportFragmentManager?.beginTransaction()?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 ?.add(R.id.videoRoot, PlayerFragment(
                     data))
                 ?.commit()
@@ -193,7 +199,7 @@ class MainActivity : AppCompatActivity() {
 
         fun loadPage(card: FastAniApi.Card) {
 
-            activity?.supportFragmentManager?.beginTransaction()
+            activity?.supportFragmentManager?.beginTransaction()?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 ?.replace(R.id.homeRoot, ResultFragment(card))
                 ?.commit()
             /*
@@ -211,9 +217,7 @@ class MainActivity : AppCompatActivity() {
         println("BACK PRESSED!!!!")
 
         if (isInResults || isInPlayer) {
-            val currentFragment = supportFragmentManager.fragments.last()
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            supportFragmentManager.beginTransaction().remove(currentFragment).commit()
+            popCurrentPage()
         } else {
             super.onBackPressed()
         }
