@@ -66,6 +66,24 @@
                 app:key="version"
                 app:title="Version"
                 app:summary="@string/version_code"/>
+        <Preference
+                android:icon="@drawable/ic_baseline_payment_24"
+                android:title="Donate"
+                app:summary="Needed to keep the fastani servers working"
+        >
+            <intent android:action="android.intent.action.VIEW"
+                    android:data="https://www.patreon.com/fastani"/>
+
+        </Preference>
+        <Preference
+                android:title="Discord"
+                android:icon="@drawable/ic_baseline_discord_24"
+                app:summary="Join the fastani community, talk with developers and give app suggestions"
+        >
+            <intent android:action="android.intent.action.VIEW"
+                    android:data="https://discord.com/invite/RtdrWqp"/>
+
+        </Preference>
         <SwitchPreference
                 app:key="cool_mode"
                 android:title="Cool mode"

@@ -53,6 +53,7 @@ import android.view.View.*
 import androidx.core.view.MotionEventCompat.getActionMasked
 import androidx.core.view.MotionEventCompat.getPointerCount
 import androidx.core.view.accessibility.AccessibilityEventCompat.getAction
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.common.math.DoubleMath.roundToInt
 import kotlin.math.*
 
@@ -502,9 +503,12 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             .setUri(getCurrentUrl())
             .setMimeType(MimeTypes.APPLICATION_MP4)
             .build()
+        val trackSelector = DefaultTrackSelector(requireContext())
+        trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext()).setRendererDisabled(0, true).build()
         exoPlayer =
             SimpleExoPlayer.Builder(this.requireContext())
                 .setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
+                .setTrackSelector(trackSelector)
                 .build().apply {
                     playWhenReady = isPlayerPlaying
                     seekTo(currentWindow, playbackPosition)
