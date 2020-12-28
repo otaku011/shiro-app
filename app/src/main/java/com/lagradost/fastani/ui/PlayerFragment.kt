@@ -149,6 +149,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         onLeftPlayer.invoke(true)
         MainActivity.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
+        MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
 
         super.onDestroy()
 
@@ -252,6 +253,10 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         video_lock_holder.startAnimation(fadeAnimation)
     }
 
+    private fun handleAudioFocusEvent(event: Boolean) {
+        if (!event) exoPlayer.pause()
+    }
+
     private fun handlePlayerEvent(event: PlayerEventType) {
         handlePlayerEvent(event.value)
     }
@@ -270,6 +275,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         MainActivity.onPlayerEvent += ::handlePlayerEvent
+        MainActivity.onAudioFocusEvent += ::handleAudioFocusEvent
 
         updateLock()
         video_lock.setOnClickListener {
@@ -394,6 +400,9 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         exoPlayer.addListener(object : DefaultEventListener() {
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                 updatePIPModeActions()
+                if (playWhenReady && playbackState == Player.STATE_READY) {
+                    MainActivity.requestAudioFocus()
+                }
             }
         })
     }

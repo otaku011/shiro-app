@@ -7,6 +7,9 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
@@ -82,6 +85,9 @@ class MainActivity : AppCompatActivity() {
         var canShowPipMode: Boolean = false
 
         var onPlayerEvent = Event<PlayerEventType>()
+        var onAudioFocusEvent = Event<Boolean>()
+
+        var focusRequest: AudioFocusRequest? = null
 
         fun getViewKey(data: PlayerData): String {
             return getViewKey(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
@@ -89,6 +95,11 @@ class MainActivity : AppCompatActivity() {
 
         fun getViewKey(aniListId: String, seasonIndex: Int, episodeIndex: Int): String {
             return aniListId + "S" + seasonIndex + "E" + episodeIndex
+        }
+
+        fun requestAudioFocus() {
+            val audioManager = activity!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.requestAudioFocus(focusRequest!!)
         }
 
         fun getViewPosDur(aniListId: String, seasonIndex: Int, episodeIndex: Int): EpisodePosDurInfo {
@@ -358,10 +369,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val myAudioFocusListener =
+        AudioManager.OnAudioFocusChangeListener {
+            onAudioFocusEvent.invoke(when (it) {
+                AudioManager.AUDIOFOCUS_GAIN -> true
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE -> true
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT -> true
+                else -> false
+            })
+        }
+
+
     override fun onDestroy() {
         mediaSession?.isActive = false
         super.onDestroy()
     }
+
 
     private var mediaSession: MediaSessionCompat? = null
 
@@ -381,6 +404,16 @@ class MainActivity : AppCompatActivity() {
 
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
+        }
+        focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
+            setAudioAttributes(AudioAttributes.Builder().run {
+                setUsage(AudioAttributes.USAGE_MEDIA)
+                setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+                build()
+            })
+            setAcceptsDelayedFocusGain(true)
+            setOnAudioFocusChangeListener(myAudioFocusListener)
+            build()
         }
 
         // Setting the theme
