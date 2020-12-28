@@ -270,14 +270,13 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                 <androidx.cardview.widget.CardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@color/grayBackground"
                         android:backgroundTint="@color/grayBackground"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="4dp"
                         android:layout_marginTop="10dp"
                         android:layout_marginBottom="10dp"
+                        android:id="@+id/spinnerRoot"
                 >
-
                     <Spinner
                             android:id="@+id/spinner"
                             android:layout_width="wrap_content"

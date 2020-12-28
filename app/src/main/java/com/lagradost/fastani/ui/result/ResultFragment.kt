@@ -2,19 +2,24 @@ package com.lagradost.fastani.ui.result
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.res.ColorStateList
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getColor
+import androidx.core.content.res.ResourcesCompat.getColor
+import androidx.core.view.ViewCompat.setBackgroundTintList
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
+import com.google.android.material.color.MaterialColors.getColor
 import com.lagradost.fastani.*
-import com.lagradost.fastani.DataStore.setKey
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.ui.GlideApp
 import com.lagradost.fastani.ui.PlayerFragment
@@ -232,6 +237,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         if (data.cdnData.seasons.size <= 1) {
             spinner.background = null
             spinner.isEnabled = false
+            spinnerRoot.backgroundTintList = ColorStateList.valueOf(getColor(requireContext(), R.color.background));
         }
         spinner.onItemSelectedListener = SpinnerClickListener()
         // loadSeason(0)
