@@ -309,7 +309,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         )
     }
 
-    fun handleMotionEvent(motionEvent: MotionEvent) {
+    private fun handleMotionEvent(motionEvent: MotionEvent) {
         if(isLocked) return
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -490,6 +490,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 val next = MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!)
                 data.seasonIndex = next.seasonIndex
                 data.episodeIndex = next.episodeIndex
+                releasePlayer()
                 initPlayer()
             }
         }
