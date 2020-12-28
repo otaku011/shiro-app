@@ -3,12 +3,16 @@ package com.lagradost.fastani
 import android.app.AppOpsManager
 import android.app.PictureInPictureParams
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
+import android.view.KeyEvent
 import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -27,6 +31,7 @@ import kotlin.concurrent.thread
 import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
 import com.lagradost.fastani.ui.PlayerData
+import com.lagradost.fastani.ui.PlayerEventType
 import com.lagradost.fastani.ui.PlayerFragment
 import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.fastani.ui.result.ResultFragment
@@ -75,6 +80,8 @@ class MainActivity : AppCompatActivity() {
         var statusHeight: Int = 0
         var activity: MainActivity? = null
         var canShowPipMode: Boolean = false
+
+        var onPlayerEvent = Event<PlayerEventType>()
 
         fun getViewKey(data: PlayerData): String {
             return getViewKey(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
@@ -324,6 +331,40 @@ class MainActivity : AppCompatActivity() {
             packageName) == AppOpsManager.MODE_ALLOWED
     }
 
+    private val callbacks = object : MediaSessionCompat.Callback() {
+        override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+            if (mediaButtonEvent != null) {
+
+                val event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as KeyEvent
+                println("EVENT: " + event.keyCode)
+                when (event.keyCode) {
+                    KeyEvent.KEYCODE_MEDIA_PAUSE -> onPlayerEvent.invoke(PlayerEventType.Pause)
+                    KeyEvent.KEYCODE_MEDIA_PLAY -> onPlayerEvent.invoke(PlayerEventType.Play)
+                    KeyEvent.KEYCODE_MEDIA_STOP -> onPlayerEvent.invoke(PlayerEventType.Pause)
+                    KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD -> onPlayerEvent.invoke(PlayerEventType.SeekForward)
+                    KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD -> onPlayerEvent.invoke(PlayerEventType.SeekBack)
+                    KeyEvent.KEYCODE_HEADSETHOOK -> onPlayerEvent.invoke(PlayerEventType.Pause)
+                }
+            }
+            return super.onMediaButtonEvent(mediaButtonEvent)
+        }
+
+        override fun onPlay() {
+            onPlayerEvent.invoke(PlayerEventType.Play)
+        }
+
+        override fun onStop() {
+            onPlayerEvent.invoke(PlayerEventType.Pause)
+        }
+    }
+
+    override fun onDestroy() {
+        mediaSession?.isActive = false
+        super.onDestroy()
+    }
+
+    private var mediaSession: MediaSessionCompat? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         statusHeight = getStatusBarHeight()
         activity = this
@@ -356,6 +397,24 @@ class MainActivity : AppCompatActivity() {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             }
         }*/
+        mediaSession = MediaSessionCompat(activity, "fastani").apply {
+
+            setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+
+            // Do not let MediaButtons restart the player when the app is not visible
+            setMediaButtonReceiver(null)
+
+            // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
+            val stateBuilder = PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PLAY_PAUSE)
+            setPlaybackState(stateBuilder.build())
+
+            // MySessionCallback has methods that handle callbacks from a media controller
+            setCallback(callbacks)
+        }
+
+        mediaSession!!.isActive = true
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

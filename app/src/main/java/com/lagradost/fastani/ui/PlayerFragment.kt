@@ -7,10 +7,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.TypedValue
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.getViewKey
@@ -27,7 +23,6 @@ import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.lang.Exception
 import android.view.animation.AlphaAnimation
 import androidx.core.content.res.ResourcesCompat
-import android.view.MotionEvent
 
 import android.view.View.OnTouchListener
 import androidx.annotation.AttrRes
@@ -44,6 +39,14 @@ import android.content.IntentFilter
 import android.widget.Toast
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DefaultEventListener
+
+import android.support.v4.media.session.MediaSessionCompat
+
+import androidx.media.session.MediaButtonReceiver
+
+import android.content.ComponentName
+import android.support.v4.media.session.PlaybackStateCompat
+import android.view.*
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -145,6 +148,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         isInPlayer = false
         onLeftPlayer.invoke(true)
         MainActivity.showSystemUI()
+        MainActivity.onPlayerEvent -= ::handlePlayerEvent
 
         super.onDestroy()
 
@@ -181,12 +185,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
                     if (ACTION_MEDIA_CONTROL != intent.action) {
                         return;
                     }
-                    when (intent.getIntExtra(EXTRA_CONTROL_TYPE, 0)) {
-                        PlayerEventType.Play.value -> exoPlayer.play()
-                        PlayerEventType.Pause.value -> exoPlayer.pause()
-                        PlayerEventType.SeekBack.value -> seekTime(-30000L)
-                        PlayerEventType.SeekForward.value -> seekTime(30000L)
-                    }
+                    handlePlayerEvent(intent.getIntExtra(EXTRA_CONTROL_TYPE, 0))
                 }
             }
             val filter = IntentFilter()
@@ -222,7 +221,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     }
 
     private fun updatePIPModeActions() {
-        if(!MainActivity.isInPIPMode) return
+        if (!MainActivity.isInPIPMode) return
         val actions: ArrayList<RemoteAction> = ArrayList<RemoteAction>()
 
         actions.add(getRemoteAction(R.drawable.go_back_30, "Go Back", PlayerEventType.SeekBack))
@@ -253,9 +252,24 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         video_lock_holder.startAnimation(fadeAnimation)
     }
 
+    private fun handlePlayerEvent(event: PlayerEventType) {
+        handlePlayerEvent(event.value)
+    }
+
+    private fun handlePlayerEvent(event: Int) {
+        when (event) {
+            PlayerEventType.Play.value -> exoPlayer.play()
+            PlayerEventType.Pause.value -> exoPlayer.pause()
+            PlayerEventType.SeekBack.value -> seekTime(-30000L)
+            PlayerEventType.SeekForward.value -> seekTime(30000L)
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        MainActivity.onPlayerEvent += ::handlePlayerEvent
 
         updateLock()
         video_lock.setOnClickListener {
@@ -350,6 +364,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         super.onSaveInstanceState(outState)
     }
 
+
     private fun initPlayer() {
         // NEEDED FOR HEADERS
         class CustomFactory : DataSource.Factory {
@@ -371,6 +386,8 @@ class PlayerFragment(data: PlayerData) : Fragment() {
                     setMediaItem(mediaItem, false)
                     prepare()
                 }
+        exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
+
         player_view.player = exoPlayer
 
         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer

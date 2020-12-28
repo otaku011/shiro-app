@@ -16,11 +16,13 @@ import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.core.view.ViewCompat.setBackgroundTintList
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.google.android.material.color.MaterialColors.getColor
 import com.lagradost.fastani.*
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
+import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.ui.GlideApp
 import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
@@ -41,7 +43,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
 
     companion object {
         var isInResults: Boolean = false
-        var isViewState: Boolean = false
+        var isViewState: Boolean = true
     }
 
     private val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
@@ -95,9 +97,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         currentSeasonIndex = index
         title_season_cards.removeAllViews()
         var epNum = 0
-
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
+        val save = settingsManager.getBoolean("save_history", true)
         // When fastani is down it doesn't report any seasons and this is needed.
-        if (data.cdnData.seasons.isNotEmpty()){
+        if (data.cdnData.seasons.isNotEmpty()) {
             data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
                 val epIndex = epNum
                 epNum++
@@ -115,13 +118,16 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     }
                 }
 
-                card.imageView.setOnClickListener {
-                    MainActivity.loadPlayer(epIndex, index, data)
-                }
                 val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
 
-                /*
-                card.setOnClickListener {
+                card.imageView.setOnClickListener {
+                    if (save) {
+                        DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                    }
+                    MainActivity.loadPlayer(epIndex, index, data)
+                }
+
+                card.setOnLongClickListener {
                     if (isViewState) {
                         if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                             DataStore.removeKey(VIEWSTATE_KEY, key)
@@ -130,7 +136,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                         }
                         loadSeason(index)
                     }
-                }*/
+                    return@setOnLongClickListener true
+                }
 
                 var title = fullEpisode.title
                 if (title == null || title.replace(" ", "") == "") {
@@ -140,10 +147,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     title = "$epNum. $title"
                 }
                 card.cardTitle.text = title
-                /*if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                    card.cardBg.setCardBackgroundColor(ContextCompat.getColor(MainActivity.activity!!.applicationContext,
-                        R.color.colorPrimaryMegaDark))
-                }*/
+                if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
+                    card.cardBg.setCardBackgroundColor(requireContext().getColorFromAttr(
+                        R.attr.colorPrimaryDark))
+                }
 
                 val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
                 println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
@@ -180,11 +187,11 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
-        isViewState = false
+        //isViewState = false
         PlayerFragment.onLeftPlayer += ::OnLeftVideoPlayer
         ToggleHeartVisual(isBookmarked)
 
-        title_go_back_holder.setPadding(0,MainActivity.statusHeight,0,0)
+        title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
         }
