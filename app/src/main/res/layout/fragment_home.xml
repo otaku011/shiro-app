@@ -40,7 +40,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-
                 <androidx.cardview.widget.CardView
                         android:layout_marginTop="10dp"
                         android:layout_width="200dp"
@@ -63,7 +62,7 @@
                     </ImageView>
 
                 </androidx.cardview.widget.CardView>
-                ö
+
                 <TextView
                         android:id="@+id/main_name"
                         android:layout_width="match_parent"
@@ -141,7 +140,9 @@
                     </TextView>
                     <HorizontalScrollView
                             android:layout_width="wrap_content"
-                            android:layout_height="170dp">
+                            android:layout_height="150dp"
+                            android:layout_marginBottom="20dp"
+                    >
                         <LinearLayout
                                 android:id="@+id/favouriteScrollView"
                                 android:orientation="horizontal"
@@ -175,7 +176,9 @@
                 </TextView>
                 <HorizontalScrollView
                         android:layout_width="wrap_content"
-                        android:layout_height="170dp">
+                        android:layout_height="150dp"
+                        android:layout_marginBottom="20dp"
+                >
                     <LinearLayout
                             android:id="@+id/trendingScrollView"
                             android:orientation="horizontal"
@@ -197,7 +200,9 @@
                 </TextView>
                 <HorizontalScrollView
                         android:layout_width="wrap_content"
-                        android:layout_height="170dp">
+                        android:layout_height="150dp"
+                        android:layout_marginBottom="20dp"
+                >
                     <LinearLayout
                             android:id="@+id/recentScrollView"
                             android:orientation="horizontal"
@@ -206,9 +211,6 @@
                     </LinearLayout>
                 </HorizontalScrollView>
             </LinearLayout>
-
-
         </FrameLayout>
-
     </ScrollView>
 </FrameLayout>
