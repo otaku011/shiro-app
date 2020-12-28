@@ -143,7 +143,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         exo_progress.isClickable = isClick
     }
 
-    fun onClickChange() {
+    private fun onClickChange() {
         isShowing = !isShowing
 
         click_overlay.visibility = if (isShowing) View.GONE else View.VISIBLE;
