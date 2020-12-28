@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
+import java.net.URLEncoder
 import kotlin.concurrent.thread
 
 class FastAniApi {
@@ -82,7 +83,7 @@ class FastAniApi {
         // ONLY PAGE 1
         fun search(query: String, page: Int = 1): SearchResponse? {
             // Tags and years can be added
-            val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${query}&tags=&years="
+            val url =  "https://fastani.net/api/data?page=${page}&animes=1&search=${URLEncoder.encode(query, "UTF-8")}&tags=&years="
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
