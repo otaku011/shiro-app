@@ -21,6 +21,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings, rootKey)
+        var easterEggsClicks = 0
         //val saveHistory = findPreference("save_history") as SwitchPreference?
         val clearHistory = findPreference("clear_history") as Preference?
         //setKey(VIEW_POS_KEY, "GGG", 2L)
@@ -62,6 +63,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
+        // EASTER EGG THEME
+        val versionButton = findPreference("version") as Preference?
+        val coolMode = findPreference("cool_mode") as SwitchPreference?
+        if (coolMode?.isChecked == true) {
+            coolMode.isVisible = true
+        }
+        versionButton?.setOnPreferenceClickListener {
+            if (easterEggsClicks == 7 && coolMode?.isChecked == false) {
+                Toast.makeText(context, "Unlocked cool mode", Toast.LENGTH_LONG).show()
+                coolMode?.isVisible = true
+            }
+            easterEggsClicks++
+            return@setOnPreferenceClickListener true
+        }
+        coolMode?.setOnPreferenceChangeListener { preference, newValue ->
+            activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
 
         /*val autoDarkMode = findPreference("auto_dark_mode") as SwitchPreferenceCompat?
         val darkMode = findPreference("dark_mode") as SwitchPreferenceCompat?

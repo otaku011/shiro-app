@@ -39,9 +39,18 @@
             android:title="Info"
     >
         <Preference
-                app:key="feedback"
+                app:key="version"
                 app:title="Version"
                 app:summary="@string/version_code"/>
+        <SwitchPreference
+                app:key="cool_mode"
+                android:title="Cool mode"
+                app:defaultValue="false"
+                app:isPreferenceVisible="false"
+
+        >
+
+        </SwitchPreference>
 
     </PreferenceCategory>
 </PreferenceScreen>

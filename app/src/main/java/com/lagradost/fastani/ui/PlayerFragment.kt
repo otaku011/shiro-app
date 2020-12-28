@@ -1,9 +1,11 @@
 package com.lagradost.fastani.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
+import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +30,9 @@ import androidx.core.content.res.ResourcesCompat
 import android.view.MotionEvent
 
 import android.view.View.OnTouchListener
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
+import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -122,11 +127,12 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         //MainActivity.showSystemUI()
     }
 
-    fun updateLock() {
+    private fun updateLock() {
         video_locked_img.setImageResource(if (isLocked) R.drawable.video_locked else R.drawable.video_unlocked)
-        video_locked_img.setColorFilter(if (isLocked) ResourcesCompat.getColor(getResources(),
-            R.color.colorAccent,
-            null) else Color.WHITE)
+        video_locked_img.setColorFilter(
+            if (isLocked) requireContext().getColorFromAttr(R.attr.colorPrimary)
+            else Color.WHITE
+        )
 
         val isClick = !isLocked
         exo_play.isClickable = isClick
@@ -208,7 +214,6 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         isInPlayer = true
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
         video_title.text = getCurrentTitle()
-        MainActivity.hideSystemUI()
         video_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
         }
@@ -273,6 +278,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        MainActivity.hideSystemUI()
         if (data.card != null) {
             val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME

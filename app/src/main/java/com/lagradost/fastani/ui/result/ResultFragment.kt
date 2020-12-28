@@ -188,7 +188,6 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             ToggleHeart(!isBookmarked)
         }
 
-
         /*
         title_viewstate.setOnClickListener {
             ToggleViewState(!isViewState)
