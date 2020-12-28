@@ -38,8 +38,28 @@
             </ImageView>
 
         </FrameLayout>
+
     </LinearLayout>
 
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:id="@+id/timeMenu"
+            app:layout_constraintTop_toBottomOf="@+id/topMenu"
+            app:layout_constraintBottom_toTopOf="@+id/centerMenu"
+    >
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/timeText"
+                android:gravity="center"
+                android:textSize="40sp"
+                android:alpha="0"
+                android:textColor="@android:color/white"
+        >
+
+        </TextView>
+    </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -70,6 +90,7 @@
                 android:paddingStart="60dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/topMenu"
         >
 
             <androidx.cardview.widget.CardView
@@ -142,6 +163,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_gravity="center"
+                android:id="@+id/centerMenu"
         >
             <FrameLayout android:layout_width="wrap_content"
                          android:layout_marginEnd="140dp"
@@ -316,4 +338,5 @@
           android:clickable="true"
           android:focusable="true"
     />
+
 </FrameLayout>

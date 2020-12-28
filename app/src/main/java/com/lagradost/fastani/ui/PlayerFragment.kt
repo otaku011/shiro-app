@@ -44,9 +44,17 @@ import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.session.MediaButtonReceiver
 
 import android.content.ComponentName
+import android.content.res.Resources
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.DisplayMetrics
 import android.view.*
+import android.view.MotionEvent.ACTION_MOVE
 import android.view.View.*
+import androidx.core.view.MotionEventCompat.getActionMasked
+import androidx.core.view.MotionEventCompat.getPointerCount
+import androidx.core.view.accessibility.AccessibilityEventCompat.getAction
+import com.google.common.math.DoubleMath.roundToInt
+import kotlin.math.*
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -100,6 +108,11 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var playbackPosition: Long = 0
     private var isFullscreen = false
     private var isPlayerPlaying = true
+    private var currentX = 0F
+    private var isMovingStartTime = 0L
+    private var skipTime = 0L
+    private var hasPassedSkipLimit = false
+    var width = 0
 
     private fun canPlayNextEpisode(): Boolean {
         if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
@@ -275,10 +288,78 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         }
     }
 
+    private fun forceLetters(inp: Int, letters: Int = 2): String {
+        val added: Int = letters - inp.toString().length
+        return if (added > 0) {
+            "0".repeat(added) + inp.toString()
+        } else {
+            inp.toString()
+        }
+    }
+
+    private fun convertTimeToString(time: Double): String {
+        val sec = time.toInt()
+        val rsec = sec % 60
+        val min = ceil((sec - rsec) / 60.0).toInt()
+        val rmin = min % 60
+        val h = ceil((min - rmin) / 60.0).toInt()
+        //int rh = h;// h % 24;
+        return (if (h > 0) forceLetters(h) + ":" else "") + (if (rmin >= 0 || h >= 0) forceLetters(rmin) + ":" else "") + forceLetters(
+            rsec
+        )
+    }
+
+    fun handleMotionEvent(motionEvent: MotionEvent) {
+        if(isLocked) return
+        when (motionEvent.action) {
+            MotionEvent.ACTION_DOWN -> {
+                currentX = motionEvent.x
+                isMovingStartTime = exoPlayer.currentPosition
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val distance = motionEvent.x - currentX
+                val diffX = distance * 2.0 / width
+                println("$diffX $width")
+                skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
+                if(isMovingStartTime + skipTime < 0) {
+                    skipTime = -isMovingStartTime
+                }
+                else if(isMovingStartTime + skipTime > exoPlayer.duration) {
+                    skipTime = exoPlayer.duration - isMovingStartTime
+                }
+                if (abs(skipTime) > 900 || hasPassedSkipLimit) {
+                    hasPassedSkipLimit = true
+                    val timeString =
+                        "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
+                            convertTimeToString(abs(skipTime / 1000.0))
+                        }]";
+                    timeText.alpha = 1f
+                    timeText.text = timeString
+                } else {
+                    timeText.alpha = 0f
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                hasPassedSkipLimit = false
+                if (abs(skipTime) > 7000) {
+                    exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
+                }
+                val fadeAnimation = AlphaAnimation(1f, 0f)
+
+                fadeAnimation.duration = 100
+                fadeAnimation.fillAfter = true
+
+                timeText.startAnimation(fadeAnimation)
+
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        width = Resources.getSystem().displayMetrics.widthPixels
         MainActivity.onPlayerEvent += ::handlePlayerEvent
         MainActivity.onAudioFocusEvent += ::handleAudioFocusEvent
 
@@ -300,10 +381,18 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             !isShowing
         })*/
 
+        player_holder.setOnTouchListener { view: View, motionEvent: MotionEvent ->
+            handleMotionEvent(motionEvent)
+            return@setOnTouchListener false
+        }
+        click_overlay.setOnTouchListener { view: View, motionEvent: MotionEvent ->
+            handleMotionEvent(motionEvent)
+            return@setOnTouchListener false
+        }
+
         click_overlay.setOnClickListener {
             onClickChange()
         }
-
         player_holder.setOnClickListener {
             onClickChange()
             /*if(!isShowing) {
