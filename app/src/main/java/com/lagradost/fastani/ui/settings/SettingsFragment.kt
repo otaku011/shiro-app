@@ -1,35 +1,29 @@
 package com.lagradost.fastani.ui.settings
 
 import android.content.DialogInterface
-import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
+import com.lagradost.fastani.*
 import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
-import com.lagradost.fastani.DataStore.setKey
 import com.lagradost.fastani.R
-import com.lagradost.fastani.VIEW_DUR_KEY
 import com.lagradost.fastani.VIEW_LST_KEY
-import com.lagradost.fastani.VIEW_POS_KEY
-import com.lagradost.fastani.ui.GlideApp
-import java.util.ResourceBundle.clearCache
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings, rootKey)
-        var easterEggsClicks = 0
+        var easterEggClicks = 0
         //val saveHistory = findPreference("save_history") as SwitchPreference?
         val clearHistory = findPreference("clear_history") as Preference?
         //setKey(VIEW_POS_KEY, "GGG", 2L)
-        val historyItems = getKeys(VIEW_POS_KEY).size
+        val historyItems = getKeys(VIEW_POS_KEY).size + getKeys(VIEWSTATE_KEY).size
 
         clearHistory?.summary = "$historyItems item${if (historyItems == 1) "" else "s"}"
         clearHistory?.setOnPreferenceClickListener {
@@ -38,9 +32,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 builder.apply {
                     setPositiveButton("OK",
                         DialogInterface.OnClickListener { dialog, id ->
-                            val amount = removeKeys(VIEW_POS_KEY)
-                            removeKeys(VIEW_DUR_KEY)
+                            val amount = removeKeys(VIEW_POS_KEY) + removeKeys(VIEWSTATE_KEY)
                             removeKeys(VIEW_LST_KEY)
+                            removeKeys(VIEW_DUR_KEY)
                             if (amount != 0) {
                                 Toast.makeText(
                                     context,
@@ -61,7 +55,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 // Create the AlertDialog
                 builder.create()
             }
-            if (getKeys(VIEW_POS_KEY).isNotEmpty()) {
+            if (getKeys(VIEW_POS_KEY).isNotEmpty() || getKeys(VIEWSTATE_KEY).isNotEmpty() ) {
                 alertDialog?.show()
             }
             return@setOnPreferenceClickListener true
@@ -83,11 +77,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             coolMode.isVisible = true
         }
         versionButton?.setOnPreferenceClickListener {
-            if (easterEggsClicks == 7 && coolMode?.isChecked == false) {
+            if (easterEggClicks == 7 && coolMode?.isChecked == false) {
                 Toast.makeText(context, "Unlocked cool mode", Toast.LENGTH_LONG).show()
                 coolMode.isVisible = true
             }
-            easterEggsClicks++
+            easterEggClicks++
             return@setOnPreferenceClickListener true
         }
         coolMode?.setOnPreferenceChangeListener { preference, newValue ->
@@ -120,7 +114,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         darkMode?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { preference: Preference, any: Any ->
                 if (any == true) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    AppCompatDelegate.setDefaultNightMode(AppCompatD        video_next_holder.isClickable = isClickelegate.MODE_NIGHT_YES)
                 } else {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                 }

@@ -24,7 +24,6 @@ import java.lang.Exception
 import android.view.animation.AlphaAnimation
 import androidx.core.content.res.ResourcesCompat
 
-import android.view.View.OnTouchListener
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
@@ -47,6 +46,7 @@ import androidx.media.session.MediaButtonReceiver
 import android.content.ComponentName
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.*
+import android.view.View.*
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -68,8 +68,8 @@ data class PlayerData(
     val title: String?,
     val url: String?,
 
-    val episodeIndex: Int?,
-    val seasonIndex: Int?,
+    var episodeIndex: Int?,
+    var seasonIndex: Int?,
     val card: FastAniApi.Card?,
 )
 
@@ -84,7 +84,7 @@ enum class PlayerEventType(val value: Int) {
     PlayPauseToggle(6)
 }
 
-class PlayerFragment(data: PlayerData) : Fragment() {
+class PlayerFragment(private var data: PlayerData) : Fragment() {
     companion object {
         var isInPlayer: Boolean = false
         var onLeftPlayer = Event<Boolean>()
@@ -92,7 +92,6 @@ class PlayerFragment(data: PlayerData) : Fragment() {
 
     private var isLocked = false
     private var isShowing = true
-    private var data: PlayerData = data
     private lateinit var exoPlayer: SimpleExoPlayer
     private lateinit var dataSourceFactory: MediaSourceFactory
 
@@ -101,12 +100,8 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     private var playbackPosition: Long = 0
     private var isFullscreen = false
     private var isPlayerPlaying = true
-    private val mediaItem = MediaItem.Builder()
-        .setUri(getCurrentUrl())
-        .setMimeType(MimeTypes.APPLICATION_MP4)
-        .build()
 
-    fun canPlayNextEpisode(): Boolean {
+    private fun canPlayNextEpisode(): Boolean {
         if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
             return false
         }
@@ -121,7 +116,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         return data.card!!.cdnData.seasons[data.seasonIndex!!].episodes[data.episodeIndex!!]
     }
 
-    fun getCurrentTitle(): String {
+    private fun getCurrentTitle(): String {
         if (data.title != null) return data.title!!
 
         val isMovie: Boolean = data.card!!.episodes == 1 && data.card!!.status == "FINISHED"
@@ -139,10 +134,14 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         return getCurrentEpisode().file
     }
 
-    override fun onDestroy() {
+    fun savePos() {
         if (data.card != null && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0) {
             MainActivity.setViewPosDur(data, exoPlayer.currentPosition, exoPlayer.duration)
         }
+    }
+
+    override fun onDestroy() {
+        savePos()
         // DON'T SAVE DATA OF TRAILERS
 
         isInPlayer = false
@@ -170,6 +169,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         exo_prev.isClickable = isClick
         video_go_back.isClickable = isClick
         exo_progress.isClickable = isClick
+        next_episode_btt.isClickable = isClick
     }
 
     private var receiver: BroadcastReceiver? = null
@@ -191,7 +191,8 @@ class PlayerFragment(data: PlayerData) : Fragment() {
             }
             val filter = IntentFilter()
             filter.addAction(
-                ACTION_MEDIA_CONTROL)
+                ACTION_MEDIA_CONTROL
+            )
             activity!!.registerReceiver(receiver, filter)
             updatePIPModeActions()
         } else {
@@ -208,17 +209,21 @@ class PlayerFragment(data: PlayerData) : Fragment() {
     }
 
     private fun getPen(code: Int): PendingIntent {
-        return PendingIntent.getBroadcast(activity,
+        return PendingIntent.getBroadcast(
+            activity,
             code,
             Intent("media_control").putExtra("control_type", code),
-            0)
+            0
+        )
     }
 
     private fun getRemoteAction(id: Int, title: String, event: PlayerEventType): RemoteAction {
-        return RemoteAction(Icon.createWithResource(activity, id),
+        return RemoteAction(
+            Icon.createWithResource(activity, id),
             title,
             title,
-            getPen(event))
+            getPen(event)
+        )
     }
 
     private fun updatePIPModeActions() {
@@ -327,7 +332,7 @@ class PlayerFragment(data: PlayerData) : Fragment() {
 
         isInPlayer = true
         retainInstance = true // OTHERWISE IT WILL CAUSE A CRASH
-        video_title.text = getCurrentTitle()
+
         video_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
         }
@@ -382,7 +387,31 @@ class PlayerFragment(data: PlayerData) : Fragment() {
                 return dataSource
             }
         }
-
+        if (data.card != null) {
+            val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
+            if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
+                playbackPosition = pro.pos
+            }
+        }
+        video_title.text = getCurrentTitle()
+        if (canPlayNextEpisode()) {
+            next_episode_btt.visibility = VISIBLE
+            next_episode_btt.setOnClickListener {
+                savePos()
+                val next = MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!)
+                data.seasonIndex = next.seasonIndex
+                data.episodeIndex = next.episodeIndex
+                initPlayer()
+            }
+        }
+        // this to make the button visible in the editor
+        else {
+            next_episode_btt.visibility = GONE
+        }
+        val mediaItem = MediaItem.Builder()
+            .setUri(getCurrentUrl())
+            .setMimeType(MimeTypes.APPLICATION_MP4)
+            .build()
         exoPlayer =
             SimpleExoPlayer.Builder(this.requireContext())
                 .setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))

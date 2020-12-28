@@ -3,6 +3,21 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
+            android:key="general"
+            android:title="General"
+            app:isPreferenceVisible="true"
+    >
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_picture_in_picture_alt_24"
+                app:key="pip_enabled"
+                android:title="Picture-in-picture"
+                android:summary="Continues playback in a miniature player on top of other apps"
+                app:defaultValue="true"
+        >
+
+        </SwitchPreference>
+    </PreferenceCategory>
+    <PreferenceCategory
             android:key="theme"
             android:title="Theme"
             app:isPreferenceVisible="false"

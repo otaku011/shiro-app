@@ -327,8 +327,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun shouldShowPIPMode(): Boolean {
-        //TODO Replace w blatzar settings
-        return DataStore.getKey("settings", "pip_mode", true)!! && isInPlayer
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        return settingsManager.getBoolean("pip_enabled", true) && isInPlayer
     }
 
     private fun hasPIPPermission(): Boolean {
@@ -337,9 +337,11 @@ class MainActivity : AppCompatActivity() {
         } else {
             return false
         }
-        return appOps.checkOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
+        return appOps.checkOpNoThrow(
+            AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
             android.os.Process.myUid(),
-            packageName) == AppOpsManager.MODE_ALLOWED
+            packageName
+        ) == AppOpsManager.MODE_ALLOWED
     }
 
     private val callbacks = object : MediaSessionCompat.Callback() {
@@ -371,12 +373,14 @@ class MainActivity : AppCompatActivity() {
 
     private val myAudioFocusListener =
         AudioManager.OnAudioFocusChangeListener {
-            onAudioFocusEvent.invoke(when (it) {
-                AudioManager.AUDIOFOCUS_GAIN -> true
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE -> true
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT -> true
-                else -> false
-            })
+            onAudioFocusEvent.invoke(
+                when (it) {
+                    AudioManager.AUDIOFOCUS_GAIN -> true
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE -> true
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT -> true
+                    else -> false
+                }
+            )
         }
 
 
@@ -432,8 +436,10 @@ class MainActivity : AppCompatActivity() {
         }*/
         mediaSession = MediaSessionCompat(activity, "fastani").apply {
 
-            setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+            setFlags(
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+            )
 
             // Do not let MediaButtons restart the player when the app is not visible
             setMediaButtonReceiver(null)
