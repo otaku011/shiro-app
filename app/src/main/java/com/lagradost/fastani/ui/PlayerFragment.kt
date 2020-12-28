@@ -33,12 +33,25 @@ import android.view.View.OnTouchListener
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
+import android.app.RemoteAction
+import android.graphics.drawable.Icon
+import android.content.Intent
+
+import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import android.widget.Toast
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.DefaultEventListener
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
 const val STATE_RESUME_POSITION = "resumePosition"
 const val STATE_PLAYER_FULLSCREEN = "playerFullscreen"
 const val STATE_PLAYER_PLAYING = "playerOnPlay"
+const val ACTION_MEDIA_CONTROL = "media_control"
+const val EXTRA_CONTROL_TYPE = "control_type"
 
 /**
  * A simple [Fragment] subclass.
@@ -56,6 +69,17 @@ data class PlayerData(
     val seasonIndex: Int?,
     val card: FastAniApi.Card?,
 )
+
+enum class PlayerEventType(val value: Int) {
+    Stop(-1),
+    Pause(0),
+    Play(1),
+    SeekForward(2),
+    SeekBack(3),
+    SkipCurrentChapter(4),
+    NextEpisode(5),
+    PlayPauseToggle(6)
+}
 
 class PlayerFragment(data: PlayerData) : Fragment() {
     companion object {
@@ -83,10 +107,10 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
             return false
         }
-        try {
-            return MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!).isFound
+        return try {
+            MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!).isFound
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
@@ -141,6 +165,76 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         exo_prev.isClickable = isClick
         video_go_back.isClickable = isClick
         exo_progress.isClickable = isClick
+    }
+
+    private var receiver: BroadcastReceiver? = null
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
+        MainActivity.isInPIPMode = isInPictureInPictureMode
+        if (isInPictureInPictureMode) {
+            // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
+            player_holder.alpha = 0f
+            receiver = object : BroadcastReceiver() {
+                override fun onReceive(
+                    context: Context,
+                    intent: Intent,
+                ) {
+                    if (ACTION_MEDIA_CONTROL != intent.action) {
+                        return;
+                    }
+                    when (intent.getIntExtra(EXTRA_CONTROL_TYPE, 0)) {
+                        PlayerEventType.Play.value -> exoPlayer.play()
+                        PlayerEventType.Pause.value -> exoPlayer.pause()
+                        PlayerEventType.SeekBack.value -> seekTime(-30000L)
+                        PlayerEventType.SeekForward.value -> seekTime(30000L)
+                    }
+                }
+            }
+            val filter = IntentFilter()
+            filter.addAction(
+                ACTION_MEDIA_CONTROL)
+            activity!!.registerReceiver(receiver, filter)
+            updatePIPModeActions()
+        } else {
+            // Restore the full-screen UI.
+            player_holder.alpha = 1f
+            receiver?.let {
+                activity!!.unregisterReceiver(it)
+            }
+        }
+    }
+
+    private fun getPen(code: PlayerEventType): PendingIntent {
+        return getPen(code.value)
+    }
+
+    private fun getPen(code: Int): PendingIntent {
+        return PendingIntent.getBroadcast(activity,
+            code,
+            Intent("media_control").putExtra("control_type", code),
+            0)
+    }
+
+    private fun getRemoteAction(id: Int, title: String, event: PlayerEventType): RemoteAction {
+        return RemoteAction(Icon.createWithResource(activity, id),
+            title,
+            title,
+            getPen(event))
+    }
+
+    private fun updatePIPModeActions() {
+        if(!MainActivity.isInPIPMode) return
+        val actions: ArrayList<RemoteAction> = ArrayList<RemoteAction>()
+
+        actions.add(getRemoteAction(R.drawable.go_back_30, "Go Back", PlayerEventType.SeekBack))
+
+        if (exoPlayer.isPlaying) {
+            actions.add(getRemoteAction(R.drawable.netflix_pause, "Pause", PlayerEventType.Pause))
+        } else {
+            actions.add(getRemoteAction(R.drawable.netflix_play, "Play", PlayerEventType.Play))
+        }
+
+        actions.add(getRemoteAction(R.drawable.go_forward_30, "Go Forward", PlayerEventType.SeekForward))
+        activity!!.setPictureInPictureParams(PictureInPictureParams.Builder().setActions(actions).build())
     }
 
     private fun onClickChange() {
@@ -221,12 +315,12 @@ class PlayerFragment(data: PlayerData) : Fragment() {
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
             exo_rew.startAnimation(rotateLeft)
-            exoPlayer.seekTo(maxOf(exoPlayer.currentPosition - 10000L, 0L))
+            seekTime(-10000L)
         }
         exo_ffwd.setOnClickListener {
             val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
             exo_ffwd.startAnimation(rotateRight)
-            exoPlayer.seekTo(minOf(exoPlayer.currentPosition + 10000L, exoPlayer.duration))
+            seekTime(10000L)
         }
 
         if (savedInstanceState != null) {
@@ -235,6 +329,10 @@ class PlayerFragment(data: PlayerData) : Fragment() {
             isFullscreen = savedInstanceState.getBoolean(STATE_PLAYER_FULLSCREEN)
             isPlayerPlaying = savedInstanceState.getBoolean(STATE_PLAYER_PLAYING)
         }
+    }
+
+    private fun seekTime(time: Long) {
+        exoPlayer.seekTo(maxOf(minOf(exoPlayer.currentPosition + time, exoPlayer.duration), 0))
     }
 
     private fun releasePlayer() {
@@ -274,6 +372,13 @@ class PlayerFragment(data: PlayerData) : Fragment() {
                     prepare()
                 }
         player_view.player = exoPlayer
+
+        //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
+        exoPlayer.addListener(object : DefaultEventListener() {
+            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                updatePIPModeActions()
+            }
+        })
     }
 
     override fun onStart() {

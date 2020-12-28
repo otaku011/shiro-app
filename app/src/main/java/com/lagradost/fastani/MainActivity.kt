@@ -1,8 +1,12 @@
 package com.lagradost.fastani
 
+import android.app.AppOpsManager
+import android.app.PictureInPictureParams
 import android.content.Context
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
@@ -10,6 +14,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.getSystemService
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -26,6 +31,7 @@ import com.lagradost.fastani.ui.PlayerFragment
 import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
+import java.lang.Exception
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
@@ -64,9 +70,11 @@ data class BookmarkedTitle(
 
 class MainActivity : AppCompatActivity() {
     companion object {
+        var isInPIPMode = false
         var navController: NavController? = null
         var statusHeight: Int = 0
         var activity: MainActivity? = null
+        var canShowPipMode: Boolean = false
 
         fun getViewKey(data: PlayerData): String {
             return getViewKey(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
@@ -241,7 +249,7 @@ class MainActivity : AppCompatActivity() {
         fun Context.getColorFromAttr(
             @AttrRes attrColor: Int,
             typedValue: TypedValue = TypedValue(),
-            resolveRefs: Boolean = true
+            resolveRefs: Boolean = true,
         ): Int {
             theme.resolveAttribute(attrColor, typedValue, resolveRefs)
             return typedValue.data
@@ -268,11 +276,66 @@ class MainActivity : AppCompatActivity() {
         return result
     }
 
+    private fun enterPIPMode() {
+        if (!shouldShowPIPMode() || !canShowPipMode) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                enterPictureInPictureMode(PictureInPictureParams.Builder().build())
+            } catch (e: Exception) {
+                enterPictureInPictureMode()
+            }
+        } else {
+            enterPictureInPictureMode()
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        enterPIPMode()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        if (isInPlayer) {
+            hideSystemUI()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isInPlayer) {
+            hideSystemUI()
+        }
+    }
+
+    private fun shouldShowPIPMode(): Boolean {
+        //TODO Replace w blatzar settings
+        return DataStore.getKey("settings", "pip_mode", true)!! && isInPlayer
+    }
+
+    private fun hasPIPPermission(): Boolean {
+        val appOps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        } else {
+            return false
+        }
+        return appOps.checkOpNoThrow(AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
+            android.os.Process.myUid(),
+            packageName) == AppOpsManager.MODE_ALLOWED
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         statusHeight = getStatusBarHeight()
         activity = this
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        //https://stackoverflow.com/questions/52594181/how-to-know-if-user-has-disabled-picture-in-picture-feature-permission
+        //https://developer.android.com/guide/topics/ui/picture-in-picture
+        canShowPipMode =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && // OS SUPPORT
+                    packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE) && // HAS FEATURE, MIGHT BE BLOCKED DUE TO POWER DRAIN
+                    hasPIPPermission() // CHECK IF FEATURE IS ENABLED IN SETTINGS
+
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
 
         if (settingsManager.getBoolean("cool_mode", false)) {
