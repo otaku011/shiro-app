@@ -56,7 +56,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         })
                 }
                 // Set other dialog properties
-                builder.setTitle("Clear search history")
+                builder.setTitle("Clear watch history")
 
                 // Create the AlertDialog
                 builder.create()
