@@ -92,8 +92,8 @@
                            android:background="?android:attr/selectableItemBackgroundBorderless"
                            -->
                 <FrameLayout android:layout_width="match_parent" android:orientation="horizontal"
-                              android:layout_height="wrap_content"
->
+                             android:layout_height="wrap_content"
+                >
 
                     <TextView
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -111,7 +111,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                     >
-                        <FrameLayout android:layout_width="wrap_content" android:layout_gravity="end" android:layout_height="wrap_content">
+                        <FrameLayout android:layout_width="wrap_content" android:layout_gravity="end"
+                                     android:layout_height="wrap_content">
                             <ImageView
                                     android:id="@+id/title_bookmark"
                                     android:layout_width="30dp"
@@ -131,10 +132,7 @@
                                     android:background="@drawable/video_tap_button">
                             </ImageView>
                         </FrameLayout>
-
-
                     </FrameLayout>
-
                 </FrameLayout>
 
                 <LinearLayout
@@ -269,13 +267,24 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                     </LinearLayout>
                 </LinearLayout>
 -->
-                <Spinner
-                        android:id="@+id/spinner"
+                <androidx.cardview.widget.CardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:background="@color/grayBackground"
+                        android:backgroundTint="@color/grayBackground"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp"
+                        android:layout_marginTop="10dp"
                         android:layout_marginBottom="10dp"
                 >
-                </Spinner>
+
+                    <Spinner
+                            android:id="@+id/spinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                    >
+                    </Spinner>
+                </androidx.cardview.widget.CardView>
 
                 <LinearLayout
                         android:layout_width="match_parent"
