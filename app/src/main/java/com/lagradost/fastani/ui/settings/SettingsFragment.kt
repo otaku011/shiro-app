@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
+import com.bumptech.glide.Glide
 import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
 import com.lagradost.fastani.DataStore.setKey
@@ -16,6 +17,9 @@ import com.lagradost.fastani.R
 import com.lagradost.fastani.VIEW_DUR_KEY
 import com.lagradost.fastani.VIEW_LST_KEY
 import com.lagradost.fastani.VIEW_POS_KEY
+import com.lagradost.fastani.ui.GlideApp
+import java.util.ResourceBundle.clearCache
+import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -52,7 +56,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         })
                 }
                 // Set other dialog properties
-                builder.setTitle("Remove search history")
+                builder.setTitle("Clear watch history")
 
                 // Create the AlertDialog
                 builder.create()
@@ -62,7 +66,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             return@setOnPreferenceClickListener true
         }
-
+        val clearCache = findPreference("clear_cache") as Preference?
+        clearCache?.setOnPreferenceClickListener {
+            val glide = Glide.get(requireContext())
+            glide.clearMemory()
+            thread {
+                glide.clearDiskCache()
+            }
+            Toast.makeText(context, "Cleared image cache", Toast.LENGTH_LONG).show()
+            return@setOnPreferenceClickListener true
+        }
         // EASTER EGG THEME
         val versionButton = findPreference("version") as Preference?
         val coolMode = findPreference("cool_mode") as SwitchPreference?
@@ -72,7 +85,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         versionButton?.setOnPreferenceClickListener {
             if (easterEggsClicks == 7 && coolMode?.isChecked == false) {
                 Toast.makeText(context, "Unlocked cool mode", Toast.LENGTH_LONG).show()
-                coolMode?.isVisible = true
+                coolMode.isVisible = true
             }
             easterEggsClicks++
             return@setOnPreferenceClickListener true

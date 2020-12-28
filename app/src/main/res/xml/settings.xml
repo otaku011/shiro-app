@@ -24,14 +24,21 @@
             android:title="History"
     >
         <SwitchPreference
+                android:icon="@drawable/ic_baseline_history_24"
                 android:key="save_history"
-                android:title="Save view history"
+                android:title="Save watch history"
                 app:defaultValue="true"
         >
         </SwitchPreference>
         <Preference
+                android:icon="@drawable/ic_baseline_delete_24"
                 app:key="clear_history"
-                android:title="Clear view history"
+                android:title="Clear watch history"
+        />
+        <Preference
+                android:icon="@drawable/ic_baseline_delete_24"
+                app:key="clear_cache"
+                android:title="Clear image cache"
         />
     </PreferenceCategory>
     <PreferenceCategory
@@ -39,6 +46,7 @@
             android:title="Info"
     >
         <Preference
+                android:icon="@drawable/ic_baseline_build_24"
                 app:key="version"
                 app:title="Version"
                 app:summary="@string/version_code"/>
@@ -47,10 +55,8 @@
                 android:title="Cool mode"
                 app:defaultValue="false"
                 app:isPreferenceVisible="false"
-
+                android:icon="@drawable/ic_baseline_warning_24"
         >
-
         </SwitchPreference>
-
     </PreferenceCategory>
 </PreferenceScreen>
