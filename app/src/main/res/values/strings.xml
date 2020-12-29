@@ -19,4 +19,5 @@
     <string name="anilist_btt">Open Anilist</string>
     <string name="anilist_btt_hint">Open Anilist</string>
     <string name="home_recently_added">Recently Added</string>
+    <string name="home_background_content_description">Background</string>
 </resources>

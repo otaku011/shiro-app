@@ -31,7 +31,7 @@
                     android:alpha="1"
                     android:src="@drawable/faded_bg"
                     android:foreground="@drawable/gradient"
-                    android:contentDescription="Background"/>
+                    android:contentDescription="@string/home_background_content_description"/>
 
 
             <LinearLayout
@@ -69,7 +69,7 @@
                         android:layout_height="wrap_content"
                         android:text="NAME PLACEHOLDER"
                         android:gravity="center_horizontal"
-                        android:textFontWeight="900"
+                        android:textStyle="bold"
                         android:paddingTop="5dp"
                         android:textSize="20sp"
                         android:textColor="@color/textColor"
@@ -83,8 +83,7 @@
                         android:layout_height="wrap_content"
                         android:text="NAME PLACEHOLDER"
                         android:gravity="center_horizontal"
-                        android:textFontWeight="900"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
                         android:textColor="@color/grayForeground"
                         android:paddingTop="0dp"
                         android:paddingBottom="10dp"
@@ -105,7 +104,6 @@
 
                 <Button
                         android:layout_marginTop="20dp"
-                        android:textFontWeight="900"
                         android:layout_marginBottom="20dp"
                         android:layout_width="150dp"
                         android:elevation="10dp"
@@ -133,8 +131,7 @@
                             android:gravity="center_horizontal"
                             android:textStyle="bold"
                             android:textColor="@color/textColor"
-                            android:textFontWeight="900"
-                            android:textSize="16dp"
+                            android:textSize="16sp"
                             android:padding="10dp"
                     >
                     </TextView>
@@ -169,8 +166,7 @@
                         android:gravity="center_horizontal"
                         android:textStyle="bold"
                         android:textColor="@color/textColor"
-                        android:textFontWeight="900"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
                         android:padding="10dp"
                 >
                 </TextView>
@@ -192,8 +188,7 @@
                         android:textColor="@color/textColor"
                         android:gravity="center_horizontal"
                         android:text="@string/home_recently_added"
-                        android:textSize="16dp"
-                        android:textFontWeight="900"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:padding="10dp"
                 >

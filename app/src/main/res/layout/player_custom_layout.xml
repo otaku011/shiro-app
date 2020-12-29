@@ -172,7 +172,7 @@
                 <TextView
                         android:textColor="@color/white"
                         android:text="10"
-                        android:textSize="15dp"
+                        android:textSize="15sp"
                         android:layout_gravity="center"
                         android:textFontWeight="900"
                         android:gravity="center"
@@ -224,7 +224,7 @@
                 <TextView
                         android:textColor="@color/white"
                         android:text="10"
-                        android:textSize="15dp"
+                        android:textSize="15sp"
                         android:layout_gravity="center"
                         android:textFontWeight="900"
                         android:gravity="center"

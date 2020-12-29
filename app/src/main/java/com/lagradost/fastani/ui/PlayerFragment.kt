@@ -1,20 +1,17 @@
 package com.lagradost.fastani.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
-import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
-import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import android.view.animation.AnimationUtils
 import com.lagradost.fastani.*
-import com.lagradost.fastani.MainActivity.Companion.getViewKey
 import com.lagradost.fastani.MainActivity.Companion.getViewPosDur
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
-import com.google.android.exoplayer2.source.MediaSourceFactory
 import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
@@ -22,41 +19,25 @@ import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.lang.Exception
 import android.view.animation.AlphaAnimation
-import androidx.core.content.res.ResourcesCompat
-
-import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import android.app.RemoteAction
 import android.graphics.drawable.Icon
 import android.content.Intent
-
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
-import android.widget.Toast
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DefaultEventListener
-
-import android.support.v4.media.session.MediaSessionCompat
-
-import androidx.media.session.MediaButtonReceiver
-
-import android.content.ComponentName
 import android.content.res.Resources
-import android.support.v4.media.session.PlaybackStateCompat
-import android.util.DisplayMetrics
 import android.view.*
-import android.view.MotionEvent.ACTION_MOVE
 import android.view.View.*
-import androidx.core.view.MotionEventCompat.getActionMasked
-import androidx.core.view.MotionEventCompat.getPointerCount
-import androidx.core.view.accessibility.AccessibilityEventCompat.getAction
+import android.view.inputmethod.InputMethodManager
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.common.math.DoubleMath.roundToInt
+import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
 import kotlin.math.*
+import androidx.core.content.ContextCompat.getSystemService as getSystemService
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -103,7 +84,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var isLocked = false
     private var isShowing = true
     private lateinit var exoPlayer: SimpleExoPlayer
-    private lateinit var dataSourceFactory: MediaSourceFactory
 
     // private val url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     private var currentWindow = 0
@@ -140,7 +120,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         if (!isMovie) {
             preTitle = "S${data.seasonIndex!! + 1}:E${data.episodeIndex!! + 1} · "
         }
-        return preTitle + getCurrentEpisode().title!!
+        // Replaces with "" if it's null
+        return preTitle + (getCurrentEpisode().title ?: "")
     }
 
     private fun getCurrentUrl(): String {
@@ -199,7 +180,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                     intent: Intent,
                 ) {
                     if (ACTION_MEDIA_CONTROL != intent.action) {
-                        return;
+                        return
                     }
                     handlePlayerEvent(intent.getIntExtra(EXTRA_CONTROL_TYPE, 0))
                 }
@@ -216,6 +197,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             receiver?.let {
                 activity!!.unregisterReceiver(it)
             }
+            hideSystemUI()
+            hideKeyboard()
         }
     }
 
@@ -243,7 +226,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
     private fun updatePIPModeActions() {
         if (!MainActivity.isInPIPMode) return
-        val actions: ArrayList<RemoteAction> = ArrayList<RemoteAction>()
+        val actions: ArrayList<RemoteAction> = ArrayList()
 
         actions.add(getRemoteAction(R.drawable.go_back_30, "Go Back", PlayerEventType.SeekBack))
 
@@ -260,7 +243,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private fun onClickChange() {
         isShowing = !isShowing
 
-        click_overlay.visibility = if (isShowing) View.GONE else View.VISIBLE;
+        click_overlay.visibility = if (isShowing) GONE else VISIBLE
         val fadeTo = if (isShowing) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
 
@@ -333,7 +316,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                     val timeString =
                         "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
                             convertTimeToString(abs(skipTime / 1000.0))
-                        }]";
+                        }]"
                     timeText.alpha = 1f
                     timeText.text = timeString
                 } else {
@@ -356,6 +339,19 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         }
     }
 
+    public fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun Fragment.hideKeyboard() {
+        view.let {
+            if (it != null) {
+                activity?.hideKeyboard(it)
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -363,6 +359,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         width = Resources.getSystem().displayMetrics.widthPixels
         MainActivity.onPlayerEvent += ::handlePlayerEvent
         MainActivity.onAudioFocusEvent += ::handleAudioFocusEvent
+
+        hideKeyboard()
 
         updateLock()
         video_lock.setOnClickListener {
@@ -382,11 +380,11 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             !isShowing
         })*/
 
-        player_holder.setOnTouchListener { view: View, motionEvent: MotionEvent ->
+        player_holder.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             handleMotionEvent(motionEvent)
             return@setOnTouchListener false
         }
-        click_overlay.setOnTouchListener { view: View, motionEvent: MotionEvent ->
+        click_overlay.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             handleMotionEvent(motionEvent)
             return@setOnTouchListener false
         }
@@ -574,11 +572,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             if (player_view != null) player_view.onPause()
             releasePlayer()
         }
-    }
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(

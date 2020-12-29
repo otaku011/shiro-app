@@ -1,5 +1,6 @@
 package com.lagradost.fastani
 
+import android.app.Activity
 import android.app.AppOpsManager
 import android.app.PictureInPictureParams
 import android.content.Context
@@ -17,11 +18,13 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.getSystemService
+import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration

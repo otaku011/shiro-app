@@ -2,7 +2,6 @@
 <androidx.cardview.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -98,11 +97,11 @@
                     <TextView
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Attack on titan"
-                            android:layout_marginRight="55dp"
+                            android:layout_marginEnd="55dp"
                             android:id="@+id/title_name"
                             android:layout_gravity="center_vertical|start"
                             android:textColor="@color/textColor"
-                            android:textFontWeight="900"
+                            android:textStyle="bold"
                             android:textSize="20sp"
                     >
                     </TextView>
@@ -149,7 +148,7 @@
                             android:textColor="?attr/colorPrimaryDark"
                             android:gravity="center_vertical"
                             android:layout_gravity="center_vertical"
-                            android:textFontWeight="900"
+                            android:textStyle="bold"
                             android:textSize="16sp"
                             android:text="Rated: 8.3">
                     </TextView>
@@ -157,7 +156,7 @@
                             android:id="@+id/title_duration"
                             android:layout_width="match_parent"
                             android:layout_height="25dp"
-                            android:layout_marginLeft="10dp"
+                            android:layout_marginStart="10dp"
                             android:gravity="center_vertical"
                             android:layout_gravity="center_vertical"
                             android:textColor="@color/textColorGray"
