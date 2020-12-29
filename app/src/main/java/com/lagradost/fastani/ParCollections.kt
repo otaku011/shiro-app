@@ -8,9 +8,10 @@ import kotlin.collections.ArrayList
 
 //https://stackoverflow.com/questions/34697828/parallel-operations-on-kotlin-collections
 fun <T, R> Iterable<T>.pmap(
-    numThreads: Int = Runtime.getRuntime().availableProcessors() - 2,
+    numThreads: Int = maxOf(Runtime.getRuntime().availableProcessors() - 2, 1),
     exec: ExecutorService = Executors.newFixedThreadPool(numThreads),
-    transform: (T) -> R): List<R> {
+    transform: (T) -> R,
+): List<R> {
 
     // default size is just an inlined version of kotlin.collections.collectionSizeOrDefault
     val defaultSize = if (this is Collection<*>) this.size else 10
