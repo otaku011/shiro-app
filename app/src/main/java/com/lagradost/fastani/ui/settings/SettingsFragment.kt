@@ -95,7 +95,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             thread {
                 val update = FastAniApi.getAppUpdate()
                 activity?.runOnUiThread {
-                    if (update.shouldUpdate) {
+                    if (update.shouldUpdate && update.updateVersion != null && update.updateURL != null) {
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))
                         Toast.makeText(context, "New version (${update.updateVersion}) found", Toast.LENGTH_LONG).show()
                     } else {
