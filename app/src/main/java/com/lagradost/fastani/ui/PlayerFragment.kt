@@ -483,8 +483,10 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         }
         if (data.card != null) {
             val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
-            if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
-                playbackPosition = pro.pos
+            playbackPosition = if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
+                pro.pos
+            } else {
+                0L
             }
         }
         video_title.text = getCurrentTitle()
@@ -527,8 +529,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                     setMediaItem(mediaItem, false)
                     prepare()
                 }
-        exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
 
+        exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
         player_view.player = exoPlayer
 
         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer

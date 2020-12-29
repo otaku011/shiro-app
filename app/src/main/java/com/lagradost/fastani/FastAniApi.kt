@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.fastani.MainActivity.Companion.activity
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 import java.net.URLEncoder
@@ -49,6 +50,8 @@ class FastAniApi {
     data class SearchResponse(val animeData: AnimeData)
     data class EpisodeResponse(val anime: Card, val nextEpisode: Int)
 
+    data class Update(val shouldUpdate: Boolean, val updateURL: String, val updateVersion: String)
+
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
         private val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
@@ -79,11 +82,31 @@ class FastAniApi {
             }
         }
 
+        fun getAppUpdate(): Update {
+            val url = "https://cdn1.fastani.net/apk/"
+            val response = khttp.get(url)
+            val versionRegex = Regex("""href="(.*?((\d)\.(\d)\.(\d)).*\.apk)"""")
+            val found =
+                versionRegex.findAll(response.text).sortedWith(compareBy {
+                    it.groupValues[2]
+                }).toList().last()
+            val currentVersion = activity?.packageManager?.getPackageInfo(activity?.packageName, 0)
+            //println(found.groupValues)
+            //println(currentVersion?.versionName)
+            val shouldUpdate = currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0
+            return Update(shouldUpdate, url + found.groupValues[1], found.groupValues[2])
+        }
+
         //search via http get request, NOT INSTANT
         // ONLY PAGE 1
         fun search(query: String, page: Int = 1): SearchResponse? {
             // Tags and years can be added
-            val url =  "https://fastani.net/api/data?page=${page}&animes=1&search=${URLEncoder.encode(query, "UTF-8")}&tags=&years="
+            val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${
+                URLEncoder.encode(
+                    query,
+                    "UTF-8"
+                )
+            }&tags=&years="
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
@@ -91,7 +114,8 @@ class FastAniApi {
         }
 
         fun getCardById(id: String): EpisodeResponse? {
-            val url = "https://fastani.net/api/data/anime/$id" //?season=$season&episode=$episode" // SPECIFYING EPISODE AND SEASON WILL ONLY GIVE 1 EPISODE
+            val url =
+                "https://fastani.net/api/data/anime/$id" //?season=$season&episode=$episode" // SPECIFYING EPISODE AND SEASON WILL ONLY GIVE 1 EPISODE
             val response = currentToken?.headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
             return response?.text?.let { mapper.readValue(it) }
         }

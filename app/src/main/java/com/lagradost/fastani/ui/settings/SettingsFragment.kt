@@ -1,6 +1,8 @@
 package com.lagradost.fastani.ui.settings
 
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -55,7 +57,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 // Create the AlertDialog
                 builder.create()
             }
-            if (getKeys(VIEW_POS_KEY).isNotEmpty() || getKeys(VIEWSTATE_KEY).isNotEmpty() ) {
+            if (getKeys(VIEW_POS_KEY).isNotEmpty() || getKeys(VIEWSTATE_KEY).isNotEmpty()) {
                 alertDialog?.show()
             }
             return@setOnPreferenceClickListener true
@@ -70,6 +72,41 @@ class SettingsFragment : PreferenceFragmentCompat() {
             Toast.makeText(context, "Cleared image cache", Toast.LENGTH_LONG).show()
             return@setOnPreferenceClickListener true
         }
+
+        // Changelog
+        val changeLog = findPreference("changelog") as Preference?
+        changeLog?.setOnPreferenceClickListener {
+            val alertDialog: AlertDialog? = activity?.let {
+                val builder = AlertDialog.Builder(it)
+                builder.apply {
+                    setPositiveButton("OK") { _, _ -> }
+                }
+                // Set other dialog properties
+                builder.setTitle(getString(R.string.version_code))
+                builder.setMessage(getString(R.string.changelog))
+                // Create the AlertDialog
+                builder.create()
+            }
+            alertDialog?.show()
+            return@setOnPreferenceClickListener true
+        }
+        val checkUpdates = findPreference("check_updates") as Preference?
+        checkUpdates?.setOnPreferenceClickListener {
+            thread {
+                val update = FastAniApi.getAppUpdate()
+                activity?.runOnUiThread {
+                    if (update.shouldUpdate) {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))
+                        Toast.makeText(context, "New version (${update.updateVersion}) found", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(context, "No updates found :(", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            return@setOnPreferenceClickListener true
+        }
+
+
         // EASTER EGG THEME
         val versionButton = findPreference("version") as Preference?
         val coolMode = findPreference("cool_mode") as SwitchPreference?

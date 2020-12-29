@@ -76,6 +76,18 @@
                 app:title="Version"
                 app:summary="@string/version_code"/>
         <Preference
+                android:title="Check for updates"
+                android:icon="@drawable/ic_baseline_system_update_24"
+                app:key="check_updates"
+        >
+        </Preference>
+        <Preference
+                android:title="Changelog"
+                app:key="changelog"
+                android:icon="@drawable/ic_baseline_notes_24"
+        >
+        </Preference>
+        <Preference
                 android:icon="@drawable/ic_baseline_payment_24"
                 android:title="Donate"
                 app:summary="Needed to keep the fastani servers working"
@@ -91,6 +103,14 @@
         >
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://discord.gg/Vaq4ARdybn"/>
+
+        </Preference>
+
+        <Preference
+                android:title="Developers (to complain to)"
+                android:icon="@drawable/ic_baseline_code_24"
+                app:summary="LagradOst#6230 &amp; Blue Fire#1471"
+        >
 
         </Preference>
         <SwitchPreference
