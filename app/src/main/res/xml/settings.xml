@@ -81,7 +81,7 @@
                 app:summary="Join the fastani community, talk with developers and give app suggestions"
         >
             <intent android:action="android.intent.action.VIEW"
-                    android:data="https://discord.com/invite/RtdrWqp"/>
+                    android:data="https://discord.gg/Vaq4ARdybn"/>
 
         </Preference>
         <SwitchPreference

@@ -53,6 +53,7 @@ import android.view.View.*
 import androidx.core.view.MotionEventCompat.getActionMasked
 import androidx.core.view.MotionEventCompat.getPointerCount
 import androidx.core.view.accessibility.AccessibilityEventCompat.getAction
+import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.common.math.DoubleMath.roundToInt
 import kotlin.math.*
@@ -311,7 +312,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     }
 
     private fun handleMotionEvent(motionEvent: MotionEvent) {
-        if(isLocked) return
+        if (isLocked) return
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 currentX = motionEvent.x
@@ -322,10 +323,9 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 val diffX = distance * 2.0 / width
                 println("$diffX $width")
                 skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
-                if(isMovingStartTime + skipTime < 0) {
+                if (isMovingStartTime + skipTime < 0) {
                     skipTime = -isMovingStartTime
-                }
-                else if(isMovingStartTime + skipTime > exoPlayer.duration) {
+                } else if (isMovingStartTime + skipTime > exoPlayer.duration) {
                     skipTime = exoPlayer.duration - isMovingStartTime
                 }
                 if (abs(skipTime) > 900 || hasPassedSkipLimit) {
@@ -504,7 +504,14 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             .setMimeType(MimeTypes.APPLICATION_MP4)
             .build()
         val trackSelector = DefaultTrackSelector(requireContext())
-        trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext()).setRendererDisabled(0, true).build()
+        // Disable subtitles
+        trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
+            .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
+            .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
+            .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
+            .clearSelectionOverrides()
+            .build()
+
         exoPlayer =
             SimpleExoPlayer.Builder(this.requireContext())
                 .setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
