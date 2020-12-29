@@ -23,6 +23,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -101,8 +102,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun requestAudioFocus() {
-            val audioManager = activity!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.requestAudioFocus(focusRequest!!)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
+                val audioManager = activity!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                audioManager.requestAudioFocus(focusRequest!!)
+            } else {
+                val audioManager: AudioManager =
+                    activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager;
+                audioManager.requestAudioFocus(
+                    null,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                )
+            }
         }
 
         fun getViewPosDur(aniListId: String, seasonIndex: Int, episodeIndex: Int): EpisodePosDurInfo {
@@ -412,15 +423,19 @@ class MainActivity : AppCompatActivity() {
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
         }
-        focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
-            setAudioAttributes(AudioAttributes.Builder().run {
-                setUsage(AudioAttributes.USAGE_MEDIA)
-                setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+
+        // CRASHES ON 7.0.0
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
+                setAudioAttributes(AudioAttributes.Builder().run {
+                    setUsage(AudioAttributes.USAGE_MEDIA)
+                    setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+                    build()
+                })
+                setAcceptsDelayedFocusGain(true)
+                setOnAudioFocusChangeListener(myAudioFocusListener)
                 build()
-            })
-            setAcceptsDelayedFocusGain(true)
-            setOnAudioFocusChangeListener(myAudioFocusListener)
-            build()
+            }
         }
 
         // Setting the theme

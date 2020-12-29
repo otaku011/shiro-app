@@ -155,11 +155,13 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
 
-        main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-            val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE
-            val gray: Int = Color.argb(fade, 0f, fade, 0f)
+        // CAUSES CRASH ON 6.0.0
+        /*main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+               val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE
+               // COLOR ARGB INTRODUCED IN 26!
+               val gray: Int = Color.argb(fade, 0f, fade, 0f)
             //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
-        }
+        }*/
         homeViewModel.apiData.observe(viewLifecycleOwner) {
             println("OBSERVED")
             homeLoaded(it)

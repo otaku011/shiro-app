@@ -295,7 +295,11 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     }
 
     private fun handleMotionEvent(motionEvent: MotionEvent) {
-        if (isLocked) return
+        // TIME_UNSET   ==   -9223372036854775807L
+        // No swiping on unloaded
+        // https://exoplayer.dev/doc/reference/constant-values.html
+        if (isLocked || exoPlayer.duration == -9223372036854775807L) return
+
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 currentX = motionEvent.x
@@ -498,7 +502,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             next_episode_btt.visibility = GONE
         }
         val mediaItem = MediaItem.Builder()
-            .setUri(getCurrentUrl())
+            //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
+            .setUri(getCurrentUrl().replace(" ", "%20"))
             .setMimeType(MimeTypes.APPLICATION_MP4)
             .build()
         val trackSelector = DefaultTrackSelector(requireContext())
