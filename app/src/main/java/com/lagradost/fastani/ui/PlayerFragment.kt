@@ -30,6 +30,7 @@ import android.content.IntentFilter
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
+import android.preference.PreferenceManager
 import android.view.*
 import android.view.View.*
 import android.view.inputmethod.InputMethodManager
@@ -94,6 +95,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var isMovingStartTime = 0L
     private var skipTime = 0L
     private var hasPassedSkipLimit = false
+    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
+    private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
     var width = 0
 
     private fun canPlayNextEpisode(): Boolean {
@@ -298,7 +301,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         // TIME_UNSET   ==   -9223372036854775807L
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
-        if (isLocked || exoPlayer.duration == -9223372036854775807L) return
+        if (isLocked || exoPlayer.duration == -9223372036854775807L || !swipeEnabled) return
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -308,7 +311,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             MotionEvent.ACTION_MOVE -> {
                 val distance = motionEvent.x - currentX
                 val diffX = distance * 2.0 / width
-                println("$diffX $width")
                 skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
                 if (isMovingStartTime + skipTime < 0) {
                     skipTime = -isMovingStartTime

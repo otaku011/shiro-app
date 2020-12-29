@@ -17,7 +17,14 @@
                 android:summary="Continues playback in a miniature player on top of other apps"
                 app:defaultValue="false"
         >
-
+        </SwitchPreference>
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_ondemand_video_24"
+                app:key="swipe_enabled"
+                android:title="Swipe to seek"
+                android:summary="Swipe left or right to control time in the videoplayer"
+                app:defaultValue="true"
+        >
         </SwitchPreference>
     </PreferenceCategory>
     <PreferenceCategory
