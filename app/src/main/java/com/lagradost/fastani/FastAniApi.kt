@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.fastani.MainActivity.Companion.activity
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 import java.net.URLEncoder
@@ -78,6 +77,7 @@ class FastAniApi {
                     fastani.cookies,
                 )
             } catch (e: Exception) {
+                println(e)
                 return null
             }
         }
@@ -102,10 +102,8 @@ class FastAniApi {
         fun search(query: String, page: Int = 1): SearchResponse? {
             // Tags and years can be added
             val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${
-                URLEncoder.encode(
-                    query,
-                    "UTF-8"
-                )
+                URLEncoder.encode(query,
+                    "UTF-8")
             }&tags=&years="
             // Security headers
             val headers = currentToken?.headers
@@ -166,8 +164,12 @@ class FastAniApi {
             val url = "https://fastani.net/api/data"
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
             val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
-
-            res?.favorites = getFav()
+            if (res == null) {
+                hasThrownError = 0
+                onHomeError.invoke(false)
+                return null
+            }
+            res.favorites = getFav()
 
             cachedHome = res
             onHomeFetched.invoke(res)
@@ -177,6 +179,8 @@ class FastAniApi {
         var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<HomePageResponse?>()
+        var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
+        var hasThrownError = -1
 
         fun init() {
             if (currentToken != null) return
@@ -189,6 +193,10 @@ class FastAniApi {
                     currentHeaders?.set("Cookie", it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";")
                 }
                 requestHome()
+            } else {
+                println("TOKEN ERROR")
+                hasThrownError = 1
+                onHomeError.invoke(true)
             }
         }
     }
