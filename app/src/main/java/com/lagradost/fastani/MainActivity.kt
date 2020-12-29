@@ -18,6 +18,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -397,17 +398,17 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-
     override fun onDestroy() {
         mediaSession?.isActive = false
         super.onDestroy()
     }
 
-
     private var mediaSession: MediaSessionCompat? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        statusHeight = getStatusBarHeight()
+        //window.statusBarColor = R.color.transparent
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        statusHeight = 0//getStatusBarHeight()
         activity = this
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
@@ -478,9 +479,6 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
 
         DataStore.init(this)
-        thread {
-            FastAniApi.init()
-        }
 
         navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
@@ -492,5 +490,7 @@ class MainActivity : AppCompatActivity() {
         )
         //setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController!!)
+
+        window.setBackgroundDrawableResource(R.color.background);
     }
 }

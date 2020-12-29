@@ -75,6 +75,7 @@ class FastAniApi {
                     fastani.cookies,
                 )
             } catch (e: Exception) {
+                println(e)
                 return null
             }
         }
@@ -83,7 +84,10 @@ class FastAniApi {
         // ONLY PAGE 1
         fun search(query: String, page: Int = 1): SearchResponse? {
             // Tags and years can be added
-            val url =  "https://fastani.net/api/data?page=${page}&animes=1&search=${URLEncoder.encode(query, "UTF-8")}&tags=&years="
+            val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${
+                URLEncoder.encode(query,
+                    "UTF-8")
+            }&tags=&years="
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
@@ -91,7 +95,8 @@ class FastAniApi {
         }
 
         fun getCardById(id: String): EpisodeResponse? {
-            val url = "https://fastani.net/api/data/anime/$id" //?season=$season&episode=$episode" // SPECIFYING EPISODE AND SEASON WILL ONLY GIVE 1 EPISODE
+            val url =
+                "https://fastani.net/api/data/anime/$id" //?season=$season&episode=$episode" // SPECIFYING EPISODE AND SEASON WILL ONLY GIVE 1 EPISODE
             val response = currentToken?.headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
             return response?.text?.let { mapper.readValue(it) }
         }
@@ -142,8 +147,11 @@ class FastAniApi {
             val url = "https://fastani.net/api/data"
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
             val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
-
-            res?.favorites = getFav()
+            if (res == null) {
+                onHomeError.invoke(false)
+                return null
+            }
+            res.favorites = getFav()
 
             cachedHome = res
             onHomeFetched.invoke(res)
@@ -153,6 +161,7 @@ class FastAniApi {
         var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<HomePageResponse?>()
+        var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
 
         fun init() {
             if (currentToken != null) return
@@ -165,6 +174,9 @@ class FastAniApi {
                     currentHeaders?.set("Cookie", it.key + "=" + it.value.substring(0, it.value.indexOf(';')) + ";")
                 }
                 requestHome()
+            } else {
+                println("TOKEN ERROR")
+                onHomeError.invoke(true)
             }
         }
     }

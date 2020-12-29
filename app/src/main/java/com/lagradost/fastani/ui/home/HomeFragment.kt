@@ -147,14 +147,37 @@ class HomeFragment : Fragment() {
             }
             main_load.alpha = 0f
             main_scroll.alpha = 1f
+            main_reload_data_btt.alpha = 0f
+            main_reload_data_btt.isClickable = false
             main_layout.setPadding(0, MainActivity.statusHeight, 0, 0)
+        }
+    }
+
+    fun onHomeErrorCatch(fullRe : Boolean) {
+        main_reload_data_btt.alpha = 1f
+        main_load.alpha = 0f
+        main_reload_data_btt.isClickable = true
+        main_reload_data_btt.setOnClickListener {
+            main_reload_data_btt.alpha = 0f
+            main_load.alpha = 1f
+            main_reload_data_btt.isClickable = false
+            thread {
+                if (fullRe) {
+                    FastAniApi.init()
+                } else {
+                    FastAniApi.requestHome(false)
+                }
+            }
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
-
+        FastAniApi.onHomeError += ::onHomeErrorCatch
+        thread {
+            FastAniApi.init()
+        }
         // CAUSES CRASH ON 6.0.0
         /*main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
                val fade = (FADE_SCROLL_DISTANCE - scrollY) / FADE_SCROLL_DISTANCE
