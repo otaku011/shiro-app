@@ -148,6 +148,7 @@ class FastAniApi {
             val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
             val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
             if (res == null) {
+                hasThrownError = 0
                 onHomeError.invoke(false)
                 return null
             }
@@ -162,6 +163,7 @@ class FastAniApi {
         var currentHeaders: MutableMap<String, String>? = null
         var onHomeFetched = Event<HomePageResponse?>()
         var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
+        var hasThrownError = -1
 
         fun init() {
             if (currentToken != null) return
@@ -176,6 +178,7 @@ class FastAniApi {
                 requestHome()
             } else {
                 println("TOKEN ERROR")
+                hasThrownError = 1
                 onHomeError.invoke(true)
             }
         }

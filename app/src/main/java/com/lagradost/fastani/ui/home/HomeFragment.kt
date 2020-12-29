@@ -153,7 +153,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun onHomeErrorCatch(fullRe : Boolean) {
+    fun onHomeErrorCatch(fullRe: Boolean) {
         main_reload_data_btt.alpha = 1f
         main_load.alpha = 0f
         main_reload_data_btt.isClickable = true
@@ -175,8 +175,8 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
         FastAniApi.onHomeError += ::onHomeErrorCatch
-        thread {
-            FastAniApi.init()
+        if (FastAniApi.hasThrownError != -1) {
+            onHomeErrorCatch(FastAniApi.hasThrownError == 1)
         }
         // CAUSES CRASH ON 6.0.0
         /*main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
