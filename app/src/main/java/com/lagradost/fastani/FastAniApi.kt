@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.lagradost.fastani.MainActivity.Companion.activity
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 import java.net.URLEncoder
