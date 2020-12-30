@@ -55,6 +55,7 @@ class SearchFragment : Fragment() {
                         progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                         (cardSpace.adapter as ResAdapter).cardList =
                             data?.animeData?.cards!! as ArrayList<FastAniApi.Card>
+                        (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                     }
                 }
                 return true
