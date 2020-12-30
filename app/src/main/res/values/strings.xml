@@ -1,6 +1,7 @@
 <resources>
     <string name="version_code">1.0.4 Public Beta</string>
     <string name="changelog">\n
+        - Added chromecast\n
         - Added statusbar toggle\n
     </string>
     <string name="app_name">FastAni</string>

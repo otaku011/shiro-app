@@ -427,8 +427,10 @@ class MainActivity : AppCompatActivity() {
 
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+            )
         }
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         if (settingsManager.getBoolean("cool_mode", false)) {
