@@ -305,11 +305,12 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
-                currentX = motionEvent.x
+                currentX = motionEvent.rawX
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {
-                val distance = motionEvent.x - currentX
+                val distance = motionEvent.rawX - currentX
+
                 val diffX = distance * 2.0 / width
                 skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
                 if (isMovingStartTime + skipTime < 0) {
@@ -317,7 +318,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 } else if (isMovingStartTime + skipTime > exoPlayer.duration) {
                     skipTime = exoPlayer.duration - isMovingStartTime
                 }
-                if (abs(skipTime) > 900 || hasPassedSkipLimit) {
+                if (abs(skipTime) > 3000 || hasPassedSkipLimit) {
                     hasPassedSkipLimit = true
                     val timeString =
                         "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${

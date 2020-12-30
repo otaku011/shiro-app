@@ -53,8 +53,10 @@
                 android:layout_height="match_parent"
                 android:id="@+id/timeText"
                 android:gravity="center"
-                android:textSize="40sp"
+                android:textSize="30sp"
                 android:alpha="0"
+                android:shadowColor="@android:color/black"
+                android:shadowRadius="10.0"
                 android:textColor="@android:color/white"
         >
 

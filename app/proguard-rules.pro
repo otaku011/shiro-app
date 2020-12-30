@@ -23,3 +23,4 @@
 -keep class android.support.v7.app.MediaRouteActionProvider {
   *;
 }
+-keep class com.lagradost.fastani.** { *; }

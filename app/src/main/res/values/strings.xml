@@ -1,8 +1,13 @@
 <resources>
     <string name="version_code">1.0.4 Public Beta</string>
     <string name="changelog">\n
-        - Added chromecast\n
+        - Added chromecast (Still in progress)\n
         - Added statusbar toggle\n
+        - Added continue watching (Still in progress)\n
+        - Added title text to cards (Will possibly add to homescreen too)\n
+        - Fixed next episode\n
+        - Fixed crashing on 6.0.0 (Again)\n
+        - Fixed search not updating properly\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>
