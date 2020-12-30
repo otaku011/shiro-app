@@ -38,6 +38,7 @@ import kotlin.concurrent.thread
 
 import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
+import com.google.android.gms.cast.framework.CastContext
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerEventType
 import com.lagradost.fastani.ui.PlayerFragment
@@ -494,5 +495,6 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController!!)
 
         window.setBackgroundDrawableResource(R.color.background);
+        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
     }
 }

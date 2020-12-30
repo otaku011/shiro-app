@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.lagradost.fastani">
     <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -9,7 +10,11 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
+
     >
+        <meta-data
+                android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+                android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider"/>
         <activity
                 android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
                 android:supportsPictureInPicture="true"

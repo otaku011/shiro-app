@@ -1,25 +1,21 @@
 package com.lagradost.fastani.ui.result
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.res.ColorStateList
-import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
-import androidx.core.content.res.ResourcesCompat.getColor
-import androidx.core.view.ViewCompat.setBackgroundTintList
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.mediarouter.app.MediaRouteButton
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.google.android.material.color.MaterialColors.getColor
+import com.google.android.gms.cast.framework.CastButtonFactory
 import com.lagradost.fastani.*
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
@@ -34,6 +30,23 @@ import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlin.concurrent.thread
+import com.google.android.gms.cast.framework.CastState
+
+import com.google.android.gms.cast.framework.CastStateListener
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.MediaQueueItem
+
+import com.google.android.exoplayer2.util.MimeTypes
+
+import com.google.android.gms.cast.MediaInfo
+import com.google.android.gms.cast.MediaMetadata
+
+import com.google.android.gms.common.images.WebImage
+import com.google.android.exoplayer2.Player
+
+import com.google.android.exoplayer2.ext.cast.CastPlayer
+import com.google.android.exoplayer2.ext.cast.SessionAvailabilityListener
+
 
 const val DESCRIPTION_LENGTH = 200
 
@@ -92,6 +105,54 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         }
     }
 
+    fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
+        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+        val ep = data.cdnData.seasons[seasonIndex].episodes[episodeIndex]
+        val poster = ep.thumb
+        val url = ep.file
+        val key = MainActivity.getViewKey(data.anilistId, seasonIndex, episodeIndex)
+
+        val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
+        movieMetadata.putString(MediaMetadata.KEY_TITLE, fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, true))
+        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.title.english)
+        if (poster != null) {
+            movieMetadata.addImage(WebImage(Uri.parse(poster)))
+        }
+        val mediaInfo = MediaInfo.Builder(url)
+            .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+            .setContentType(MimeTypes.VIDEO_UNKNOWN)
+            .setMetadata(movieMetadata).build()
+
+        val mediaItems = arrayOf(MediaQueueItem.Builder(mediaInfo).build())
+        val castPlayer = CastPlayer(castContext)
+        castPlayer.loadItems(mediaItems,
+            0,
+            DataStore.getKey<Long>(VIEW_POS_KEY, key, 0L)!!,
+            Player.REPEAT_MODE_OFF)
+        /*castPlayer.setSessionAvailabilityListener(object : SessionAvailabilityListener {
+            override fun onCastSessionAvailable() {
+
+            }
+
+            override fun onCastSessionUnavailable() {}
+        })*/
+    }
+
+    fun fixEpTitle(_title: String?, epNum: Int, seNum: Int, formatBefore: Boolean = false): String {
+        var title = _title
+        if (title == null || title.replace(" ", "") == "") {
+            title = "Episode $epNum"
+        }
+        if (!isMovie) {
+            if (formatBefore) {
+                title = "S$seNum:E$epNum $title" //•
+            } else {
+                title = "$epNum. $title"
+            }
+        }
+        return title
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun loadSeason(index: Int) {
         currentSeasonIndex = index
@@ -99,6 +160,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         var epNum = 0
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
         val save = settingsManager.getBoolean("save_history", true)
+
         // When fastani is down it doesn't report any seasons and this is needed.
         if (data.cdnData.seasons.isNotEmpty()) {
             data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
@@ -121,10 +183,17 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
 
                 card.imageView.setOnClickListener {
+                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+                    println("SSTATE: " + castContext.castState + "<<")
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
-                    MainActivity.loadPlayer(epIndex, index, data)
+                    if (castContext.castState == CastState.CONNECTED) {
+                        castEpsiode(index, epIndex)
+                        loadSeason(index)
+                    } else {
+                        MainActivity.loadPlayer(epIndex, index, data)
+                    }
                 }
 
                 card.setOnLongClickListener {
@@ -139,13 +208,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     return@setOnLongClickListener true
                 }
 
-                var title = fullEpisode.title
-                if (title == null || title.replace(" ", "") == "") {
-                    title = "Episode $epNum"
-                }
-                if (!isMovie) {
-                    title = "$epNum. $title"
-                }
+                val title = fixEpTitle(fullEpisode.title, epNum, index + 1)
+
                 card.cardTitle.text = title
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(requireContext().getColorFromAttr(
@@ -186,12 +250,26 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button);
+        CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
+        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+
+        if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
+        castContext.addCastStateListener(CastStateListener { state ->
+            if(media_route_button != null) {
+                if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
+                    if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+                }
+            }
+        })
         isInResults = true
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::OnLeftVideoPlayer
         ToggleHeartVisual(isBookmarked)
 
         title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
+        media_route_button.setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
         }
