@@ -251,6 +251,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if(!FastAniApi.lastCards.containsKey(data.id)) {
+            FastAniApi.lastCards[data.id] = data
+        }
+
         val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button);
         CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)

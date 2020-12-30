@@ -1,30 +1,17 @@
 package com.lagradost.fastani.ui.home
 
-import android.content.Context
-import android.content.res.Resources
-import android.graphics.Color
-import android.graphics.Rect
 import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.AbsListView
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.Toast
-import androidx.annotation.ColorInt
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.fastani.*
-import com.lagradost.fastani.DataStore.getSharedPrefs
-import com.lagradost.fastani.FastAniApi.Companion.getCardById
-import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MainActivity.Companion.loadPlayer
 import com.lagradost.fastani.ui.GlideApp
-import com.lagradost.fastani.ui.PlayerData
-import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
@@ -100,10 +87,10 @@ class HomeFragment : Fragment() {
                         return@setOnLongClickListener true
                     }
                     card.imageView.setOnClickListener {
-                        val _id = cardInfo?.anilistId
-                        if (FastAniApi.fullBookmarks.containsKey(_id)) {
+                        val _id = cardInfo?.id
+                        if (FastAniApi.lastCards.containsKey(_id)) {
                             if (cardInfo != null) {
-                                MainActivity.loadPage(FastAniApi.fullBookmarks[_id]!!)
+                                MainActivity.loadPage(FastAniApi.lastCards[_id]!!)
                             }
                         } else {
                             Toast.makeText(context, "Loading " + cardInfo?.title?.english + "... ", Toast.LENGTH_SHORT)
@@ -140,37 +127,49 @@ class HomeFragment : Fragment() {
 
             fun displayCardData(data: List<LastEpisodeInfo?>?, scrollView: LinearLayout) {
                 data?.forEach { cardInfo ->
-                    val card: View = layoutInflater.inflate(R.layout.home_recently_seen, null)
-                    val glideUrl =
-                        GlideUrl(cardInfo?.episode?.thumb) { FastAniApi.currentHeaders }
-                    //  activity?.runOnUiThread {
-                    context?.let {
-                        GlideApp.with(it)
-                            .load(glideUrl)
-                            .into(card.imageView)
-                    }
-                    card.imageView.setOnLongClickListener {
-                        Toast.makeText(context, cardInfo?.title?.english + "\nSeason ${cardInfo?.seasonIndex!! + 1} Episode ${cardInfo.episodeIndex + 1}", Toast.LENGTH_SHORT).show()
-                        return@setOnLongClickListener true
-                    }
-                    card.imageView.setOnClickListener {
-                        if (cardInfo != null) {
-                            loadPlayer(cardInfo.episode.title, cardInfo.episode.file)
+                    if (cardInfo != null) {
+                        val card: View = layoutInflater.inflate(R.layout.home_recently_seen, null)
+                        val glideUrl =
+                            GlideUrl(cardInfo.episode.thumb) { FastAniApi.currentHeaders }
+                        //  activity?.runOnUiThread {
+                        context?.let {
+                            GlideApp.with(it)
+                                .load(glideUrl)
+                                .into(card.imageView)
                         }
-                    }
 
-                    if (cardInfo?.dur!! > 0 && cardInfo.pos > 0) {
-                        var progress: Int = (cardInfo.pos * 100L / cardInfo.dur).toInt()
-                        if (progress < 5) {
-                            progress = 5
-                        } else if (progress > 95) {
-                            progress = 100
+                        card.imageView.setOnLongClickListener {
+                            Toast.makeText(context,
+                                cardInfo.title.english +
+                                        if (!cardInfo.isMovie) "\nSeason ${cardInfo.seasonIndex + 1} Episode ${cardInfo.episodeIndex + 1}" else "",
+                                Toast.LENGTH_SHORT).show()
+                            return@setOnLongClickListener true
                         }
-                        card.video_progress.progress = progress
-                    } else {
-                        card.video_progress.alpha = 0f
+                        card.imageView.setOnClickListener {
+                            val epId = cardInfo.id
+                            when {
+                                FastAniApi.lastCards.containsKey(epId) -> {
+                                    loadPlayer(cardInfo.episodeIndex,cardInfo.seasonIndex, FastAniApi.lastCards[epId]!!)
+                                }
+                                else -> {
+                                    loadPlayer(cardInfo.episode.title, cardInfo.episode.file)
+                                }
+                            }
+                        }
+
+                        if (cardInfo.dur > 0 && cardInfo.pos > 0) {
+                            var progress: Int = (cardInfo.pos * 100L / cardInfo.dur).toInt()
+                            if (progress < 5) {
+                                progress = 5
+                            } else if (progress > 95) {
+                                progress = 100
+                            }
+                            card.video_progress.progress = progress
+                        } else {
+                            card.video_progress.alpha = 0f
+                        }
+                        scrollView.addView(card)
                     }
-                    scrollView.addView(card)
                 }
             }
             displayCardData(data?.trendingData, trendingScrollView)
@@ -225,6 +224,9 @@ class HomeFragment : Fragment() {
         FastAniApi.onHomeError += ::onHomeErrorCatch
         if (FastAniApi.hasThrownError != -1) {
             onHomeErrorCatch(FastAniApi.hasThrownError == 1)
+        }
+        thread {
+            FastAniApi.getFullLastWatch()
         }
         // CAUSES CRASH ON 6.0.0
         /*main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->

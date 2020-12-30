@@ -5,6 +5,7 @@
     <color name="colorPrimaryMegaDark">#210303</color>
     <color name="colorAccent">#ed2c2b</color>
     <color name="darkBar">#121212</color>
+    <color name="darkBarTransparent">#C0121212</color>
     <color name="background">#050505</color>
     <color name="textColor">#e6e6e6</color>
     <color name="white">#FFF</color>

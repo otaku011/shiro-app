@@ -18,7 +18,7 @@ class FastAniApi {
         val recentlyAddedData: List<Card>,
         val trendingData: List<Card>,
         var favorites: List<BookmarkedTitle?>?,
-        var recentlySeen: List<LastEpisodeInfo?>?
+        var recentlySeen: List<LastEpisodeInfo?>?,
     )
 
     data class Token(val headers: Map<String, String>, val cookies: CookieJar)
@@ -117,11 +117,19 @@ class FastAniApi {
             return response?.text?.let { mapper.readValue(it) }
         }
 
-        fun getCardById(id: String): EpisodeResponse? {
+        val lastCards = hashMapOf<String, Card>()
+        fun getCardById(id: String, canBeCached: Boolean = true): EpisodeResponse? {
+            if (canBeCached && lastCards.containsKey(id)) {
+                return EpisodeResponse(lastCards[id]!!, 0)
+            }
             val url =
                 "https://fastani.net/api/data/anime/$id" //?season=$season&episode=$episode" // SPECIFYING EPISODE AND SEASON WILL ONLY GIVE 1 EPISODE
             val response = currentToken?.headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
-            return response?.text?.let { mapper.readValue(it) }
+            val resp: EpisodeResponse? = response?.text?.let { mapper.readValue(it) }
+            if (resp != null) {
+                lastCards[id] = resp.anime
+            }
+            return resp
         }
 
         var cachedHome: HomePageResponse? = null
@@ -137,20 +145,27 @@ class FastAniApi {
             }
         }
 
-        val fullBookmarks = hashMapOf<String, Card>()
+        fun getFullLastWatch() {
+            val keys = DataStore.getKeys(VIEW_LST_KEY)
+
+           keys.pmap {
+               DataStore.getKey<LastEpisodeInfo>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+           }
+        }
 
         private fun getFullFav() {
             val keys = DataStore.getKeys(BOOKMARK_KEY)
 
-            val books = keys.pmap {
+            keys.pmap {
                 DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
             }
+            /*
             fullBookmarks.clear()
             for (b in books) {
                 if (b != null) {
                     fullBookmarks[b.anilistId] = b
                 }
-            }
+            }*/
         }
 
         fun requestHome(canBeCached: Boolean = true, forceUpdateFav: Boolean = false): HomePageResponse? {

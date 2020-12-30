@@ -69,6 +69,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     coverHeight
                 )
             }
+            itemView.imageText.text = card.title.english
             cardView.setOnLongClickListener {
                 Toast.makeText(context, card.title.english, Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
