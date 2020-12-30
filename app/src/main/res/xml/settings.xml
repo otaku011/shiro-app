@@ -26,6 +26,13 @@
                 app:defaultValue="true"
         >
         </SwitchPreference>
+                <SwitchPreference
+                android:icon="@drawable/ic_baseline_fullscreen_24"
+                app:key="statusbar_hidden"
+                android:title="Hide statusbar"
+                app:defaultValue="true"
+        >
+        </SwitchPreference>
     </PreferenceCategory>
     <PreferenceCategory
             android:key="theme"
@@ -90,7 +97,7 @@
         <Preference
                 android:icon="@drawable/ic_baseline_payment_24"
                 android:title="Donate"
-                app:summary="Needed to keep the fastani servers working"
+                app:summary="In order to help us fund the servers and keep them running"
         >
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://www.patreon.com/fastani"/>
@@ -99,7 +106,7 @@
         <Preference
                 android:title="Discord"
                 android:icon="@drawable/ic_baseline_discord_24"
-                app:summary="Join the fastani community, talk with developers and give app suggestions"
+                app:summary="Join FastAni's Community to check updates on the app and site, talk with developers and give suggestions"
         >
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://discord.gg/Vaq4ARdybn"/>

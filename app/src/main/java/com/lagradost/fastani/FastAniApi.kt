@@ -50,7 +50,7 @@ class FastAniApi {
     data class SearchResponse(val animeData: AnimeData)
     data class EpisodeResponse(val anime: Card, val nextEpisode: Int)
 
-    data class Update(val shouldUpdate: Boolean, val updateURL: String, val updateVersion: String)
+    data class Update(val shouldUpdate: Boolean, val updateURL: String?, val updateVersion: String?)
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -90,12 +90,13 @@ class FastAniApi {
             val found =
                 versionRegex.findAll(response.text).sortedWith(compareBy {
                     it.groupValues[2]
-                }).toList().last()
+                }).toList().lastOrNull()
             val currentVersion = activity?.packageManager?.getPackageInfo(activity?.packageName, 0)
             //println(found.groupValues)
             //println(currentVersion?.versionName)
-            val shouldUpdate = currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0
-            return Update(shouldUpdate, url + found.groupValues[1], found.groupValues[2])
+
+            val shouldUpdate = if (found != null) currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0 else false
+            return Update(shouldUpdate, url + found?.groupValues?.get(1), found?.groupValues?.get(2))
         }
 
         //search via http get request, NOT INSTANT

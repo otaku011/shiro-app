@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.*
@@ -13,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.lagradost.fastani.*
 import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
+import com.lagradost.fastani.MainActivity.Companion.statusHeight
 import com.lagradost.fastani.R
 import com.lagradost.fastani.VIEW_LST_KEY
 import kotlin.concurrent.thread
@@ -95,7 +97,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             thread {
                 val update = FastAniApi.getAppUpdate()
                 activity?.runOnUiThread {
-                    if (update.shouldUpdate) {
+                    if (update.shouldUpdate && update.updateVersion != null && update.updateURL != null) {
                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))
                         Toast.makeText(context, "New version (${update.updateVersion}) found", Toast.LENGTH_LONG).show()
                     } else {
@@ -105,7 +107,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
             return@setOnPreferenceClickListener true
         }
-
+        val statusBarHidden = findPreference("statusbar_hidden") as SwitchPreference?
+        statusBarHidden?.setOnPreferenceChangeListener { _, newValue ->
+            MainActivity.changeStatusBarState(newValue == true)
+            return@setOnPreferenceChangeListener true
+        }
 
         // EASTER EGG THEME
         val versionButton = findPreference("version") as Preference?

@@ -1,9 +1,7 @@
 <resources>
-    <string name="version_code">1.0.3 Public Beta</string>
+    <string name="version_code">1.0.4 Public Beta</string>
     <string name="changelog">\n
-        - Added changelog\n
-        - Fixed next episode not resetting time\n
-        - Added update button\n
+        - Added statusbar toggle\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>
