@@ -41,6 +41,7 @@ class HomeFragment : Fragment() {
             trendingScrollView.removeAllViews()
             recentScrollView.removeAllViews()
             favouriteScrollView.removeAllViews()
+            recentlySeenScrollView.removeAllViews()
 
             val cardInfo = data?.homeSlidesData?.get(0)
             val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
@@ -152,7 +153,7 @@ class HomeFragment : Fragment() {
                                     loadPlayer(cardInfo.episodeIndex,cardInfo.seasonIndex, FastAniApi.lastCards[epId]!!)
                                 }
                                 else -> {
-                                    loadPlayer(cardInfo.episode.title, cardInfo.episode.file)
+                                    loadPlayer(cardInfo.episode.title, cardInfo.episode.file, cardInfo.pos)
                                 }
                             }
                         }
@@ -191,7 +192,6 @@ class HomeFragment : Fragment() {
                 recentlySeenRoot.visibility = GONE
             }
 
-
             main_load.alpha = 0f
             main_scroll.alpha = 1f
             main_reload_data_btt.alpha = 0f
@@ -224,9 +224,6 @@ class HomeFragment : Fragment() {
         FastAniApi.onHomeError += ::onHomeErrorCatch
         if (FastAniApi.hasThrownError != -1) {
             onHomeErrorCatch(FastAniApi.hasThrownError == 1)
-        }
-        thread {
-            FastAniApi.getFullLastWatch()
         }
         // CAUSES CRASH ON 6.0.0
         /*main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->

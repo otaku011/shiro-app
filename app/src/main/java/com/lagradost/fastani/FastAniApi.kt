@@ -135,30 +135,32 @@ class FastAniApi {
         var cachedHome: HomePageResponse? = null
 
         private fun getFav(): List<BookmarkedTitle?> {
-            thread {
-                getFullFav()
-            }
             val keys = DataStore.getKeys(BOOKMARK_KEY)
+            thread {
+                keys.pmap {
+                    DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+                }
+            }
 
             return keys.map {
                 DataStore.getKey<BookmarkedTitle>(it)
             }
         }
 
-        fun getFullLastWatch() {
+        fun getLastWatch(): List<LastEpisodeInfo?> {
             val keys = DataStore.getKeys(VIEW_LST_KEY)
-
-           keys.pmap {
-               DataStore.getKey<LastEpisodeInfo>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
-           }
+            thread {
+                keys.pmap {
+                    DataStore.getKey<LastEpisodeInfo>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+                }
+            }
+            return (DataStore.getKeys(VIEW_LST_KEY).map {
+                DataStore.getKey<LastEpisodeInfo>(it)
+            }).sortedBy { if(it == null) 0 else -(it.seenAt) }
         }
 
         private fun getFullFav() {
-            val keys = DataStore.getKeys(BOOKMARK_KEY)
 
-            keys.pmap {
-                DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
-            }
             /*
             fullBookmarks.clear()
             for (b in books) {
@@ -168,32 +170,30 @@ class FastAniApi {
             }*/
         }
 
-        fun requestHome(canBeCached: Boolean = true, forceUpdateFav: Boolean = false): HomePageResponse? {
+        fun requestHome(canBeCached: Boolean = true): HomePageResponse? {
             if (currentToken == null) return null
-
-            if (cachedHome != null && canBeCached) {
-                onHomeFetched.invoke(cachedHome)
-                if (forceUpdateFav) {
-                    cachedHome?.favorites = getFav()
-                }
-                return cachedHome
-            }
-            return getHome()
+            return getHome(canBeCached)
         }
 
-        fun getHome(): HomePageResponse? {
-            val url = "https://fastani.net/api/data"
-            val response = currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
-            val res: HomePageResponse? = response?.text?.let { mapper.readValue(it) }
+        fun getHome(canBeCached: Boolean): HomePageResponse? {
+            var res: HomePageResponse? = null
+            if (canBeCached && cachedHome != null) {
+                res = cachedHome
+            } else {
+                val url = "https://fastani.net/api/data"
+                val response =
+                    currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
+                res = response?.text?.let { mapper.readValue(it) }
+            }
+
             if (res == null) {
                 hasThrownError = 0
                 onHomeError.invoke(false)
                 return null
             }
             res.favorites = getFav()
-            res.recentlySeen = DataStore.getKeys(VIEW_LST_KEY).map {
-                DataStore.getKey<LastEpisodeInfo>(it)
-            }
+            res.recentlySeen = getLastWatch()
+
             cachedHome = res
             onHomeFetched.invoke(res)
             return res

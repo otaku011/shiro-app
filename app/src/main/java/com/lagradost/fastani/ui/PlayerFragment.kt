@@ -63,6 +63,7 @@ data class PlayerData(
     var episodeIndex: Int?,
     var seasonIndex: Int?,
     val card: FastAniApi.Card?,
+    val startAt : Long?,
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -150,7 +151,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
 
         super.onDestroy()
-
         //MainActivity.showSystemUI()
     }
 
@@ -346,7 +346,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         }
     }
 
-    public fun Context.hideKeyboard(view: View) {
+    fun Context.hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
     }
@@ -489,6 +489,9 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             } else {
                 0L
             }
+        }
+        else if(data.startAt != null) {
+            playbackPosition = data.startAt!!
         }
         video_title.text = getCurrentTitle()
         if (canPlayNextEpisode()) {

@@ -60,6 +60,7 @@ data class EpisodePosDurInfo(
 data class LastEpisodeInfo(
     val pos: Long,
     val dur: Long,
+    val seenAt: Long,
     val id: String,
     val aniListId: String,
     val episodeIndex: Int,
@@ -200,6 +201,7 @@ class MainActivity : AppCompatActivity() {
                 LastEpisodeInfo(
                     _pos,
                     _dur,
+                    System.currentTimeMillis(),
                     card.id,
                     card.anilistId,
                     episodeIndex,
@@ -211,6 +213,10 @@ class MainActivity : AppCompatActivity() {
                     card.bannerImage
                 )
             )
+
+            thread {
+                FastAniApi.requestHome(true)
+            }
         }
 
         fun popCurrentPage() {
@@ -259,13 +265,14 @@ class MainActivity : AppCompatActivity() {
                     null, null,
                     episodeIndex,
                     seasonIndex,
-                    card
+                    card,
+                    null
                 )
             )
         }
 
-        fun loadPlayer(title: String?, url: String) {
-            loadPlayer(PlayerData(title, url, null, null, null))
+        fun loadPlayer(title: String?, url: String, startAt:Long?) {
+            loadPlayer(PlayerData(title, url, null, null, null,startAt))
         }
 
         private fun loadPlayer(data: PlayerData) {

@@ -101,7 +101,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             DataStore.removeKey(BOOKMARK_KEY, data.anilistId)
         }
         thread {
-            requestHome(false)
+            requestHome(true)
         }
     }
 
@@ -251,7 +251,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if(!FastAniApi.lastCards.containsKey(data.id)) {
+        if (!FastAniApi.lastCards.containsKey(data.id)) {
             FastAniApi.lastCards[data.id] = data
         }
 
@@ -261,7 +261,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
 
         if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
         castContext.addCastStateListener(CastStateListener { state ->
-            if(media_route_button != null) {
+            if (media_route_button != null) {
                 if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
                     if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
                 }
@@ -306,7 +306,9 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             }
 
             title_background.setOnClickListener() {
-                MainActivity.loadPlayer(data.title.english + " - Trailer", "https://fastani.net/" + data.trailer!!)
+                MainActivity.loadPlayer(data.title.english + " - Trailer",
+                    "https://fastani.net/" + data.trailer!!,
+                    null)
             }
         } else {
             title_trailer_btt.alpha = 0f
