@@ -18,6 +18,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
+import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
@@ -26,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.getSystemService
+import androidx.fragment.app.DialogFragment.STYLE_NO_FRAME
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -114,6 +116,19 @@ class MainActivity : AppCompatActivity() {
                     AudioManager.STREAM_MUSIC,
                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
                 )
+            }
+        }
+
+        fun changeStatusBarState(hide: Boolean) {
+            if (hide) {
+                activity!!.window.setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+                )
+                statusHeight = 0
+            } else {
+                activity!!.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                statusHeight = activity!!.getStatusBarHeight()
             }
         }
 
@@ -406,11 +421,16 @@ class MainActivity : AppCompatActivity() {
     private var mediaSession: MediaSessionCompat? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //window.statusBarColor = R.color.transparent
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-        statusHeight = 0//getStatusBarHeight()
         activity = this
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        if (settingsManager.getBoolean("cool_mode", false)) {
+            theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
+        }
+        changeStatusBarState(settingsManager.getBoolean("statusbar_hidden", true))
+        //window.statusBarColor = R.color.transparent
 
         //https://stackoverflow.com/questions/52594181/how-to-know-if-user-has-disabled-picture-in-picture-feature-permission
         //https://developer.android.com/guide/topics/ui/picture-in-picture
@@ -419,11 +439,6 @@ class MainActivity : AppCompatActivity() {
                     packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE) && // HAS FEATURE, MIGHT BE BLOCKED DUE TO POWER DRAIN
                     hasPIPPermission() // CHECK IF FEATURE IS ENABLED IN SETTINGS
 
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
-
-        if (settingsManager.getBoolean("cool_mode", false)) {
-            theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
-        }
 
         // CRASHES ON 7.0.0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
