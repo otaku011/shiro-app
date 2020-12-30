@@ -262,7 +262,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        fun loadPlayer(title: String, url: String) {
+        fun loadPlayer(title: String?, url: String) {
             loadPlayer(PlayerData(title, url, null, null, null))
         }
 

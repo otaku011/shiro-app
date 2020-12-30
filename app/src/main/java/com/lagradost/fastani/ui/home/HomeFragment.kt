@@ -21,11 +21,14 @@ import com.lagradost.fastani.*
 import com.lagradost.fastani.DataStore.getSharedPrefs
 import com.lagradost.fastani.FastAniApi.Companion.getCardById
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
+import com.lagradost.fastani.MainActivity.Companion.loadPlayer
 import com.lagradost.fastani.ui.GlideApp
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
+import kotlinx.android.synthetic.main.home_card.view.imageView
+import kotlinx.android.synthetic.main.home_recently_seen.view.*
 import kotlin.concurrent.thread
 
 const val MAXIMUM_FADE = 0.3f
@@ -134,6 +137,42 @@ class HomeFragment : Fragment() {
                     scrollView.addView(card)
                 }
             }
+
+            fun displayCardData(data: List<LastEpisodeInfo?>?, scrollView: LinearLayout) {
+                data?.forEach { cardInfo ->
+                    val card: View = layoutInflater.inflate(R.layout.home_recently_seen, null)
+                    val glideUrl =
+                        GlideUrl(cardInfo?.episode?.thumb) { FastAniApi.currentHeaders }
+                    //  activity?.runOnUiThread {
+                    context?.let {
+                        GlideApp.with(it)
+                            .load(glideUrl)
+                            .into(card.imageView)
+                    }
+                    card.imageView.setOnLongClickListener {
+                        Toast.makeText(context, cardInfo?.title?.english + "\nSeason ${cardInfo?.seasonIndex!! + 1} Episode ${cardInfo.episodeIndex + 1}", Toast.LENGTH_SHORT).show()
+                        return@setOnLongClickListener true
+                    }
+                    card.imageView.setOnClickListener {
+                        if (cardInfo != null) {
+                            loadPlayer(cardInfo.episode.title, cardInfo.episode.file)
+                        }
+                    }
+
+                    if (cardInfo?.dur!! > 0 && cardInfo.pos > 0) {
+                        var progress: Int = (cardInfo.pos * 100L / cardInfo.dur).toInt()
+                        if (progress < 5) {
+                            progress = 5
+                        } else if (progress > 95) {
+                            progress = 100
+                        }
+                        card.video_progress.progress = progress
+                    } else {
+                        card.video_progress.alpha = 0f
+                    }
+                    scrollView.addView(card)
+                }
+            }
             displayCardData(data?.trendingData, trendingScrollView)
             displayCardData(data?.recentlyAddedData, recentScrollView)
 
@@ -145,6 +184,15 @@ class HomeFragment : Fragment() {
             } else {
                 favouriteRoot.visibility = GONE
             }
+
+            if (data?.recentlySeen?.isNotEmpty() == true) {
+                recentlySeenRoot.visibility = VISIBLE
+                displayCardData(data.recentlySeen, recentlySeenScrollView)
+            } else {
+                recentlySeenRoot.visibility = GONE
+            }
+
+
             main_load.alpha = 0f
             main_scroll.alpha = 1f
             main_reload_data_btt.alpha = 0f
@@ -153,7 +201,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun onHomeErrorCatch(fullRe: Boolean) {
+    private fun onHomeErrorCatch(fullRe: Boolean) {
         main_reload_data_btt.alpha = 1f
         main_load.alpha = 0f
         main_reload_data_btt.isClickable = true

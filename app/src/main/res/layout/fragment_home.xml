@@ -17,17 +17,16 @@
     >
     </ProgressBar>
 
-        <Button android:text="@string/error_connecting_reload"
-                android:alpha="0"
-                android:backgroundTint="@color/textColor"
-                android:textColor="@color/background"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:id="@+id/main_reload_data_btt"
-                android:layout_width="wrap_content" android:layout_height="50dp"
-        >
-        </Button>
-
+    <Button android:text="@string/error_connecting_reload"
+            android:alpha="0"
+            android:backgroundTint="@color/textColor"
+            android:textColor="@color/background"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:id="@+id/main_reload_data_btt"
+            android:layout_width="wrap_content" android:layout_height="50dp"
+    >
+    </Button>
 
 
     <ScrollView android:layout_width="match_parent"
@@ -131,6 +130,38 @@
                         android:id="@+id/main_watch_button"
                         android:text="@string/main_watch_button_text">
                 </Button>
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:id="@+id/recentlySeenRoot"
+                        android:visibility="visible"
+                >
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Continue watching"
+                            android:gravity="center_horizontal"
+                            android:textStyle="bold"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            android:padding="10dp"
+                    >
+                    </TextView>
+                    <HorizontalScrollView
+                            android:layout_width="wrap_content"
+                            android:layout_height="120dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginBottom="20dp"
+                    >
+                        <LinearLayout
+                                android:id="@+id/recentlySeenScrollView"
+                                android:orientation="horizontal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                        </LinearLayout>
+                    </HorizontalScrollView>
+                </LinearLayout>
                 <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"

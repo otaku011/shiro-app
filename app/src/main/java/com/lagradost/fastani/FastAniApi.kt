@@ -18,6 +18,7 @@ class FastAniApi {
         val recentlyAddedData: List<Card>,
         val trendingData: List<Card>,
         var favorites: List<BookmarkedTitle?>?,
+        var recentlySeen: List<LastEpisodeInfo?>?
     )
 
     data class Token(val headers: Map<String, String>, val cookies: CookieJar)
@@ -95,7 +96,8 @@ class FastAniApi {
             //println(found.groupValues)
             //println(currentVersion?.versionName)
 
-            val shouldUpdate = if (found != null) currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0 else false
+            val shouldUpdate =
+                if (found != null) currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0 else false
             return Update(shouldUpdate, url + found?.groupValues?.get(1), found?.groupValues?.get(2))
         }
 
@@ -104,8 +106,10 @@ class FastAniApi {
         fun search(query: String, page: Int = 1): SearchResponse? {
             // Tags and years can be added
             val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${
-                URLEncoder.encode(query,
-                    "UTF-8")
+                URLEncoder.encode(
+                    query,
+                    "UTF-8"
+                )
             }&tags=&years="
             // Security headers
             val headers = currentToken?.headers
@@ -172,7 +176,9 @@ class FastAniApi {
                 return null
             }
             res.favorites = getFav()
-
+            res.recentlySeen = DataStore.getKeys(VIEW_LST_KEY).map {
+                DataStore.getKey<LastEpisodeInfo>(it)
+            }
             cachedHome = res
             onHomeFetched.invoke(res)
             return res
