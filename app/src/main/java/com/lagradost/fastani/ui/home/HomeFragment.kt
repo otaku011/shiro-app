@@ -136,6 +136,7 @@ class HomeFragment : Fragment() {
                 data?.forEach { cardInfo ->
                     if (cardInfo != null) {
                         val card: View = layoutInflater.inflate(R.layout.home_recently_seen, null)
+                        val epId = cardInfo.id
 
                         if (cardInfo.episode.thumb != null) {
                             val glideUrl =
@@ -147,9 +148,18 @@ class HomeFragment : Fragment() {
                                     .into(card.imageView)
                             }
                         }
-                        card.cardDescription.text = "S${cardInfo.seasonIndex + 1}:E${cardInfo.episodeIndex + 1} ${cardInfo.title.english}"
+                        card.cardDescription.text =
+                            "S${cardInfo.seasonIndex + 1}:E${cardInfo.episodeIndex + 1} ${cardInfo.title.english}"
                         card.infoButton.setOnClickListener {
-                            MainActivity.loadPage(cardInfo.card)
+                            if (FastAniApi.lastCards.containsKey(epId)) {
+                                MainActivity.loadPage(FastAniApi.lastCards[epId]!!)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Loading...",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                         card.imageView.setOnLongClickListener {
                             Toast.makeText(
@@ -162,7 +172,6 @@ class HomeFragment : Fragment() {
                         }
 
                         card.imageView.setOnClickListener {
-                            val epId = cardInfo.id
                             when {
                                 FastAniApi.lastCards.containsKey(epId) -> {
                                     loadPlayer(
@@ -175,6 +184,11 @@ class HomeFragment : Fragment() {
                                     loadPlayer(cardInfo.episode.title, cardInfo.episode.file, cardInfo.pos)
                                 }
                             }
+                        }
+
+                        card.removeButton.setOnClickListener {
+                            DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
+                            FastAniApi.requestHome(true)
                         }
 
                         if (cardInfo.dur > 0 && cardInfo.pos > 0) {
