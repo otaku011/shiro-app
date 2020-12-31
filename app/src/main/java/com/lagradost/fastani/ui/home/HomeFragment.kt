@@ -147,7 +147,7 @@ class HomeFragment : Fragment() {
                                     .into(card.imageView)
                             }
                         }
-
+                        card.cardDescription.text = "S${cardInfo.seasonIndex + 1}:E${cardInfo.episodeIndex + 1} ${cardInfo.title.english}"
                         card.imageView.setOnLongClickListener {
                             Toast.makeText(
                                 context,
