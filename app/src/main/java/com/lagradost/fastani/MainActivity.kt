@@ -70,6 +70,7 @@ data class LastEpisodeInfo(
     val coverImage: FastAniApi.CoverImage,
     val title: FastAniApi.Title,
     val bannerImage: String,
+    val card: FastAniApi.Card
 )
 
 data class NextEpisode(
@@ -211,7 +212,8 @@ class MainActivity : AppCompatActivity() {
                         card.cdnData.seasons[seasonIndex].episodes[episodeIndex],
                         card.coverImage,
                         card.title,
-                        card.bannerImage
+                        card.bannerImage,
+                        card
                     )
                 )
 

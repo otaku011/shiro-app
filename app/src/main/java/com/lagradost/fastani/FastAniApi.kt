@@ -85,20 +85,26 @@ class FastAniApi {
         }
 
         fun getAppUpdate(): Update {
-            val url = "https://cdn1.fastani.net/apk/"
-            val response = khttp.get(url)
-            val versionRegex = Regex("""href="(.*?((\d)\.(\d)\.(\d)).*\.apk)"""")
-            val found =
-                versionRegex.findAll(response.text).sortedWith(compareBy {
-                    it.groupValues[2]
-                }).toList().lastOrNull()
-            val currentVersion = activity?.packageManager?.getPackageInfo(activity?.packageName, 0)
-            //println(found.groupValues)
-            //println(currentVersion?.versionName)
+            try {
+                val url = "https://cdn1.fastani.net/apk/"
+                val response = khttp.get(url)
+                val versionRegex = Regex("""href="(.*?((\d)\.(\d)\.(\d)).*\.apk)"""")
+                val found =
+                    versionRegex.findAll(response.text).sortedWith(compareBy {
+                        it.groupValues[2]
+                    }).toList().lastOrNull()
+                val currentVersion = activity?.packageManager?.getPackageInfo(activity?.packageName, 0)
+                //println(found.groupValues)
+                //println(currentVersion?.versionName)
 
-            val shouldUpdate =
-                if (found != null) currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0 else false
-            return Update(shouldUpdate, url + found?.groupValues?.get(1), found?.groupValues?.get(2))
+                val shouldUpdate =
+                    if (found != null) currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0 else false
+                return Update(shouldUpdate, url + found?.groupValues?.get(1), found?.groupValues?.get(2))
+
+            } catch (e: Exception) {
+                println(e)
+                return Update(false, "", "")
+            }
         }
 
         //search via http get request, NOT INSTANT
@@ -156,7 +162,7 @@ class FastAniApi {
             }
             return (DataStore.getKeys(VIEW_LST_KEY).map {
                 DataStore.getKey<LastEpisodeInfo>(it)
-            }).sortedBy { if(it == null) 0 else -(it.seenAt) }
+            }).sortedBy { if (it == null) 0 else -(it.seenAt) }
         }
 
         private fun getFullFav() {

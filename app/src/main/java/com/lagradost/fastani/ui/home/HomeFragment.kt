@@ -148,6 +148,9 @@ class HomeFragment : Fragment() {
                             }
                         }
                         card.cardDescription.text = "S${cardInfo.seasonIndex + 1}:E${cardInfo.episodeIndex + 1} ${cardInfo.title.english}"
+                        card.infoButton.setOnClickListener {
+                            MainActivity.loadPage(cardInfo.card)
+                        }
                         card.imageView.setOnLongClickListener {
                             Toast.makeText(
                                 context,
