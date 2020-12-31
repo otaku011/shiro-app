@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat.getColor
+import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
@@ -273,7 +274,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         ToggleHeartVisual(isBookmarked)
 
         title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
-        media_route_button.setPadding(0, MainActivity.statusHeight, 0, 0)
+        media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
+        //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
         }
