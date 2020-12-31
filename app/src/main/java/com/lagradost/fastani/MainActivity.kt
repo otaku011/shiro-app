@@ -195,27 +195,29 @@ class MainActivity : AppCompatActivity() {
 
             if (!isFound) return
 
-            DataStore.setKey(
-                VIEW_LST_KEY,
-                data.card.anilistId,
-                LastEpisodeInfo(
-                    _pos,
-                    _dur,
-                    System.currentTimeMillis(),
-                    card.id,
-                    card.anilistId,
-                    episodeIndex,
-                    seasonIndex,
-                    data.card.episodes == 1 && data.card.status == "FINISHED",
-                    card.cdnData.seasons[seasonIndex].episodes[episodeIndex],
-                    card.coverImage,
-                    card.title,
-                    card.bannerImage
+            if (settingsManager.getBoolean("save_history", true)) {
+                DataStore.setKey(
+                    VIEW_LST_KEY,
+                    data.card.anilistId,
+                    LastEpisodeInfo(
+                        _pos,
+                        _dur,
+                        System.currentTimeMillis(),
+                        card.id,
+                        card.anilistId,
+                        episodeIndex,
+                        seasonIndex,
+                        data.card.episodes == 1 && data.card.status == "FINISHED",
+                        card.cdnData.seasons[seasonIndex].episodes[episodeIndex],
+                        card.coverImage,
+                        card.title,
+                        card.bannerImage
+                    )
                 )
-            )
 
-            thread {
-                FastAniApi.requestHome(true)
+                thread {
+                    FastAniApi.requestHome(true)
+                }
             }
         }
 
@@ -271,8 +273,8 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        fun loadPlayer(title: String?, url: String, startAt:Long?) {
-            loadPlayer(PlayerData(title, url, null, null, null,startAt))
+        fun loadPlayer(title: String?, url: String, startAt: Long?) {
+            loadPlayer(PlayerData(title, url, null, null, null, startAt))
         }
 
         private fun loadPlayer(data: PlayerData) {

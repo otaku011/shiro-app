@@ -83,6 +83,9 @@ class HomeFragment : Fragment() {
                             .load(glideUrl)
                             .into(card.imageView)
                     }
+
+                    card.imageText.text = cardInfo?.title?.english
+
                     card.imageView.setOnLongClickListener {
                         Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
@@ -113,6 +116,9 @@ class HomeFragment : Fragment() {
                             .load(glideUrl)
                             .into(card.imageView)
                     }
+
+                    card.imageText.text = cardInfo?.title?.english
+
                     card.imageView.setOnLongClickListener {
                         Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
@@ -130,27 +136,37 @@ class HomeFragment : Fragment() {
                 data?.forEach { cardInfo ->
                     if (cardInfo != null) {
                         val card: View = layoutInflater.inflate(R.layout.home_recently_seen, null)
-                        val glideUrl =
-                            GlideUrl(cardInfo.episode.thumb) { FastAniApi.currentHeaders }
-                        //  activity?.runOnUiThread {
-                        context?.let {
-                            GlideApp.with(it)
-                                .load(glideUrl)
-                                .into(card.imageView)
+
+                        if (cardInfo.episode.thumb != null) {
+                            val glideUrl =
+                                GlideUrl(cardInfo.episode.thumb) { FastAniApi.currentHeaders }
+                            //  activity?.runOnUiThread {
+                            context?.let {
+                                GlideApp.with(it)
+                                    .load(glideUrl)
+                                    .into(card.imageView)
+                            }
                         }
 
                         card.imageView.setOnLongClickListener {
-                            Toast.makeText(context,
+                            Toast.makeText(
+                                context,
                                 cardInfo.title.english +
                                         if (!cardInfo.isMovie) "\nSeason ${cardInfo.seasonIndex + 1} Episode ${cardInfo.episodeIndex + 1}" else "",
-                                Toast.LENGTH_SHORT).show()
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return@setOnLongClickListener true
                         }
+
                         card.imageView.setOnClickListener {
                             val epId = cardInfo.id
                             when {
                                 FastAniApi.lastCards.containsKey(epId) -> {
-                                    loadPlayer(cardInfo.episodeIndex,cardInfo.seasonIndex, FastAniApi.lastCards[epId]!!)
+                                    loadPlayer(
+                                        cardInfo.episodeIndex,
+                                        cardInfo.seasonIndex,
+                                        FastAniApi.lastCards[epId]!!
+                                    )
                                 }
                                 else -> {
                                     loadPlayer(cardInfo.episode.title, cardInfo.episode.file, cardInfo.pos)

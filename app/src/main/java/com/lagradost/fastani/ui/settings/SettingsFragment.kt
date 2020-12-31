@@ -46,6 +46,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
+                            thread {
+                                FastAniApi.requestHome(true)
+                            }
                             clearHistory.summary = "0 items"
                         })
                     setNegativeButton("Cancel",
