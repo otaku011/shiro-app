@@ -512,6 +512,7 @@ class MainActivity : AppCompatActivity() {
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
 
         DataStore.init(this)
+        DownloadManager.init(this)
         thread {
             FastAniApi.init()
         }

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.lagradost.fastani">
+          xmlns:tools="http://schemas.android.com/tools" package="com.lagradost.fastani">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
             android:allowBackup="true"
@@ -15,6 +17,7 @@
         <meta-data
                 android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
                 android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider"/>
+
         <activity
                 android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
                 android:supportsPictureInPicture="true"
@@ -26,5 +29,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <service
+                android:name=".DownloadService"
+                android:enabled="true"
+                android:exported="false">
+        </service>
     </application>
 </manifest>
