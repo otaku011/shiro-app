@@ -63,7 +63,7 @@ data class PlayerData(
     var episodeIndex: Int?,
     var seasonIndex: Int?,
     val card: FastAniApi.Card?,
-    val startAt : Long?,
+    val startAt: Long?,
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -169,6 +169,15 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         video_go_back.isClickable = isClick
         exo_progress.isClickable = isClick
         next_episode_btt.isClickable = isClick
+
+        val fadeTo = if (!isLocked) 1f else 0f
+        val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
+
+        fadeAnimation.duration = 100
+        fadeAnimation.fillAfter = true
+
+        shadow_overlay.startAnimation(fadeAnimation)
+
     }
 
     private var receiver: BroadcastReceiver? = null
@@ -247,6 +256,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         isShowing = !isShowing
 
         click_overlay.visibility = if (isShowing) GONE else VISIBLE
+
         val fadeTo = if (isShowing) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
 
@@ -255,6 +265,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
         if (!isLocked) {
             video_holder.startAnimation(fadeAnimation)
+            shadow_overlay.startAnimation(fadeAnimation)
         }
         video_lock_holder.startAnimation(fadeAnimation)
     }
@@ -489,8 +500,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             } else {
                 0L
             }
-        }
-        else if(data.startAt != null) {
+        } else if (data.startAt != null) {
             playbackPosition = data.startAt!!
         }
         video_title.text = getCurrentTitle()
