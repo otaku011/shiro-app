@@ -83,14 +83,15 @@
                     android:layout_gravity="end"
                     android:id="@+id/media_route_button_holder"
             >
-            <androidx.mediarouter.app.MediaRouteButton
-                    android:id="@+id/media_route_button"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:mediaRouteTypes="user"
-                    android:layout_gravity="end"
-                    android:visibility="gone"
-            /></FrameLayout>
+                <androidx.mediarouter.app.MediaRouteButton
+                        android:id="@+id/media_route_button"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:mediaRouteTypes="user"
+                        android:layout_gravity="end"
+                        android:visibility="gone"
+                />
+            </FrameLayout>
             <LinearLayout
                     android:orientation="vertical"
                     android:paddingTop="150dp"
@@ -199,6 +200,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
 
                 </TextView>
 
+
                 <!-- OPTION FOR VIEWSTATE ECT -->
                 <!--
                 <LinearLayout
@@ -297,7 +299,6 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                     >
                     </Spinner>
                 </androidx.cardview.widget.CardView>
-
                 <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -305,9 +306,24 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                         android:layout_marginBottom="25dp"
                         android:orientation="vertical"
                 >
-                </LinearLayout>
-            </LinearLayout>
 
+                </LinearLayout>
+
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
     </ScrollView>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <fragment
+                app:castControlButtons="@array/cast_mini_controller_control_buttons"
+                android:id="@+id/cast_mini_controller"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:visibility="gone"
+                class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment">
+
+        </fragment>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

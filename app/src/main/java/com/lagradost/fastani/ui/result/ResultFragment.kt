@@ -9,12 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat.getColor
-import androidx.core.view.marginLeft
-import androidx.core.view.marginRight
+import androidx.core.view.MenuItemCompat
 import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
+import androidx.mediarouter.app.MediaRouteControllerDialogFragment
+import androidx.mediarouter.media.MediaRouteSelector
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -49,11 +50,11 @@ import com.google.android.exoplayer2.Player
 
 import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.google.android.exoplayer2.ext.cast.SessionAvailabilityListener
-import com.google.android.exoplayer2.offline.Download
+import com.google.android.gms.cast.CastMediaControlIntent
+import com.google.android.gms.cast.framework.media.uicontroller.UIMediaController
 
 
 const val DESCRIPTION_LENGTH = 200
-const val has_download_perms = true
 
 class ResultFragment(data: FastAniApi.Card) : Fragment() {
     var data: FastAniApi.Card = data
@@ -99,9 +100,11 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         this.isBookmarked = _isBookmarked
         ToggleHeartVisual(_isBookmarked)
         if (_isBookmarked) {
-            DataStore.setKey<BookmarkedTitle>(BOOKMARK_KEY,
+            DataStore.setKey<BookmarkedTitle>(
+                BOOKMARK_KEY,
                 data.anilistId,
-                BookmarkedTitle(data.id, data.anilistId, data.description, data.title, data.coverImage))
+                BookmarkedTitle(data.id, data.anilistId, data.description, data.title, data.coverImage)
+            )
         } else {
             DataStore.removeKey(BOOKMARK_KEY, data.anilistId)
         }
@@ -112,6 +115,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
 
     fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+        castContext.castOptions
         val ep = data.cdnData.seasons[seasonIndex].episodes[episodeIndex]
         val poster = ep.thumb
         val url = ep.file
@@ -130,10 +134,15 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
 
         val mediaItems = arrayOf(MediaQueueItem.Builder(mediaInfo).build())
         val castPlayer = CastPlayer(castContext)
-        castPlayer.loadItems(mediaItems,
+
+        castPlayer.loadItems(
+            mediaItems,
             0,
             DataStore.getKey<Long>(VIEW_POS_KEY, key, 0L)!!,
-            Player.REPEAT_MODE_OFF)
+            Player.REPEAT_MODE_OFF
+        )
+
+
         /*castPlayer.setSessionAvailabilityListener(object : SessionAvailabilityListener {
             override fun onCastSessionAvailable() {
 
@@ -213,30 +222,19 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     return@setOnLongClickListener true
                 }
 
-                if (has_download_perms) {
-                    card.cardDownloadIcon.setOnClickListener {
-                        DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(data, index, epIndex))
-                    }
-                } else {
-                    card.cardDownloadIcon.visibility = View.GONE
-                    val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
-                    param.setMargins(card.cardTitle.marginLeft,
-                        card.cardTitle.marginTop,
-                        20.toPx,
-                        card.cardTitle.bottom)
-                    card.cardTitle.layoutParams = param
-                }
-
                 val title = fixEpTitle(fullEpisode.title, epNum, index + 1)
 
                 card.cardTitle.text = title
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
-                    card.cardBg.setCardBackgroundColor(requireContext().getColorFromAttr(
-                        R.attr.colorPrimaryDark))
+                    card.cardBg.setCardBackgroundColor(
+                        requireContext().getColorFromAttr(
+                            R.attr.colorPrimaryDark
+                        )
+                    )
                 }
 
                 val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
-                //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
+                println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
                     if (progress < 5) {
@@ -274,7 +272,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             FastAniApi.lastCards[data.id] = data
         }
 
-        val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button);
+        val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
+
         CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
 
@@ -326,9 +325,11 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             }
 
             title_background.setOnClickListener() {
-                MainActivity.loadPlayer(data.title.english + " - Trailer",
+                MainActivity.loadPlayer(
+                    data.title.english + " - Trailer",
                     "https://fastani.net/" + data.trailer!!,
-                    null)
+                    null
+                )
             }
         } else {
             title_trailer_btt.alpha = 0f

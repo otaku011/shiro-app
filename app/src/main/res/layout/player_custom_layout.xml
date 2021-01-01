@@ -8,7 +8,11 @@
              tools:targetApi="28"
              android:screenOrientation="landscape"
 >
-
+    <View android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/shadow_overlay"
+          android:background="@color/black_overlay"
+    />
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:gravity="end"
@@ -335,7 +339,8 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <View android:layout_width="match_parent" android:layout_height="match_parent"
+    <View android:layout_width="match_parent"
+          android:layout_height="match_parent"
           android:id="@+id/click_overlay"
           android:clickable="true"
           android:focusable="true"
