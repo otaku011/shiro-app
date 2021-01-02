@@ -64,6 +64,21 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     companion object {
         var isInResults: Boolean = false
         var isViewState: Boolean = true
+
+        fun fixEpTitle(_title: String?, epNum: Int, seNum: Int,isMovie : Boolean, formatBefore: Boolean = false): String {
+            var title = _title
+            if (title == null || title.replace(" ", "") == "") {
+                title = "Episode $epNum"
+            }
+            if (!isMovie) {
+                if (formatBefore) {
+                    title = "S$seNum:E$epNum $title" //•
+                } else {
+                    title = "$epNum. $title"
+                }
+            }
+            return title
+        }
     }
 
     private val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
@@ -123,7 +138,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         val key = MainActivity.getViewKey(data.anilistId, seasonIndex, episodeIndex)
 
         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
-        movieMetadata.putString(MediaMetadata.KEY_TITLE, fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, true))
+        movieMetadata.putString(MediaMetadata.KEY_TITLE, fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, isMovie,true))
         movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.title.english)
         if (poster != null) {
             movieMetadata.addImage(WebImage(Uri.parse(poster)))
@@ -151,21 +166,6 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
 
             override fun onCastSessionUnavailable() {}
         })*/
-    }
-
-    fun fixEpTitle(_title: String?, epNum: Int, seNum: Int, formatBefore: Boolean = false): String {
-        var title = _title
-        if (title == null || title.replace(" ", "") == "") {
-            title = "Episode $epNum"
-        }
-        if (!isMovie) {
-            if (formatBefore) {
-                title = "S$seNum:E$epNum $title" //•
-            } else {
-                title = "$epNum. $title"
-            }
-        }
-        return title
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -239,7 +239,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     return@setOnLongClickListener true
                 }
 
-                val title = fixEpTitle(fullEpisode.title, epNum, index + 1)
+                val title = fixEpTitle(fullEpisode.title, epNum, index + 1,isMovie )
 
                 card.cardTitle.text = title
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {

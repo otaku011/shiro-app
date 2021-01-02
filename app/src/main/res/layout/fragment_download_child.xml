@@ -3,7 +3,8 @@
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:backgroundTint="@color/darkBar"
+            android:backgroundTint="@color/background"
+            android:background="@color/background"
             tools:context=".ui.DownloadFragmentChild">
     <LinearLayout
             android:id="@+id/downloadRootChild"

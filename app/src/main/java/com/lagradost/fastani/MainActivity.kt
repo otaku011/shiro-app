@@ -106,7 +106,9 @@ class MainActivity : AppCompatActivity() {
         var focusRequest: AudioFocusRequest? = null
 
         fun getViewKey(data: PlayerData): String {
-            return getViewKey(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
+            return getViewKey(if (data.card != null) data.card.anilistId else data.anilistId!!,
+                data.seasonIndex!!,
+                data.episodeIndex!!)
         }
 
         fun getViewKey(aniListId: String, seasonIndex: Int, episodeIndex: Int): String {
@@ -172,6 +174,8 @@ class MainActivity : AppCompatActivity() {
                 DataStore.setKey(VIEW_POS_KEY, key, pos)
                 DataStore.setKey(VIEW_DUR_KEY, key, dur)
             }
+
+            if (data.card == null) return
 
             // HANDLES THE LOGIC FOR NEXT EPISODE
             var episodeIndex = data.episodeIndex!!
@@ -274,16 +278,17 @@ class MainActivity : AppCompatActivity() {
                     episodeIndex,
                     seasonIndex,
                     card,
+                    null,
                     null
                 )
             )
         }
 
         fun loadPlayer(title: String?, url: String, startAt: Long?) {
-            loadPlayer(PlayerData(title, url, null, null, null, startAt))
+            loadPlayer(PlayerData(title, url, null, null, null, startAt, null))
         }
 
-        private fun loadPlayer(data: PlayerData) {
+        fun loadPlayer(data: PlayerData) {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 ?.add(

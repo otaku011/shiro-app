@@ -28,6 +28,7 @@ class DownloadFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
+
     data class EpisodesDownloaded(
         val count: Int,
         val countDownloading: Int,
@@ -38,10 +39,10 @@ class DownloadFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         println("TTLLLL::: ")
         val inflator = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        childMetadataKeys.clear()
 
         val epData = hashMapOf<String, EpisodesDownloaded>()
         try {
-
             val childKeys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
             for (k in childKeys) {
                 val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
@@ -53,6 +54,12 @@ class DownloadFragment : Fragment() {
                         }
                         DataStore.removeKey(k)
                     } else {
+                        if (childMetadataKeys.containsKey(child.anilistId)) {
+                            childMetadataKeys[child.anilistId]?.add(k)
+                        } else {
+                            childMetadataKeys[child.anilistId] = mutableListOf<String>(k)
+                        }
+
                         val id = child.anilistId
                         println("EPINDEX: " + child.episodeIndex)
                         val isDownloading =
@@ -75,6 +82,7 @@ class DownloadFragment : Fragment() {
             for (k in keys) {
                 val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                 if (parent != null) {
+                    println("KEY::: " + k)
                     if (epData.containsKey(parent.anilistId)) {
                         val cardView = inflator.inflate(R.layout.download_card, null)
 
@@ -86,6 +94,17 @@ class DownloadFragment : Fragment() {
                         cardView.cardInfo.text =
                             if (parent.isMovie) "$megaBytes MB" else
                                 "${childData.count} Episode${(if (childData.count == 1) "" else "s")} | $megaBytes MB"
+
+                        cardView.cardBg.setOnClickListener {
+                            MainActivity.activity?.supportFragmentManager?.beginTransaction()
+                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                ?.add(
+                                    R.id.homeRoot, DownloadFragmentChild(
+                                        parent.anilistId
+                                    )
+                                )
+                                ?.commit()
+                        }
 
                         downloadRoot.addView(cardView)
                     } else {
@@ -125,22 +144,6 @@ class DownloadFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment DownloadFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            DownloadFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        val childMetadataKeys = hashMapOf<String, MutableList<String>>()
     }
 }

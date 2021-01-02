@@ -30,6 +30,7 @@ import android.content.IntentFilter
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
+import android.net.Uri
 import android.preference.PreferenceManager
 import android.view.*
 import android.view.View.*
@@ -38,6 +39,7 @@ import android.widget.Toast
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
+import java.io.File
 import kotlin.math.*
 import androidx.core.content.ContextCompat.getSystemService as getSystemService
 
@@ -65,6 +67,7 @@ data class PlayerData(
     var seasonIndex: Int?,
     val card: FastAniApi.Card?,
     val startAt: Long?,
+    val anilistId: String?,
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -137,7 +140,11 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     }
 
     fun savePos() {
-        if (data.card != null && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0) {
+        if (((data.anilistId != null
+                    && data.seasonIndex != null
+                    && data.episodeIndex != null) || data.card != null)
+            && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
+        ) {
             MainActivity.setViewPosDur(data, exoPlayer.currentPosition, exoPlayer.duration)
         }
     }
@@ -457,7 +464,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             seekTime(10000L)
         }
 
-        if (skipOpEnabled){
+        if (skipOpEnabled) {
             skip_op_holder.visibility = VISIBLE
             skip_op.setOnClickListener {
                 seekTime(85000L)
@@ -503,8 +510,10 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 return dataSource
             }
         }
-        if (data.card != null) {
-            val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
+        if (data.card != null || (data.anilistId != null && data.episodeIndex != null && data.seasonIndex != null)) {
+            val pro = getViewPosDur(if (data.card != null) data.card!!.anilistId else data.anilistId!!,
+                data.seasonIndex!!,
+                data.episodeIndex!!)
             playbackPosition = if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 pro.pos
             } else {
@@ -537,11 +546,22 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         else {
             next_episode_btt.visibility = GONE
         }
-        val mediaItem = MediaItem.Builder()
+        var currentUrl = getCurrentUrl()
+        val isOnline = currentUrl.startsWith("https://") || currentUrl.startsWith("http://")
+        if (isOnline) {
+            currentUrl = currentUrl.replace(" ", "%20")
+        }
+        val _mediaItem = MediaItem.Builder()
             //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
-            .setUri(getCurrentUrl().replace(" ", "%20"))
             .setMimeType(MimeTypes.APPLICATION_MP4)
-            .build()
+
+        if (isOnline) {
+            _mediaItem.setUri(currentUrl)
+        } else {
+            _mediaItem.setUri(Uri.fromFile(File(currentUrl)))
+        }
+
+        val mediaItem = _mediaItem.build()
         val trackSelector = DefaultTrackSelector(requireContext())
         // Disable subtitles
         trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
@@ -551,17 +571,20 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             .clearSelectionOverrides()
             .build()
 
-        exoPlayer =
+        val _exoPlayer =
             SimpleExoPlayer.Builder(this.requireContext())
-                .setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
                 .setTrackSelector(trackSelector)
-                .build().apply {
-                    playWhenReady = isPlayerPlaying
-                    seekTo(currentWindow, playbackPosition)
-                    setMediaItem(mediaItem, false)
-                    prepare()
-                }
 
+        if(!isOnline) {
+            _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
+        }
+
+        exoPlayer = _exoPlayer.build().apply {
+            playWhenReady = isPlayerPlaying
+            seekTo(currentWindow, playbackPosition)
+            setMediaItem(mediaItem, false)
+            prepare()
+        }
         exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
         player_view.player = exoPlayer
 
