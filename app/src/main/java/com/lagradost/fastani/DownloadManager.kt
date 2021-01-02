@@ -23,10 +23,10 @@ import java.util.concurrent.Executors
 
 const val UPDATE_TIME = 1000
 const val CHANNEL_ID = "fastani.general"
-const val CHANNEL_NAME = "General"
-const val CHANNEL_DESCRIPT = "The notification channel for the fastani app"
+const val CHANNEL_NAME = "Downloads"
+const val CHANNEL_DESCRIPT = "The download notification channel for the fastani app"
 
-
+// USED TO STOP, CANCEL AND RESUME FROM ACTION IN NOTIFICATION
 class DownloadService : IntentService("DownloadService") {
     override fun onHandleIntent(intent: Intent?) {
         if (intent != null) {
@@ -98,6 +98,30 @@ object DownloadManager {
         IsStoped,
     }
 
+    data class DownloadParentFileMetadata(
+        val fastAniId: String,
+        val anilistId: String, // ID
+        val title: FastAniApi.Title,
+        val coverImagePath: String,
+        val isMovie: Boolean,
+    )
+
+    data class DownloadFileMetadata(
+        val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
+        val fastAniId: String,
+        val anilistId: String, // USED AS PARENT ID
+
+        val thumbPath: String?,
+        val videoPath: String,
+
+        val videoTitle: String?,
+        val seasonIndex: Int,
+        val episodeIndex: Int,
+
+        val downloadAt: Long,
+        val maxFileSize: Long, // IF MUST RESUME
+        val downloadFileUrl: String, // IF RESUME, DO IT FROM THIS URL
+    )
 
     fun Double.round(decimals: Int): Double {
         var multiplier = 1.0
@@ -137,156 +161,242 @@ object DownloadManager {
         return name
     }
 
-    fun downloadEpisode(info: DownloadInfo) {
-        if (!isDonor) {
+    fun downloadPoster(path: String, url: String) {
+        thread {
+            try {
+                val rFile: File = File(path)
+                if (rFile.exists()) {
+                    return@thread
+                }
+                try {
+                    rFile.mkdirs()
+                } catch (_ex: Exception) {
+                    println("FAILED:::$_ex")
+                }
+
+                val _url = URL(url)
+                val connection: URLConnection = _url.openConnection()
+
+                val input: InputStream = BufferedInputStream(connection.inputStream)
+                val output: OutputStream = FileOutputStream(rFile, true)
+
+                val buffer: ByteArray = ByteArray(1024)
+                var count = 0
+
+                while (true) {
+                    try {
+                        count = input.read(buffer)
+                        if (count < 0) break
+
+                        output.write(buffer, 0, count)
+                    } catch (_ex: Exception) {
+                        println("FAILEDDLOAD:::$_ex")
+                    }
+                }
+            } catch (_ex: Exception) {
+                println("FAILEDPOSTERDLOAD:::$_ex")
+            }
+        }
+    }
+
+    fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
+        if (!isDonor) { // FINAL CHECK
             Toast.makeText(activity, "This is for donors only.", Toast.LENGTH_SHORT).show()
             return
         }
+        val id = (info.card.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
+        if (downloadStatus.containsKey(id)) { // PREVENT DUPLICATE DOWNLOADS
+            if (downloadStatus[id] == DownloadStatusType.IsPaused) {
+                downloadStatus[id] = DownloadStatusType.IsDownloading
+                downloadMustUpdateStatus[id] = true
+            }
+            return
+        }
+
         thread {
-            val id = (info.card.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
-
-            val isMovie: Boolean = info.card.episodes == 1 && info.card.status == "FINISHED"
-            val ep = info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
-            var title = ep.title
-            if (title?.replace(" ", "") == "") {
-                title = "Episode " + info.episodeIndex + 1
-            }
-
-            val path = activity!!.filesDir.toString() +
-                    "/Download/Anime/" +
-                    censorFilename(info.card.title.english) +
-                    if (isMovie)
-                        ".mp4"
-                    else
-                        "/" + censorFilename("S${info.seasonIndex + 1}:E${info.episodeIndex + 1} $title") + ".mp4"
-
-            println("FULL DLOAD PATH: " + path)
-            val rFile: File = File(path)
-
             try {
-                rFile.mkdirs()
-            } catch (_ex: Exception) {
-                println("FAILED:::$_ex")
-            }
-            val url = ep.file
-
-            val _url = URL(url)
-
-            val connection: URLConnection = _url.openConnection()
-
-            val resumeIntent = false // TODO FIX
-
-            var bytesRead = 0L
-            val referer = ""
-
-            try {
-                if (!rFile.exists()) {
-                    println("FILE DOESN'T EXITS")
-                    rFile.createNewFile()
-                } else {
-                    if (resumeIntent) {
-                        bytesRead = rFile.length()
-                        connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
-                    } else {
-                        rFile.delete()
-                        rFile.createNewFile()
-                    }
+                val isMovie: Boolean = info.card.episodes == 1 && info.card.status == "FINISHED"
+                val ep = info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
+                var title = ep.title
+                if (title?.replace(" ", "") == "") {
+                    title = "Episode " + info.episodeIndex + 1
                 }
-            } catch (e: Exception) {
-                println(e)
-                activity?.runOnUiThread {
-                    Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
+
+                // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
+                val path = activity!!.filesDir.toString() +
+                        "/Download/Anime/" +
+                        censorFilename(info.card.title.english) +
+                        if (isMovie)
+                            ".mp4"
+                        else
+                            "/" + censorFilename("S${info.seasonIndex + 1}:E${info.episodeIndex + 1} $title") + ".mp4"
+
+                val posterPath = path.replace("/Anime/", "/Posters/").replace(".mp4", ".jpg")
+                if (ep.thumb != null) {
+                    downloadPoster(posterPath, ep.thumb)
                 }
-                return@thread
-            }
+                val mainPosterPath = activity!!.filesDir.toString() +
+                        "/Download/MainPosters/" +
+                        censorFilename(info.card.title.english) + ".jpg"
+                downloadPoster(mainPosterPath, info.card.coverImage.large)
 
-            connection.setRequestProperty("Accept-Encoding", "identity")
-            if (referer != "") {
-                connection.setRequestProperty("Referer", referer)
-            }
-            connection.connectTimeout = 10000
-            var clen = 0
-            try {
-                connection.connect()
-                clen = connection.contentLength
-            } catch (_ex: Exception) {
-                println("CONNECT:::$_ex")
-            }
-
-            if (clen < 5000000) { // min of 5 MB
-                clen = 0
-            }
-            if (clen <= 0) { // TO SMALL OR INVALID
-                showNot(0, 0, 0, DownloadType.IsFailed, info)
-                return@thread
-            }
-
-            downloadStatus[id] = DownloadStatusType.IsDownloading
-            val bytesTotal: Long = (clen + bytesRead.toInt()).toLong()
-            val input: InputStream = BufferedInputStream(connection.inputStream)
-            val output: OutputStream = FileOutputStream(rFile, true)
-            var bytesPerSec = 0L
-            val buffer: ByteArray = ByteArray(1024)
-            var count = 0
-            var lastUpdate = System.currentTimeMillis()
-
-            while (true) {
+                // =================== MAKE DIRS ===================
+                val rFile: File = File(path)
                 try {
-                    count = input.read(buffer)
-                    if (count < 0) break
+                    rFile.mkdirs()
+                } catch (_ex: Exception) {
+                    println("FAILED:::$_ex")
+                }
+                val url = ep.file
 
-                    bytesRead += count
-                    bytesPerSec += count
-                    output.write(buffer, 0, count)
-                    val currentTime = System.currentTimeMillis()
-                    val timeDiff = currentTime - lastUpdate
-                    val contains = downloadMustUpdateStatus.containsKey(id)
-                    if (timeDiff > UPDATE_TIME || contains) {
-                        if (contains) {
-                            downloadMustUpdateStatus.remove(id)
-                        }
+                val _url = URL(url)
 
-                        if (downloadStatus[id] == DownloadStatusType.IsStoped) {
-                            downloadStatus.remove(id)
-                            rFile.delete()
-                            showNot(0, bytesTotal, 0, DownloadType.IsStopped, info)
-                            output.flush()
-                            output.close()
-                            input.close()
-                            return@thread
+                val connection: URLConnection = _url.openConnection()
+
+                var bytesRead = 0L
+                val referer = ""
+
+                // =================== STORAGE ===================
+                try {
+                    if (!rFile.exists()) {
+                        println("FILE DOESN'T EXITS")
+                        rFile.createNewFile()
+                    } else {
+                        if (resumeIntent) {
+                            bytesRead = rFile.length()
+                            connection.setRequestProperty("Range", "bytes=" + rFile.length() + "-")
                         } else {
-                            showNot(
-                                bytesRead,
-                                bytesTotal,
-                                (bytesPerSec * UPDATE_TIME) / timeDiff,
+                            rFile.delete()
+                            rFile.createNewFile()
+                        }
+                    }
+                } catch (e: Exception) {
+                    println(e)
+                    activity?.runOnUiThread {
+                        Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
+                    }
+                    return@thread
+                }
 
-                                if (downloadStatus[id] == DownloadStatusType.IsPaused)
-                                    DownloadType.IsPaused
-                                else
-                                    DownloadType.IsDownloading,
+                // =================== CONNECTION ===================
+                connection.setRequestProperty("Accept-Encoding", "identity")
+                if (referer != "") {
+                    connection.setRequestProperty("Referer", referer)
+                }
+                connection.connectTimeout = 10000
+                var clen = 0
+                try {
+                    connection.connect()
+                    clen = connection.contentLength
+                } catch (_ex: Exception) {
+                    println("CONNECT:::$_ex")
+                }
 
-                                info
-                            )
-                            lastUpdate = currentTime
-                            bytesPerSec = 0
-                            try {
-                                while (downloadStatus[id] == DownloadStatusType.IsPaused) {
-                                    Thread.sleep(100)
+                // =================== VALIDATE ===================
+                if (clen < 5000000) { // min of 5 MB
+                    clen = 0
+                }
+                if (clen <= 0) { // TO SMALL OR INVALID
+                    showNot(0, 0, 0, DownloadType.IsFailed, info)
+                    return@thread
+                }
+
+                // =================== SETUP VARIABLES ===================
+                downloadStatus[id] = DownloadStatusType.IsDownloading
+                val bytesTotal: Long = (clen + bytesRead.toInt()).toLong()
+                val input: InputStream = BufferedInputStream(connection.inputStream)
+                val output: OutputStream = FileOutputStream(rFile, true)
+                var bytesPerSec = 0L
+                val buffer: ByteArray = ByteArray(1024)
+                var count = 0
+                var lastUpdate = System.currentTimeMillis()
+
+                // =================== SET KEYS ===================
+                DataStore.setKey(DOWNLOAD_CHILD_KEY,
+                    DownloadFileMetadata(id,
+                        info.card.id,
+                        info.card.anilistId,
+                        if (ep.thumb == null) null else posterPath,
+                        path,
+                        ep.title,
+                        info.seasonIndex,
+                        info.episodeIndex,
+                        System.currentTimeMillis(),
+                        bytesTotal,
+                        url))
+
+                DataStore.setKey(DOWNLOAD_PARENT_KEY,
+                    DownloadParentFileMetadata(info.card.id,
+                        info.card.anilistId,
+                        info.card.title,
+                        mainPosterPath,
+                        isMovie))
+
+                // =================== DOWNLOAD ===================
+                while (true) {
+                    try {
+                        count = input.read(buffer)
+                        if (count < 0) break
+
+                        bytesRead += count
+                        bytesPerSec += count
+                        output.write(buffer, 0, count)
+                        val currentTime = System.currentTimeMillis()
+                        val timeDiff = currentTime - lastUpdate
+                        val contains = downloadMustUpdateStatus.containsKey(id)
+                        if (timeDiff > UPDATE_TIME || contains) {
+                            if (contains) {
+                                downloadMustUpdateStatus.remove(id)
+                            }
+
+                            if (downloadStatus[id] == DownloadStatusType.IsStoped) {
+                                downloadStatus.remove(id)
+                                rFile.delete()
+                                showNot(0, bytesTotal, 0, DownloadType.IsStopped, info)
+                                output.flush()
+                                output.close()
+                                input.close()
+                                return@thread
+                            } else {
+                                showNot(
+                                    bytesRead,
+                                    bytesTotal,
+                                    (bytesPerSec * UPDATE_TIME) / timeDiff,
+
+                                    if (downloadStatus[id] == DownloadStatusType.IsPaused)
+                                        DownloadType.IsPaused
+                                    else
+                                        DownloadType.IsDownloading,
+
+                                    info
+                                )
+                                lastUpdate = currentTime
+                                bytesPerSec = 0
+                                try {
+                                    while (downloadStatus[id] == DownloadStatusType.IsPaused) {
+                                        Thread.sleep(100)
+                                    }
+                                } catch (e: Exception) {
                                 }
-                            } catch (e: Exception) {
                             }
                         }
+                    } catch (_ex: Exception) {
+                        println("CONNECT TRUE:::$_ex")
+                        showNot(bytesRead, bytesTotal, 0, DownloadType.IsFailed, info)
                     }
-                } catch (_ex: Exception) {
-                    println("CONNECT TRUE:::$_ex")
-                    showNot(bytesRead, bytesTotal, 0, DownloadType.IsFailed, info)
+                }
+                showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
+                output.flush()
+                output.close()
+                input.close()
+                downloadStatus.remove(id)
+            } catch (_ex: Exception) {
+                println("FATAL EX DOWNLOADING:::$_ex")
+            } finally {
+                if (downloadStatus.containsKey(id)) {
+                    downloadStatus.remove(id)
                 }
             }
-            showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
-            output.flush()
-            output.close()
-            input.close()
-            downloadStatus.remove(id)
         }
     }
 
