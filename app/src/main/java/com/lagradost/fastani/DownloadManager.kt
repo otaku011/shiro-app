@@ -346,7 +346,7 @@ object DownloadManager {
                         bytesTotal,
                         url))
 
-                DataStore.setKey(DOWNLOAD_PARENT_KEY,
+                DataStore.setKey(DOWNLOAD_PARENT_KEY, info.card.anilistId,
                     DownloadParentFileMetadata(info.card.id,
                         info.card.anilistId,
                         info.card.title,
