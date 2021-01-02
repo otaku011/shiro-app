@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.MenuItemCompat
+import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
@@ -199,7 +200,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
 
                 val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
 
-                if (has_download_perms) {
+                if (MainActivity.isDonor) {
                     card.cardDownloadIcon.setOnClickListener {
                         DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(data, index, epIndex))
                     }
@@ -209,8 +210,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     param.setMargins(
                         card.cardTitle.marginLeft,
                         card.cardTitle.marginTop,
-                        20.toPx,
-                        card.cardTitle.bottom
+                        1.toPx,
+                        card.cardTitle.marginBottom
                     )
                     card.cardTitle.layoutParams = param
                 }

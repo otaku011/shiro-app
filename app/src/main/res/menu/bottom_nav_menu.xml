@@ -13,7 +13,7 @@
             android:title="@string/title_search"/>
     <item
             android:id="@+id/navigation_downloads"
-            android:icon="@drawable/netflix_download"
+            android:icon="@drawable/main_dload_icon_navview"
             android:title="Downloads"/>
 
     <item
