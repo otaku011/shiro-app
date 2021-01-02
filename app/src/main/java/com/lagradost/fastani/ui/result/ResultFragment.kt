@@ -9,10 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat.getColor
-import androidx.core.view.MenuItemCompat
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginTop
+import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
@@ -207,10 +204,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 } else {
                     card.cardDownloadIcon.visibility = View.GONE
                     val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
-                    param.setMargins(
+                    param.updateMarginsRelative(
                         card.cardTitle.marginLeft,
                         card.cardTitle.marginTop,
-                        1.toPx,
+                        10.toPx,
                         card.cardTitle.marginBottom
                     )
                     card.cardTitle.layoutParams = param
