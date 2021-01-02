@@ -177,13 +177,17 @@ object DownloadManager {
                     rFile.createNewFile()
                 } catch (e: Exception) {
                     println(e)
+                    e.printStackTrace()
                     activity?.runOnUiThread {
                         Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
                     }
                     return@thread
                 }
 
-                val rUrl = if (url.startsWith("https://") || url.startsWith("http://")) url else "https://fastani.net/$url"
+                val rUrl =
+                    (if (url.startsWith("https://") || url.startsWith("http://")) url else "https://fastani.net/$url").replace(
+                        " ",
+                        "%20")
                 println("RRLL: " + rUrl)
                 val _url = URL(rUrl)
                 val connection: URLConnection = _url.openConnection()
@@ -251,9 +255,9 @@ object DownloadManager {
                     downloadPoster(posterPath, ep.thumb)
                 }
                 val mainPosterPath =
-                    android.os.Environment.getExternalStorageDirectory().path +
+                    //android.os.Environment.getExternalStorageDirectory().path +
                             activity!!.filesDir.toString() +
-                            //"/Download/MainPosters/" +
+                            "/Download/MainPosters/" +
                             censorFilename(info.card.title.english) + ".jpg"
                 downloadPoster(mainPosterPath, info.card.coverImage.large)
 
@@ -329,7 +333,7 @@ object DownloadManager {
                 var lastUpdate = System.currentTimeMillis()
 
                 // =================== SET KEYS ===================
-                DataStore.setKey(DOWNLOAD_CHILD_KEY,
+                DataStore.setKey(DOWNLOAD_CHILD_KEY, id.toString(), // MUST HAVE ID TO NOT OVERRIDE
                     DownloadFileMetadata(id,
                         info.card.id,
                         info.card.anilistId,
