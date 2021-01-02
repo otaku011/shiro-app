@@ -183,7 +183,7 @@ object DownloadManager {
                     return@thread
                 }
 
-                val rUrl = if (url.startsWith("https://fastani.net/")) url else "https://fastani.net/" + url
+                val rUrl = if (url.startsWith("https://") || url.startsWith("http://")) url else "https://fastani.net/$url"
                 println("RRLL: " + rUrl)
                 val _url = URL(rUrl)
                 val connection: URLConnection = _url.openConnection()
