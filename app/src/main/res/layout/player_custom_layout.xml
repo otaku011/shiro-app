@@ -134,6 +134,7 @@
                 </ImageView>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
+
         <FrameLayout
                 android:layout_margin="5dp"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -246,6 +247,7 @@
                         android:tintMode="src_in"
 
                 />
+
             </FrameLayout>
 
 
@@ -295,15 +297,13 @@
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:layout_marginTop="4dp"
                 android:layout_marginBottom="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-        >
+                android:id="@+id/linearLayout">
 
             <TextView
                     android:id="@id/exo_position"
@@ -336,7 +336,40 @@
                     android:textStyle="bold"/>
 
         </LinearLayout>
+        <RelativeLayout
+                app:layout_constraintTop_toBottomOf="@id/centerMenu"
+                android:layout_margin="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/bottomMenu"
+                app:layout_constraintBottom_toBottomOf="parent"
+        >
+            <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:gravity="center|end"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/skip_op_holder"
+                    android:visibility="gone"
+            >
 
+                <ImageView
+                        android:layout_marginStart="15dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/exo_controls_fastforward">
+                </ImageView>
+                <ImageView
+                        android:id="@+id/skip_op"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:focusable="true"
+                        android:clickable="true"
+                        android:background="@drawable/video_tap_button"
+                >
+                </ImageView>
+            </RelativeLayout>
+        </RelativeLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View android:layout_width="match_parent"

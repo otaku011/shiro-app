@@ -34,6 +34,7 @@ import android.preference.PreferenceManager
 import android.view.*
 import android.view.View.*
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
@@ -98,6 +99,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var hasPassedSkipLimit = false
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
+    private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", true)
     var width = 0
 
     private fun canPlayNextEpisode(): Boolean {
@@ -169,6 +171,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         video_go_back.isClickable = isClick
         exo_progress.isClickable = isClick
         next_episode_btt.isClickable = isClick
+        skip_op.isClickable = isClick
 
         val fadeTo = if (!isLocked) 1f else 0f
         val fadeAnimation = AlphaAnimation(1f - fadeTo, fadeTo)
@@ -454,6 +457,13 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             seekTime(10000L)
         }
 
+        if (skipOpEnabled){
+            skip_op_holder.visibility = VISIBLE
+            skip_op.setOnClickListener {
+                seekTime(85000L)
+            }
+        }
+
         if (savedInstanceState != null) {
             currentWindow = savedInstanceState.getInt(STATE_RESUME_WINDOW)
             playbackPosition = savedInstanceState.getLong(STATE_RESUME_POSITION)
@@ -509,9 +519,11 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             next_episode_btt.setOnClickListener {
                 savePos()
                 val next = MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!)
-                val key = MainActivity.getViewKey(data.card!!.anilistId,
+                val key = MainActivity.getViewKey(
+                    data.card!!.anilistId,
                     next.seasonIndex,
-                    next.episodeIndex)
+                    next.episodeIndex
+                )
                 DataStore.removeKey(VIEW_POS_KEY, key)
                 DataStore.removeKey(VIEW_DUR_KEY, key)
 
