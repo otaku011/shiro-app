@@ -1,12 +1,14 @@
 package com.lagradost.fastani.ui.search
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.Transition
 import android.transition.TransitionManager
 import android.view.*
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
@@ -22,7 +24,6 @@ import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread
 
 class SearchFragment : Fragment() {
-
     private lateinit var searchViewModel: SearchViewModel
 
     @SuppressLint("ClickableViewAccessibility")
@@ -103,4 +104,16 @@ class SearchFragment : Fragment() {
             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
         )
     }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            cardSpace.spanCount = 6
+            //Toast.makeText(activity, "landscape", Toast.LENGTH_SHORT).show();
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            cardSpace.spanCount = 3
+            //Toast.makeText(activity, "portrait", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
