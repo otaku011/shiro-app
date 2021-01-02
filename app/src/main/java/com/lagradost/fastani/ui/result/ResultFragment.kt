@@ -53,6 +53,7 @@ import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.google.android.exoplayer2.ext.cast.SessionAvailabilityListener
 import com.google.android.gms.cast.CastMediaControlIntent
 import com.google.android.gms.cast.framework.media.uicontroller.UIMediaController
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 const val DESCRIPTION_LENGTH = 200
@@ -205,10 +206,12 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 } else {
                     card.cardDownloadIcon.visibility = View.GONE
                     val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
-                    param.setMargins(card.cardTitle.marginLeft,
+                    param.setMargins(
+                        card.cardTitle.marginLeft,
                         card.cardTitle.marginTop,
                         20.toPx,
-                        card.cardTitle.bottom)
+                        card.cardTitle.bottom
+                    )
                     card.cardTitle.layoutParams = param
                 }
 

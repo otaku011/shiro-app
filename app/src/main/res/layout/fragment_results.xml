@@ -303,7 +303,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/title_season_cards"
-                        android:layout_marginBottom="25dp"
+                        android:layout_marginBottom="75dp"
                         android:orientation="vertical"
                 >
 
@@ -313,14 +313,16 @@ Flash forward to the present and the city has not seen a titan in over 100 years
         </androidx.cardview.widget.CardView>
     </ScrollView>
     <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+    >
+
         <fragment
                 app:castControlButtons="@array/cast_mini_controller_control_buttons"
                 android:id="@+id/cast_mini_controller"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
                 android:visibility="gone"
                 class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment">
 

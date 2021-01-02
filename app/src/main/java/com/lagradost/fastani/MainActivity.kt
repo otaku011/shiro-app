@@ -16,10 +16,9 @@ import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
-import android.view.KeyEvent
-import android.view.View
-import android.view.Window
-import android.view.WindowManager
+import android.view.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -40,6 +39,9 @@ import kotlin.concurrent.thread
 
 import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
+import androidx.transition.ChangeBounds
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import com.google.android.gms.cast.framework.CastContext
 import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
@@ -48,6 +50,7 @@ import com.lagradost.fastani.ui.PlayerFragment
 import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
+import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -528,7 +531,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_home, R.id.navigation_search, R.id.navigation_settings
+                R.id.navigation_home, R.id.navigation_search, R.id.navigation_downloads, R.id.navigation_settings
             )
         )
         //setupActionBarWithNavController(navController, appBarConfiguration)

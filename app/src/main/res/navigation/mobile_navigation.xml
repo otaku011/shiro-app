@@ -20,9 +20,16 @@
             tools:layout="@layout/fragment_search"/>
 
     <fragment
+            android:id="@+id/navigation_downloads"
+            android:layout_height="match_parent"
+            android:name="com.lagradost.fastani.ui.DownloadFragment"
+            android:label="Downloads"
+    />
+
+    <fragment
             android:id="@+id/navigation_settings"
             android:layout_height="match_parent"
             android:name="com.lagradost.fastani.ui.settings.SettingsFragment"
             android:label="@string/title_settings"
-            />
+    />
 </navigation>
