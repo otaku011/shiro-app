@@ -12,6 +12,8 @@ const val VIEW_DUR_KEY: String = "view_dur" // VIDEO DURATION
 const val VIEW_LST_KEY: String = "view_lst_watched" // LAST WATCHED, ONE PER TITLE ID
 const val BOOKMARK_KEY: String = "bookmark" // BOOKMARK/FAVORITE BookmarkedTitle
 const val VIEWSTATE_KEY: String = "viewstate" // BOOKMARK/FAVORITE BookmarkedTitle
+const val DOWNLOAD_CHILD_KEY: String = "dload_child" // DownloadFileMetadata
+const val DOWNLOAD_PARENT_KEY: String = "dload_parent" // DownloadParentFileMetadata
 
 object DataStore {
 
