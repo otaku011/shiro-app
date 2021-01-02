@@ -37,6 +37,7 @@ import android.view.View.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
 import java.io.File
@@ -501,19 +502,28 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
     private fun initPlayer() {
         // NEEDED FOR HEADERS
+        var currentUrl = getCurrentUrl()
+        val isOnline = currentUrl.startsWith("https://") || currentUrl.startsWith("http://")
+
         class CustomFactory : DataSource.Factory {
             override fun createDataSource(): DataSource {
-                val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
-                FastAniApi.currentHeaders?.forEach {
-                    dataSource.setRequestProperty(it.key, it.value)
+                if (isOnline) {
+                    val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
+                    FastAniApi.currentHeaders?.forEach {
+                        dataSource.setRequestProperty(it.key, it.value)
+                    }
+                    return dataSource
+                } else {
+                    return DefaultDataSourceFactory(requireContext(), "ua").createDataSource()
                 }
-                return dataSource
             }
         }
         if (data.card != null || (data.anilistId != null && data.episodeIndex != null && data.seasonIndex != null)) {
-            val pro = getViewPosDur(if (data.card != null) data.card!!.anilistId else data.anilistId!!,
+            val pro = getViewPosDur(
+                if (data.card != null) data.card!!.anilistId else data.anilistId!!,
                 data.seasonIndex!!,
-                data.episodeIndex!!)
+                data.episodeIndex!!
+            )
             playbackPosition = if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 pro.pos
             } else {
@@ -546,8 +556,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         else {
             next_episode_btt.visibility = GONE
         }
-        var currentUrl = getCurrentUrl()
-        val isOnline = currentUrl.startsWith("https://") || currentUrl.startsWith("http://")
+
         if (isOnline) {
             currentUrl = currentUrl.replace(" ", "%20")
         }
@@ -575,7 +584,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             SimpleExoPlayer.Builder(this.requireContext())
                 .setTrackSelector(trackSelector)
 
-        if(!isOnline) {
+        if (!isOnline) {
             _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
         }
 
