@@ -4,5 +4,6 @@
      <item
              android:id="@+id/media_route_menu_item"
              app:actionProviderClass="androidx.mediarouter.app.MediaRouteActionProvider"
-             app:showAsAction="always" android:title="TODO"/>
+             app:showAsAction="always"
+             android:title=""/>
  </menu>
