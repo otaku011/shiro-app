@@ -231,7 +231,9 @@ class MainActivity : AppCompatActivity() {
             val currentFragment = activity?.supportFragmentManager!!.fragments.last()
 
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
-            if (!(settingsManager.getBoolean("rotation_enabled", false))) {
+            if (settingsManager.getBoolean("rotation_enabled", false)) {
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+            } else {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
 
@@ -447,9 +449,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
-        if (!(settingsManager.getBoolean("rotation_enabled", false))) {
+        if (settingsManager.getBoolean("rotation_enabled", false)) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+        } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+
         thread {
             isDonor = true//TODO FIX getDonorStatus()
         }
