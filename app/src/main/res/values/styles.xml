@@ -47,6 +47,8 @@
             @array/cast_expanded_controller_control_buttons
         </item>
         <item name="castButtonColor">@null</item>
+        <item name="castSeekBarProgressAndThumbColor">@color/white</item>
+        <item name="castSeekBarSecondaryProgressColor">@color/darkBar</item>
         <item name="castBackground">?attr/colorPrimary</item>
         <item name="castProgressBarColor">?attr/colorPrimary</item>
         <item name="castPlayButtonDrawable">@drawable/netflix_play</item>
@@ -58,10 +60,11 @@
         <item name="castForward30ButtonDrawable">@drawable/go_forward_30</item>
     </style>
     <style name="CustomCastMiniController" parent="CastMiniController">
+        <item name="castMiniControllerLoadingIndicatorColor">?attr/colorPrimary</item>
         <item name="castShowImageThumbnail">true</item>
         <item name="castTitleTextAppearance">@style/TextAppearance.AppCompat.Subhead</item>
         <item name="castSubtitleTextAppearance">@style/TextAppearance.AppCompat.Caption</item>
-        <item name="castBackground">?attr/colorPrimary</item>
+        <item name="castBackground">@color/darkBar</item>
         <item name="castProgressBarColor">?attr/colorPrimary</item>
         <item name="castStopButtonDrawable">@drawable/cast_ic_mini_controller_stop</item>'
         <item name="castLargeStopButtonDrawable">@drawable/cast_ic_mini_controller_stop_large</item>
