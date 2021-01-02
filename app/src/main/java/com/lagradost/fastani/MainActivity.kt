@@ -229,7 +229,13 @@ class MainActivity : AppCompatActivity() {
 
         fun popCurrentPage() {
             val currentFragment = activity?.supportFragmentManager!!.fragments.last()
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+            val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+            if (!(settingsManager.getBoolean("rotation_enabled", false))) {
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+
+
             // No fucked animations leaving the player :)
             if (isInPlayer) {
                 activity?.supportFragmentManager!!.beginTransaction()
@@ -440,8 +446,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        if (!(settingsManager.getBoolean("rotation_enabled", false))) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
         thread {
             isDonor = true//TODO FIX getDonorStatus()
         }
@@ -453,7 +461,6 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
             )
         }
-        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         if (settingsManager.getBoolean("cool_mode", false)) {
             theme.applyStyle(R.style.OverlayPrimaryColorBlue, true)
         }

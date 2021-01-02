@@ -1,6 +1,7 @@
 package com.lagradost.fastani.ui.settings
 
 import android.content.*
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -86,7 +87,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val id: String = Settings.Secure.getString(context?.contentResolver, Settings.Secure.ANDROID_ID)
         val encodedString =
             Base64.getEncoder().withoutPadding().encodeToString(id.toByteArray())
-            donatorId?.summary = if (isDonor) "Thanks for the donation :D" else encodedString
+        donatorId?.summary = if (isDonor) "Thanks for the donation :D" else encodedString
         donatorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)
@@ -153,6 +154,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         coolMode?.setOnPreferenceChangeListener { preference, newValue ->
             activity?.recreate()
+            return@setOnPreferenceChangeListener true
+        }
+        val allowRotation = findPreference("rotation_enabled") as SwitchPreference?
+        allowRotation?.setOnPreferenceChangeListener { preference, newValue ->
+            if (newValue == true){
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+            }
+            else {
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
             return@setOnPreferenceChangeListener true
         }
 
