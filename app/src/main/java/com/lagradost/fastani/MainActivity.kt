@@ -443,7 +443,7 @@ class MainActivity : AppCompatActivity() {
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         thread {
-            isDonor = getDonorStatus()
+            isDonor = true//TODO FIX getDonorStatus()
         }
 
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher

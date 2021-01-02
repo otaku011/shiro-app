@@ -169,13 +169,27 @@ object DownloadManager {
                     return@thread
                 }
                 try {
-                    rFile.mkdirs()
+                    rFile.parentFile.mkdirs()
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
+                try {
+                    rFile.createNewFile()
+                } catch (e: Exception) {
+                    println(e)
+                    activity?.runOnUiThread {
+                        Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
+                    }
+                    return@thread
+                }
 
-                val _url = URL(url)
+                val rUrl = "https://fastani.net/" + url
+                println("RRLL: " + rUrl)
+                val _url = URL(rUrl)
                 val connection: URLConnection = _url.openConnection()
+                for (k in FastAniApi.currentHeaders?.keys!!) {
+                    connection.setRequestProperty(k, FastAniApi.currentHeaders!![k])
+                }
 
                 val input: InputStream = BufferedInputStream(connection.inputStream)
                 val output: OutputStream = FileOutputStream(rFile, true)
@@ -194,6 +208,7 @@ object DownloadManager {
                     }
                 }
             } catch (_ex: Exception) {
+                _ex.printStackTrace()
                 println("FAILEDPOSTERDLOAD:::$_ex")
             }
         }
@@ -235,15 +250,17 @@ object DownloadManager {
                 if (ep.thumb != null) {
                     downloadPoster(posterPath, ep.thumb)
                 }
-                val mainPosterPath = activity!!.filesDir.toString() +
-                        "/Download/MainPosters/" +
-                        censorFilename(info.card.title.english) + ".jpg"
+                val mainPosterPath =
+                    android.os.Environment.getExternalStorageDirectory().path +
+                            activity!!.filesDir.toString() +
+                            //"/Download/MainPosters/" +
+                            censorFilename(info.card.title.english) + ".jpg"
                 downloadPoster(mainPosterPath, info.card.coverImage.large)
 
                 // =================== MAKE DIRS ===================
                 val rFile: File = File(path)
                 try {
-                    rFile.mkdirs()
+                    rFile.parentFile.mkdirs()
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
