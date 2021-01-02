@@ -151,7 +151,8 @@ object DownloadManager {
             if (title?.replace(" ", "") == "") {
                 title = "Episode " + info.episodeIndex + 1
             }
-            val path = android.os.Environment.getExternalStorageDirectory().path +
+
+            val path = activity!!.filesDir.toString() +
                     "/Download/Anime/" +
                     censorFilename(info.card.title.english) +
                     if (isMovie)
