@@ -11,6 +11,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.bumptech.glide.Glide
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
+import com.lagradost.fastani.MainActivity.Companion.isDonor
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
@@ -137,6 +138,10 @@ object DownloadManager {
     }
 
     fun downloadEpisode(info: DownloadInfo) {
+        if (!isDonor) {
+            Toast.makeText(activity, "This is for donors only.", Toast.LENGTH_SHORT).show()
+            return
+        }
         thread {
             val id = (info.card.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
 

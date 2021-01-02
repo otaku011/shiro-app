@@ -1,6 +1,9 @@
 package com.lagradost.fastani
 
-import com.lagradost.fastani.ui.Stopwatch
+import android.annotation.SuppressLint
+import android.provider.Settings
+import android.util.Base64.*
+import android.widget.Toast
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -9,6 +12,7 @@ import com.lagradost.fastani.MainActivity.Companion.activity
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 import java.net.URLEncoder
+import java.util.*
 import kotlin.concurrent.thread
 
 class FastAniApi {
@@ -104,6 +108,31 @@ class FastAniApi {
             } catch (e: Exception) {
                 println(e)
                 return Update(false, "", "")
+            }
+        }
+
+        @SuppressLint("HardwareIds")
+        fun getDonorStatus(): Boolean {
+            try {
+                val url = "https://cdn1.fastani.net/donors.json"
+                val response = khttp.get(url).text
+                val users = mapper.readValue<List<String>>(response)
+                users.forEach lit@{
+                    println(it)
+                    try {
+                        val responseId = decode(it, DEFAULT).toString(charset("UTF-8"))
+                        val androidId: String =
+                            Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
+                        if (androidId == responseId || it == "all") {
+                            return true
+                        }
+                    } catch (e: Exception) {
+                        return@lit
+                    }
+                }
+                return false
+            } catch (e: Exception) {
+                return false
             }
         }
 

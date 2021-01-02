@@ -41,6 +41,7 @@ import kotlin.concurrent.thread
 import androidx.navigation.Navigation
 import androidx.preference.AndroidResources
 import com.google.android.gms.cast.framework.CastContext
+import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerEventType
 import com.lagradost.fastani.ui.PlayerFragment
@@ -93,6 +94,8 @@ class MainActivity : AppCompatActivity() {
         var statusHeight: Int = 0
         var activity: MainActivity? = null
         var canShowPipMode: Boolean = false
+
+        var isDonor: Boolean = false
 
         var onPlayerEvent = Event<PlayerEventType>()
         var onAudioFocusEvent = Event<Boolean>()
@@ -435,6 +438,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        thread {
+            isDonor = getDonorStatus()
+        }
 
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
