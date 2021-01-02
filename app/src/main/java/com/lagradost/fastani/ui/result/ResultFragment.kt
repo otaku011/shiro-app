@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.MenuItemCompat
+import androidx.core.view.marginLeft
 import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -55,6 +56,7 @@ import com.google.android.gms.cast.framework.media.uicontroller.UIMediaControlle
 
 
 const val DESCRIPTION_LENGTH = 200
+const val has_download_perms = true
 
 class ResultFragment(data: FastAniApi.Card) : Fragment() {
     var data: FastAniApi.Card = data
@@ -195,6 +197,20 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 }
 
                 val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
+
+                if (has_download_perms) {
+                    card.cardDownloadIcon.setOnClickListener {
+                        DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(data, index, epIndex))
+                    }
+                } else {
+                    card.cardDownloadIcon.visibility = View.GONE
+                    val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
+                    param.setMargins(card.cardTitle.marginLeft,
+                        card.cardTitle.marginTop,
+                        20.toPx,
+                        card.cardTitle.bottom)
+                    card.cardTitle.layoutParams = param
+                }
 
                 card.imageView.setOnClickListener {
                     val castContext = CastContext.getSharedInstance(activity!!.applicationContext)

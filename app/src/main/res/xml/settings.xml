@@ -87,7 +87,7 @@
         />
         <Preference
                 android:title="Check for updates"
-                android:icon="@drawable/ic_baseline_system_update_24"
+                android:icon="@drawable/rdload"
                 app:key="check_updates"
         />
         <Preference

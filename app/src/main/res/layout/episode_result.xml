@@ -46,7 +46,7 @@
                 style="@android:style/Widget.Material.ProgressBar.Horizontal"
                 android:layout_height="wrap_content">
         </androidx.core.widget.ContentLoadingProgressBar>
-
+        <!--TODO FIX-->
         <TextView
                 android:id="@+id/cardTitle"
                 android:layout_width="match_parent"
@@ -55,9 +55,16 @@
                 android:textSize="15sp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="160dp"
-                android:layout_marginEnd="20dp"
+                android:layout_marginEnd="50dp"
         >
         </TextView>
+
+        <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
+                   android:id="@+id/cardDownloadIcon"
+                   android:src="@drawable/netflix_download"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+        />
         <!--
         <TextView
                 android:id="@+id/cardDescription"

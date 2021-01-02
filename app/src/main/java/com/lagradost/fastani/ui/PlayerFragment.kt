@@ -509,6 +509,12 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             next_episode_btt.setOnClickListener {
                 savePos()
                 val next = MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!)
+                val key = MainActivity.getViewKey(data.card!!.anilistId,
+                    next.seasonIndex,
+                    next.episodeIndex)
+                DataStore.removeKey(VIEW_POS_KEY, key)
+                DataStore.removeKey(VIEW_DUR_KEY, key)
+
                 data.seasonIndex = next.seasonIndex
                 data.episodeIndex = next.episodeIndex
                 releasePlayer()
