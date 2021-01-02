@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -22,13 +23,6 @@ class ControllerActivity : ExpandedControllerActivity() {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.cast_expanded_controller_menu, menu);
         CastButtonFactory.setUpMediaRouteButton(this, menu, R.id.media_route_menu_item)
-        val bar = findViewById<CastSeekBar>(R.id.cast_seek_bar)
-        println(bar)
-        val colorCodeDark = Color.parseColor("#0F52BA");
-        //bar.
-        /* (
-            this.getColorFromAttr(R.attr.colorPrimary)
-        )*/
         return true
     }
 }

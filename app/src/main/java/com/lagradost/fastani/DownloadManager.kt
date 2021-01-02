@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bumptech.glide.Glide
+import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -174,7 +175,7 @@ object DownloadManager {
 
             try {
                 if (!rFile.exists()) {
-                    print("FILE DOESN'T EXITS")
+                    println("FILE DOESN'T EXITS")
                     rFile.createNewFile()
                 } else {
                     if (resumeIntent) {
@@ -186,7 +187,10 @@ object DownloadManager {
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
+                println(e)
+                activity?.runOnUiThread {
+                    Toast.makeText(localContext!!, "Permission error", Toast.LENGTH_SHORT).show()
+                }
                 return@thread
             }
 
@@ -245,7 +249,8 @@ object DownloadManager {
                             input.close()
                             return@thread
                         } else {
-                            showNot(bytesRead,
+                            showNot(
+                                bytesRead,
                                 bytesTotal,
                                 (bytesPerSec * UPDATE_TIME) / timeDiff,
 
@@ -254,7 +259,8 @@ object DownloadManager {
                                 else
                                     DownloadType.IsDownloading,
 
-                                info)
+                                info
+                            )
                             lastUpdate = currentTime
                             bytesPerSec = 0
                             try {
@@ -302,9 +308,11 @@ object DownloadManager {
                 body += "S${info.seasonIndex + 1}:E${info.episodeIndex + 1} - ${title}\n"
             }
             body += "$progressPro % (${convertBytesToAny(progress, 1, 2.0)} MB/${
-                convertBytesToAny(total,
+                convertBytesToAny(
+                    total,
                     1,
-                    2.0)
+                    2.0
+                )
             } MB)"
         }
 
@@ -322,9 +330,11 @@ object DownloadManager {
                 when (type) {
                     DownloadType.IsDone -> "Download Done"
                     DownloadType.IsDownloading -> "${info.card.title.english} - ${
-                        convertBytesToAny(progressPerSec,
+                        convertBytesToAny(
+                            progressPerSec,
                             2,
-                            2.0)
+                            2.0
+                        )
                     } MB/s"
                     DownloadType.IsPaused -> "${info.card.title.english} - Paused"
                     DownloadType.IsFailed -> "Download Failed"
@@ -379,27 +389,34 @@ object DownloadManager {
             for ((index, i) in actionTypes.withIndex()) {
                 val _resultIntent = Intent(localContext, DownloadService::class.java)
 
-                _resultIntent.putExtra("type", when (i) {
-                    DownloadActionType.Resume -> "resume"
-                    DownloadActionType.Pause -> "pause"
-                    DownloadActionType.Stop -> "stop"
-                })
+                _resultIntent.putExtra(
+                    "type", when (i) {
+                        DownloadActionType.Resume -> "resume"
+                        DownloadActionType.Pause -> "pause"
+                        DownloadActionType.Stop -> "stop"
+                    }
+                )
 
                 _resultIntent.putExtra("id", id)
 
-                val pending: PendingIntent = PendingIntent.getService(localContext, 3337 + index + id,
+                val pending: PendingIntent = PendingIntent.getService(
+                    localContext, 3337 + index + id,
                     _resultIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
-                builder.addAction(NotificationCompat.Action(when (i) {
-                    DownloadActionType.Resume -> R.drawable.rdload
-                    DownloadActionType.Pause -> R.drawable.rdpause
-                    DownloadActionType.Stop -> R.drawable.rderror
-                }, when (i) {
-                    DownloadActionType.Resume -> "Resume"
-                    DownloadActionType.Pause -> "Pause"
-                    DownloadActionType.Stop -> "Stop"
-                }, pending))
+                builder.addAction(
+                    NotificationCompat.Action(
+                        when (i) {
+                            DownloadActionType.Resume -> R.drawable.rdload
+                            DownloadActionType.Pause -> R.drawable.rdpause
+                            DownloadActionType.Stop -> R.drawable.rderror
+                        }, when (i) {
+                            DownloadActionType.Resume -> "Resume"
+                            DownloadActionType.Pause -> "Pause"
+                            DownloadActionType.Stop -> "Stop"
+                        }, pending
+                    )
+                )
             }
         }
 

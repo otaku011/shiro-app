@@ -1,12 +1,13 @@
 package com.lagradost.fastani.ui.settings
 
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
@@ -17,6 +18,7 @@ import com.lagradost.fastani.DataStore.removeKeys
 import com.lagradost.fastani.MainActivity.Companion.statusHeight
 import com.lagradost.fastani.R
 import com.lagradost.fastani.VIEW_LST_KEY
+import java.util.*
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -77,7 +79,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
             Toast.makeText(context, "Cleared image cache", Toast.LENGTH_LONG).show()
             return@setOnPreferenceClickListener true
         }
+        val id: String = Settings.Secure.getString(context?.contentResolver, Settings.Secure.ANDROID_ID)
+        val encodedString =
+            Base64.getEncoder().withoutPadding().encodeToString(id.toByteArray())
 
+        val donatorId = findPreference("donator_id") as Preference?
+        donatorId?.summary = encodedString
+        donatorId?.setOnPreferenceClickListener {
+            val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip: ClipData = ClipData.newPlainText("ID", encodedString)
+            clipboard.primaryClip = clip
+            Toast.makeText(context!!, "Copied donor ID, give this to the devs to enable donor mode (if you have donated)", Toast.LENGTH_LONG).show()
+            return@setOnPreferenceClickListener true
+        }
         // Changelog
         val changeLog = findPreference("changelog") as Preference?
         changeLog?.setOnPreferenceClickListener {

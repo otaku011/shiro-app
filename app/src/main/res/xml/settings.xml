@@ -98,12 +98,16 @@
         <Preference
                 android:icon="@drawable/ic_baseline_payment_24"
                 android:title="Donate"
-                app:summary="In order to help us fund the servers and keep them running"
+                app:summary="In order to help us fund the servers and keep them running. Donors can download if authenticated with the Donor ID."
         >
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://www.patreon.com/fastani"/>
 
         </Preference>
+        <Preference
+                android:title="Donor ID"
+                app:key="donator_id"
+        />
         <Preference
                 android:title="Discord"
                 android:icon="@drawable/ic_baseline_discord_24"
