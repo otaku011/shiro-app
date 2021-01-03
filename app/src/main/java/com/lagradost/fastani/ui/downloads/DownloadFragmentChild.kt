@@ -52,9 +52,7 @@ class DownloadFragmentChild() : Fragment() {
             MainActivity.statusHeight // view height
         )
         top_padding_download_child.layoutParams = topParams
-        PlayerFragment.onLeftPlayer += {
-            loadData()
-        }
+        PlayerFragment.onLeftPlayer += ::onPlayerLeft
 
         println("ANILIST: " + anilistId)
         loadData()
@@ -62,7 +60,12 @@ class DownloadFragmentChild() : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        PlayerFragment.onLeftPlayer -= ::onPlayerLeft
         isInResults = false
+    }
+
+    fun onPlayerLeft(it: Boolean) {
+        loadData()
     }
 
     @SuppressLint("ClickableViewAccessibility")
