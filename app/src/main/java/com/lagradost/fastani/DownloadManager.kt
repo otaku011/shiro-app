@@ -311,7 +311,7 @@ object DownloadManager {
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
-                val url = ep.file
+                val url = ep.file.replace(" ","%20")
 
                 val _url = URL(url)
 
