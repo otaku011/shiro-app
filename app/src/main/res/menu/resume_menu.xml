@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/mail"
-          android:title="mail" />
-    <item android:id="@+id/upload"
-          android:title="upload" />
-    <item android:id="@+id/share"
-          android:title="share" />
+    <item android:id="@+id/res_resumedload"
+          android:title="Resume Download" />
+    <item android:id="@+id/res_stopdload"
+          android:title="Delete File" />
 </menu>

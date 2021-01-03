@@ -33,13 +33,12 @@ class DownloadService : IntentService("DownloadService") {
             val id = intent.getIntExtra("id", -1)
             val type = intent.getStringExtra("type")
             if (id != -1 && type != null) {
-                DownloadManager.downloadMustUpdateStatus[id] = true
-                DownloadManager.downloadStatus[id] = when (type) {
+                DownloadManager.invokeDownloadAction(id, when (type) {
                     "resume" -> DownloadManager.DownloadStatusType.IsDownloading
                     "pause" -> DownloadManager.DownloadStatusType.IsPaused
                     "stop" -> DownloadManager.DownloadStatusType.IsStoped
                     else -> DownloadManager.DownloadStatusType.IsDownloading
-                }
+                })
             }
         }
     }
@@ -51,6 +50,7 @@ object DownloadManager {
     val downloadMustUpdateStatus = hashMapOf<Int, Boolean>()
     val downloadEvent = Event<DownloadEvent>()
     val downloadPauseEvent = Event<Int>()
+    val downloadDeleteEvent = Event<Int>()
 
     fun init(_context: Context) {
         localContext = _context
@@ -135,6 +135,20 @@ object DownloadManager {
         val maxFileSize: Long, // IF MUST RESUME
         val downloadFileUrl: String, // IF RESUME, DO IT FROM THIS URL
     )
+
+    fun invokeDownloadAction(id: Int, type: DownloadStatusType) {
+        if (downloadStatus.containsKey(id)) {
+            downloadStatus[id] = type
+            downloadMustUpdateStatus[id] = true
+        } else {
+            downloadStatus[id] = type
+        }
+        if (type == DownloadStatusType.IsDownloading) {
+            downloadPauseEvent.invoke(id)
+        } else if (type == DownloadStatusType.IsStoped) {
+            downloadDeleteEvent.invoke(id)
+        }
+    }
 
     fun Double.round(decimals: Int): Double {
         var multiplier = 1.0
@@ -237,12 +251,20 @@ object DownloadManager {
             return
         }
         val id = (info.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
+
         if (downloadStatus.containsKey(id)) { // PREVENT DUPLICATE DOWNLOADS
             if (downloadStatus[id] == DownloadStatusType.IsPaused) {
                 downloadStatus[id] = DownloadStatusType.IsDownloading
                 downloadMustUpdateStatus[id] = true
             }
+            if (resumeIntent) {
+                invokeDownloadAction(id, DownloadStatusType.IsDownloading)
+            }
             return
+        } else {
+            if (resumeIntent) {
+                invokeDownloadAction(id, DownloadStatusType.IsDownloading)
+            }
         }
 
         thread {
@@ -391,7 +413,9 @@ object DownloadManager {
 
                             if (downloadStatus[id] == DownloadStatusType.IsStoped) {
                                 downloadStatus.remove(id)
-                                rFile.delete()
+                                if(rFile.exists()) {
+                                    rFile.delete()
+                                }
                                 showNot(0, bytesTotal, 0, DownloadType.IsStopped, info)
                                 output.flush()
                                 output.close()
@@ -416,7 +440,7 @@ object DownloadManager {
                                 lastUpdate = currentTime
                                 bytesPerSec = 0
                                 try {
-                                    if(downloadStatus[id] == DownloadStatusType.IsPaused) {
+                                    if (downloadStatus[id] == DownloadStatusType.IsPaused) {
                                         downloadPauseEvent.invoke(id)
                                         while (downloadStatus[id] == DownloadStatusType.IsPaused) {
                                             Thread.sleep(100)

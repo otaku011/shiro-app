@@ -7,11 +7,13 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
@@ -34,8 +36,6 @@ import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
 
 import com.lagradost.fastani.MainActivity
-
-
 
 
 class DownloadFragmentChild() : Fragment() {
@@ -87,20 +87,26 @@ class DownloadFragmentChild() : Fragment() {
 
                 val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
 
+                fun deleteFile() {
+                    if (file.exists()) {
+                        file.delete()
+                    }
+                    card.visibility = GONE
+                    DataStore.removeKey(k)
+                    Toast.makeText(
+                        context,
+                        "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
                 card.cardRemoveIcon.setOnClickListener {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it)
                         builder.apply {
                             setPositiveButton("Delete",
                                 DialogInterface.OnClickListener { dialog, id ->
-                                    file.delete()
-                                    card.visibility = GONE
-                                    DataStore.removeKey(k)
-                                    Toast.makeText(
-                                        context,
-                                        "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
-                                        Toast.LENGTH_LONG
-                                    ).show()
+                                    deleteFile()
                                 })
                             setNegativeButton("Cancel",
                                 DialogInterface.OnClickListener { dialog, id ->
@@ -172,7 +178,7 @@ class DownloadFragmentChild() : Fragment() {
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
 
                 fun updateIcon(megabytes: Int) {
-                    if (megabytes - 2 >= localBytesTotal) {
+                    if (megabytes + 3 >= megaBytesTotal) {
                         card.progressBar.visibility = View.GONE
                         card.cardPauseIcon.visibility = View.GONE
                         card.cardRemoveIcon.visibility = View.VISIBLE
@@ -183,28 +189,74 @@ class DownloadFragmentChild() : Fragment() {
                     }
                 }
 
+                fun getDownload(): DownloadManager.DownloadInfo {
+                    return DownloadManager.DownloadInfo(child.seasonIndex,
+                        child.episodeIndex,
+                        parent!!.title,
+                        parent.isMovie,
+                        child.anilistId,
+                        child.fastAniId,
+                        FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
+                        null)
+                }
+
+                fun getStatus(): Boolean { // IF CAN RESUME
+                    return if (DownloadManager.downloadStatus.containsKey(child.internalId)) {
+                        DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsPaused
+                    } else {
+                        true
+                    }
+                }
+
                 fun setStatus() {
-                    if (DownloadManager.downloadStatus.containsKey(child.internalId)) {
-                        if (DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsPaused) {
+                    activity?.runOnUiThread {
+                        if (getStatus()) {
                             card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
                         } else {
                             card.cardPauseIcon.setImageResource(R.drawable.exo_icon_stop)
                         }
-                    } else {
-                        card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
                     }
                 }
 
                 setStatus()
                 updateIcon(localBytesTotal)
 
-                /*
-                card.cardPauseIcon.setOnClickListener {
-                    val popup = PopupMenu(context, card.cardPauseIcon)
-                    popup.setOnMenuItemClickListener(context)
-                    popup.inflate(R.menu)
+                card.cardPauseIcon.setOnClickListener { v ->
+                    val popup = PopupMenu(context, v)
+                    if (getStatus()) {
+                        popup.setOnMenuItemClickListener {
+                            when (it.itemId) {
+                                R.id.res_resumedload -> {
+                                    DownloadManager.downloadEpisode(getDownload(), true)
+                                }
+                                R.id.res_stopdload -> {
+                                    DownloadManager.invokeDownloadAction(child.internalId,
+                                        DownloadManager.DownloadStatusType.IsStoped)
+                                    deleteFile()
+                                }
+                            }
+                            return@setOnMenuItemClickListener true
+                        }
+                        popup.inflate(R.menu.resume_menu)
+                    } else {
+                        popup.setOnMenuItemClickListener {
+                            when (it.itemId) {
+                                R.id.stop_pauseload -> {
+                                    DownloadManager.invokeDownloadAction(child.internalId,
+                                        DownloadManager.DownloadStatusType.IsPaused)
+                                }
+                                R.id.stop_stopdload -> {
+                                    DownloadManager.invokeDownloadAction(child.internalId,
+                                        DownloadManager.DownloadStatusType.IsStoped)
+                                    deleteFile()
+                                }
+                            }
+                            return@setOnMenuItemClickListener true
+                        }
+                        popup.inflate(R.menu.stop_menu)
+                    }
                     popup.show()
-                }*/
+                }
                 /*
                 else {
                     card.cardRemoveIcon.setImageResource(R.drawable.netflix_pause)
@@ -215,6 +267,12 @@ class DownloadFragmentChild() : Fragment() {
                 DownloadManager.downloadPauseEvent += {
                     if (it == child.internalId) {
                         setStatus()
+                    }
+                }
+
+                DownloadManager.downloadDeleteEvent += {
+                    if (it == child.internalId) {
+                        deleteFile()
                     }
                 }
 
@@ -231,14 +289,7 @@ class DownloadFragmentChild() : Fragment() {
                 // RESUME FUNCTION
                 /*
                 if (parent != null) {
-                    DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(child.seasonIndex,
-                        child.episodeIndex,
-                        parent.title,
-                        parent.isMovie,
-                        child.anilistId,
-                        child.fastAniId,
-                        FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
-                        null), true)
+
                 }*/
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(
