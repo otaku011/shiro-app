@@ -32,9 +32,6 @@ import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
-import kotlin.concurrent.thread
-import android.R
-import android.widget.PopupMenu
 
 import com.lagradost.fastani.MainActivity
 
