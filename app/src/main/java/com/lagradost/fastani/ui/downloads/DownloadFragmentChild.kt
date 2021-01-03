@@ -36,6 +36,7 @@ import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
 
 import com.lagradost.fastani.MainActivity
+import com.lagradost.fastani.ui.PlayerFragment
 
 
 class DownloadFragmentChild() : Fragment() {
@@ -51,6 +52,9 @@ class DownloadFragmentChild() : Fragment() {
             MainActivity.statusHeight // view height
         )
         top_padding_download_child.layoutParams = topParams
+        PlayerFragment.onLeftPlayer += {
+            loadData()
+        }
 
         println("ANILIST: " + anilistId)
         loadData()
@@ -87,17 +91,44 @@ class DownloadFragmentChild() : Fragment() {
 
                 val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
 
+                card.imageView.setOnClickListener {
+                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+                    println("SSTATE: " + castContext.castState + "<<")
+                    if (save) {
+                        DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
+                    }
+                    MainActivity.loadPlayer(
+                        PlayerData(
+                            child.videoTitle,
+                            child.videoPath,
+                            child.episodeIndex,
+                            child.seasonIndex,
+                            null,
+                            null,
+                            anilistId
+                        )
+                    )
+                    //MainActivity.loadPlayer(epIndex, index, data)
+                }
+                val title = fixEpTitle(
+                    child.videoTitle, child.episodeIndex + 1, child.seasonIndex + 1,
+                    parent?.isMovie == true, true
+                )
+
+                // ================ DOWNLOAD STUFF ================
                 fun deleteFile() {
                     if (file.exists()) {
                         file.delete()
                     }
-                    card.visibility = GONE
-                    DataStore.removeKey(k)
-                    Toast.makeText(
-                        context,
-                        "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    activity?.runOnUiThread {
+                        card.visibility = GONE
+                        DataStore.removeKey(k)
+                        Toast.makeText(
+                            context,
+                            "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
 
                 card.cardRemoveIcon.setOnClickListener {
@@ -122,39 +153,6 @@ class DownloadFragmentChild() : Fragment() {
                     alertDialog?.show()
                 }
 
-                // CANT DOWNLOAD DOWNLOADED FILES
-                /*
-                card.cardRemoveIcon.visibility = View.GONE
-                val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
-                param.updateMarginsRelative(
-                    card.cardTitle.marginLeft,
-                    card.cardTitle.marginTop,
-                    10.toPx,
-                    card.cardTitle.marginBottom
-                )
-                card.cardTitle.layoutParams = param*/
-
-
-                card.imageView.setOnClickListener {
-                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-                    println("SSTATE: " + castContext.castState + "<<")
-                    if (save) {
-                        DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
-                    }
-                    MainActivity.loadPlayer(
-                        PlayerData(
-                            child.videoTitle,
-                            child.videoPath,
-                            child.episodeIndex,
-                            child.seasonIndex,
-                            null,
-                            null,
-                            anilistId
-                        )
-                    )
-                    //MainActivity.loadPlayer(epIndex, index, data)
-                }
-
                 card.setOnLongClickListener {
                     if (ResultFragment.isViewState) {
                         if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
@@ -166,11 +164,6 @@ class DownloadFragmentChild() : Fragment() {
                     }
                     return@setOnLongClickListener true
                 }
-
-                val title = fixEpTitle(
-                    child.videoTitle, child.episodeIndex + 1, child.seasonIndex + 1,
-                    parent?.isMovie == true, true
-                )
 
                 card.cardTitle.text = title
                 val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
@@ -257,11 +250,7 @@ class DownloadFragmentChild() : Fragment() {
                     }
                     popup.show()
                 }
-                /*
-                else {
-                    card.cardRemoveIcon.setImageResource(R.drawable.netflix_pause)
-                    card.cardRemoveIcon.setColorFilter(requireContext().getColorFromAttr(R.attr.colorPrimary))
-                }*/
+
                 card.progressBar.progress = maxOf(minOf(localBytesTotal * 100 / megaBytesTotal, 100), 0)
 
                 DownloadManager.downloadPauseEvent += {
@@ -277,20 +266,17 @@ class DownloadFragmentChild() : Fragment() {
                 }
 
                 DownloadManager.downloadEvent += {
-                    if (it.id == child.internalId) {
-                        val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
-                        card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
-                        card.progressBar.setProgress(maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0), true)
-                        updateIcon(megaBytes)
+                    activity?.runOnUiThread {
+                        if (it.id == child.internalId) {
+                            val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
+                            card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
+                            card.progressBar.setProgress(maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0), true)
+                            updateIcon(megaBytes)
+                        }
                     }
                 }
 
-
-                // RESUME FUNCTION
-                /*
-                if (parent != null) {
-
-                }*/
+                // ================ REGULAR ================
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(
                         requireContext().getColorFromAttr(

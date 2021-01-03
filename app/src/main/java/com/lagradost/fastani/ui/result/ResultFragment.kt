@@ -2,6 +2,7 @@ package com.lagradost.fastani.ui.result
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
@@ -9,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.*
 import androidx.fragment.app.Fragment
@@ -50,6 +52,11 @@ import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.lagradost.fastani.DataStore.mapper
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.episode_result.view.cardBg
+import kotlinx.android.synthetic.main.episode_result.view.cardTitle
+import kotlinx.android.synthetic.main.episode_result.view.progressBar
+import kotlinx.android.synthetic.main.episode_result.view.video_progress
+import java.io.File
 
 
 const val DESCRIPTION_LENGTH = 200
@@ -219,6 +226,7 @@ class ResultFragment : Fragment() {
                 }
 
                 val key = MainActivity.getViewKey(data!!.anilistId, index, epIndex)
+                val internalId = (data!!.anilistId + "S${index}E${epIndex}").hashCode()
 
                 if (MainActivity.isDonor) {
                     card.cardDownloadIcon.setOnClickListener {
@@ -298,6 +306,174 @@ class ResultFragment : Fragment() {
                     card.video_progress.alpha = 0f
                 }
 
+                val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(DOWNLOAD_CHILD_KEY, internalId.toString())
+                // ================ DOWNLOAD STUFF ================
+                if (child != null) {
+                    println("CHILD NOT NULL:" + epIndex)
+                    val file = File(child.videoPath)
+                    if (file.exists()) {
+                        val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
+                        val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
+                        fun updateIcon(megabytes: Int) {
+                            if (!file.exists()) {
+                                card.cardDownloadIcon.visibility = View.VISIBLE
+                                card.progressBar.visibility = View.GONE
+                                card.cardPauseIcon.visibility = View.GONE
+                                card.cardRemoveIcon.visibility = View.GONE
+                            } else {
+                                card.cardDownloadIcon.visibility = View.GONE
+                                if (megabytes + 3 >= megaBytesTotal) {
+                                    card.progressBar.visibility = View.GONE
+                                    card.cardPauseIcon.visibility = View.GONE
+                                    card.cardRemoveIcon.visibility = View.VISIBLE
+                                } else {
+                                    card.progressBar.visibility = View.VISIBLE
+                                    card.cardRemoveIcon.visibility = View.GONE
+                                    card.cardPauseIcon.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+
+                        println("FILE EXISTS:" + epIndex)
+                        fun deleteFile() {
+                            if (file.exists()) {
+                                file.delete()
+                            }
+                            activity?.runOnUiThread {
+                                DataStore.removeKey(DOWNLOAD_CHILD_KEY, key)
+                                Toast.makeText(
+                                    context,
+                                    "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                updateIcon(0)
+                            }
+                        }
+
+                        card.cardRemoveIcon.setOnClickListener {
+                            val alertDialog: AlertDialog? = activity?.let {
+                                val builder = AlertDialog.Builder(it)
+                                builder.apply {
+                                    setPositiveButton("Delete",
+                                        DialogInterface.OnClickListener { dialog, id ->
+                                            deleteFile()
+                                        })
+                                    setNegativeButton("Cancel",
+                                        DialogInterface.OnClickListener { dialog, id ->
+                                            // User cancelled the dialog
+                                        })
+                                }
+                                // Set other dialog properties
+                                builder.setTitle("Delete ${child.videoTitle} - S${child.seasonIndex + 1}:E${child.episodeIndex + 1}")
+
+                                // Create the AlertDialog
+                                builder.create()
+                            }
+                            alertDialog?.show()
+                        }
+
+                        card.cardTitle.text = title
+
+                        //card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
+
+
+                        fun getDownload(): DownloadManager.DownloadInfo {
+                            return DownloadManager.DownloadInfo(child.seasonIndex,
+                                child.episodeIndex,
+                                data!!.title,
+                                isMovie,
+                                child.anilistId,
+                                child.fastAniId,
+                                FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
+                                null)
+                        }
+
+                        fun getStatus(): Boolean { // IF CAN RESUME
+                            return if (DownloadManager.downloadStatus.containsKey(child.internalId)) {
+                                DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsPaused
+                            } else {
+                                true
+                            }
+                        }
+
+                        fun setStatus() {
+                            activity?.runOnUiThread {
+                                if (getStatus()) {
+                                    card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
+                                } else {
+                                    card.cardPauseIcon.setImageResource(R.drawable.exo_icon_stop)
+                                }
+                            }
+                        }
+
+                        setStatus()
+                        updateIcon(localBytesTotal)
+
+                        card.cardPauseIcon.setOnClickListener { v ->
+                            val popup = PopupMenu(context, v)
+                            if (getStatus()) {
+                                popup.setOnMenuItemClickListener {
+                                    when (it.itemId) {
+                                        R.id.res_resumedload -> {
+                                            DownloadManager.downloadEpisode(getDownload(), true)
+                                        }
+                                        R.id.res_stopdload -> {
+                                            DownloadManager.invokeDownloadAction(child.internalId,
+                                                DownloadManager.DownloadStatusType.IsStoped)
+                                            deleteFile()
+                                        }
+                                    }
+                                    return@setOnMenuItemClickListener true
+                                }
+                                popup.inflate(R.menu.resume_menu)
+                            } else {
+                                popup.setOnMenuItemClickListener {
+                                    when (it.itemId) {
+                                        R.id.stop_pauseload -> {
+                                            DownloadManager.invokeDownloadAction(child.internalId,
+                                                DownloadManager.DownloadStatusType.IsPaused)
+                                        }
+                                        R.id.stop_stopdload -> {
+                                            DownloadManager.invokeDownloadAction(child.internalId,
+                                                DownloadManager.DownloadStatusType.IsStoped)
+                                            deleteFile()
+                                        }
+                                    }
+                                    return@setOnMenuItemClickListener true
+                                }
+                                popup.inflate(R.menu.stop_menu)
+                            }
+                            popup.show()
+                        }
+
+                        card.progressBar.progress = maxOf(minOf(localBytesTotal * 100 / megaBytesTotal, 100), 0)
+
+                        DownloadManager.downloadPauseEvent += {
+                            if (it == child.internalId) {
+                                setStatus()
+                            }
+                        }
+
+                        DownloadManager.downloadDeleteEvent += {
+                            if (it == child.internalId) {
+                                deleteFile()
+                            }
+                        }
+
+                        DownloadManager.downloadEvent += {
+                            activity?.runOnUiThread {
+                                if (it.id == child.internalId) {
+                                    val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
+                                    //card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
+                                    card.progressBar.setProgress(maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0),
+                                        true)
+                                    updateIcon(megaBytes)
+                                }
+                            }
+                        }
+                        // END DOWNLOAD
+                    }
+                }
                 title_season_cards.addView(card)
             }
         }
@@ -305,12 +481,21 @@ class ResultFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        PlayerFragment.onLeftPlayer -= ::OnLeftVideoPlayer
+        PlayerFragment.onLeftPlayer -= ::onLeftVideoPlayer
+        DownloadManager.downloadStartEvent -= ::onDownloadStarted
         isInResults = false
     }
 
-    fun OnLeftVideoPlayer(event: Boolean) {
+    fun onLeftVideoPlayer(event: Boolean) {
         loadSeason(currentSeasonIndex)
+    }
+
+    fun onDownloadStarted(anilistId : String) {
+        if(anilistId == data!!.anilistId) {
+            activity?.runOnUiThread {
+                loadSeason(currentSeasonIndex)
+            }
+        }
     }
 
     var currentSeasonIndex: Int = 0
@@ -338,7 +523,8 @@ class ResultFragment : Fragment() {
         })
         isInResults = true
         //isViewState = false
-        PlayerFragment.onLeftPlayer += ::OnLeftVideoPlayer
+        PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
+        DownloadManager.downloadStartEvent += ::onDownloadStarted
         ToggleHeartVisual(isBookmarked)
 
         title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)

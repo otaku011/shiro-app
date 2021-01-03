@@ -51,6 +51,7 @@ object DownloadManager {
     val downloadEvent = Event<DownloadEvent>()
     val downloadPauseEvent = Event<Int>()
     val downloadDeleteEvent = Event<Int>()
+    val downloadStartEvent = Event<String>()
 
     fun init(_context: Context) {
         localContext = _context
@@ -386,14 +387,15 @@ object DownloadManager {
                         bytesTotal,
                         url))
 
-                //if(info.card != null) {
                 DataStore.setKey(DOWNLOAD_PARENT_KEY, info.anilistId,
                     DownloadParentFileMetadata(info.id,
                         info.anilistId,
                         info.title,
                         mainPosterPath,
                         isMovie))
-                //}
+
+                downloadStartEvent.invoke(info.anilistId)
+
                 // =================== DOWNLOAD ===================
                 while (true) {
                     try {
@@ -416,6 +418,7 @@ object DownloadManager {
                                 if(rFile.exists()) {
                                     rFile.delete()
                                 }
+                                //downloadDeleteEvent.invoke(id)
                                 showNot(0, bytesTotal, 0, DownloadType.IsStopped, info)
                                 output.flush()
                                 output.close()
@@ -453,6 +456,7 @@ object DownloadManager {
                         }
                     } catch (_ex: Exception) {
                         println("CONNECT TRUE:::$_ex")
+                        _ex.printStackTrace()
                         fullResume = true
                         /*if (isFromPaused) {
                         } else {
@@ -468,6 +472,7 @@ object DownloadManager {
                     }
                 } else {
                     showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
+                    downloadEvent.invoke(DownloadEvent(id, bytesRead))
                 }
 
                 output.flush()

@@ -58,20 +58,7 @@
                 android:layout_marginEnd="50dp"
         >
         </TextView>
-        <ProgressBar
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:id="@+id/progressBar"
-                android:indeterminate="false"
-                android:progressDrawable="@drawable/circular_progress_bar"
-                android:background="@drawable/circle_shape"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:max="100"
-                android:layout_margin="10dp"
-                android:layout_gravity="end|center_vertical"
-                android:progress="0"
-                android:visibility="gone"
-        />
+
 
         <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
                    android:src="@drawable/exo_icon_stop"
@@ -85,6 +72,36 @@
         <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
                    android:src="@drawable/netflix_download"
                    android:id="@+id/cardDownloadIcon"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+        />
+        <ProgressBar
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/progressBar"
+                android:indeterminate="false"
+                android:progressDrawable="@drawable/circular_progress_bar"
+                android:background="@drawable/circle_shape"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:max="100"
+                android:layout_margin="5dp"
+                android:layout_gravity="end|center_vertical"
+                android:progress="0"
+                android:visibility="gone"
+        />
+
+        <ImageView android:layout_width="30dp" android:layout_height="30dp" android:layout_margin="10dp"
+                   android:id="@+id/cardPauseIcon"
+                   android:src="@drawable/exo_icon_stop"
+                   app:tint="?attr/colorPrimary"
+                   android:visibility="gone"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+        />
+        <ImageView android:layout_width="30dp" android:layout_height="30dp" android:layout_margin="10dp"
+                   android:id="@+id/cardRemoveIcon"
+                   android:visibility="gone"
+                   android:src="@drawable/ic_baseline_delete_24"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
         />
