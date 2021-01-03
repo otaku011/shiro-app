@@ -18,8 +18,8 @@
         <ImageView
                 android:id="@+id/imageView"
                 android:scaleType="centerCrop"
-                android:layout_width="68dp"
-                android:layout_height="100dp"
+                android:layout_width="61dp"
+                android:layout_height="90dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"

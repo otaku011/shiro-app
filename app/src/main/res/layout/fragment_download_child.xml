@@ -16,6 +16,8 @@
             android:background="@color/background"
             tools:context=".ui.downloads.DownloadFragmentChild">
         <LinearLayout
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 android:id="@+id/downloadRootChild"
                 android:orientation="vertical"
                 android:layout_width="match_parent"

@@ -20,6 +20,8 @@
                 android:backgroundTint="@color/darkBar"
                 tools:context=".ui.downloads.DownloadFragment">
             <LinearLayout
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
                     android:id="@+id/downloadRoot"
                     android:orientation="vertical"
                     android:layout_width="match_parent"
