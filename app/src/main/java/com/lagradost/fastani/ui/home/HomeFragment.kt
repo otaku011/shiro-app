@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.fastani.*
+import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MainActivity.Companion.loadPlayer
 import com.lagradost.fastani.ui.GlideApp
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -32,6 +33,9 @@ class HomeFragment : Fragment() {
     ): View? {
         homeViewModel =
             activity?.let { ViewModelProviders.of(it).get(HomeViewModel::class.java) }!!
+        thread {
+            requestHome(true)
+        }
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 

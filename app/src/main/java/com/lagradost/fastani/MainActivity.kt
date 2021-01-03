@@ -11,6 +11,7 @@ import android.content.res.Resources
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
@@ -28,6 +29,7 @@ import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment.STYLE_NO_FRAME
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -43,6 +45,7 @@ import androidx.transition.ChangeBounds
 import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.google.android.gms.cast.framework.CastContext
+import com.lagradost.fastani.FastAniApi.Companion.getCardById
 import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerEventType
@@ -198,10 +201,10 @@ class MainActivity : AppCompatActivity() {
             val maxValue = 90
             var canContinue: Boolean = (pos * 100 / dur) > maxValue
             var isFound: Boolean = true
-            var _pos = pos
-            var _dur = dur
+            val _pos = pos
+            val _dur = dur
 
-            val card = data.card!!
+            val card = data.card
             while (canContinue) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
                 val next = canPlayNextEpisode(card, seasonIndex, episodeIndex)
                 if (next.isFound) {
@@ -248,8 +251,10 @@ class MainActivity : AppCompatActivity() {
 
         fun popCurrentPage() {
             println("POPP")
-            val currentFragment = activity?.supportFragmentManager!!.fragments.last()
-            println(currentFragment)
+            val currentFragment = activity?.supportFragmentManager!!.fragments.last {
+                it.isVisible
+            }
+
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
             if (settingsManager.getBoolean("rotation_enabled", false)) {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
@@ -477,9 +482,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         thread {
+            FastAniApi.init()
+        }
+        thread {
             isDonor = true//TODO FIX getDonorStatus()
         }
-
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window.setFlags(
@@ -495,6 +502,10 @@ class MainActivity : AppCompatActivity() {
 
         //https://stackoverflow.com/questions/52594181/how-to-know-if-user-has-disabled-picture-in-picture-feature-permission
         //https://developer.android.com/guide/topics/ui/picture-in-picture
+
+        //val action: String? = intent?.action
+
+
         canShowPipMode =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && // OS SUPPORT
                     packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE) && // HAS FEATURE, MIGHT BE BLOCKED DUE TO POWER DRAIN
@@ -517,18 +528,18 @@ class MainActivity : AppCompatActivity() {
 
         // Setting the theme
         /*
-        val autoDarkMode = settingsManager.getBoolean("auto_dark_mode", true)
-        val darkMode = settingsManager.getBoolean("dark_mode", false)
+    val autoDarkMode = settingsManager.getBoolean("auto_dark_mode", true)
+    val darkMode = settingsManager.getBoolean("dark_mode", false)
 
-        if (autoDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    if (autoDarkMode) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    } else {
+        if (darkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         } else {
-            if (darkMode) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
-        }*/
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+    }*/
         mediaSession = MediaSessionCompat(activity, "fastani").apply {
 
             setFlags(
@@ -556,9 +567,6 @@ class MainActivity : AppCompatActivity() {
 
         DataStore.init(this)
         DownloadManager.init(this)
-        thread {
-            FastAniApi.init()
-        }
         navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -571,6 +579,24 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController!!)
 
         window.setBackgroundDrawableResource(R.color.background);
-        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+        //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+        val data: Uri? = intent?.data
+
+        if (data != null) {
+            thread {
+                val urlRegex = Regex("""fastani\.net\/watch\/(.*?)\/(\d+)\/(\d+)$""")
+                val found = urlRegex.find(data.toString())
+                if (found != null) {
+                    val (id, season, episode) = found.destructured
+                    println("$id $season $episode")
+                    val card = getCardById(id)
+                    if (card?.anime?.cdnData?.seasons?.getOrNull(season.toInt() - 1) != null) {
+                        if (card.anime.cdnData.seasons[season.toInt() - 1].episodes.getOrNull(episode.toInt() - 1) != null) {
+                            loadPlayer(episode.toInt() - 1, season.toInt() - 1, card.anime)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
