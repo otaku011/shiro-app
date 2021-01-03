@@ -128,7 +128,7 @@
                 app:summary="Join FastAni's Community to check updates on the app and site, talk with developers and give suggestions"
         >
             <intent android:action="android.intent.action.VIEW"
-                    android:data="https://discord.gg/Vaq4ARdybn"/>
+                    android:data="https://discord.gg/kzR2AUtTV8"/>
 
         </Preference>
         <Preference
