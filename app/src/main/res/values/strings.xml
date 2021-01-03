@@ -1,14 +1,15 @@
 <resources>
-    <string name="version_code">1.0.4 Public Beta</string>
+    <string name="version_code">1.0.5 Public Beta</string>
     <string name="changelog">\n
-        - Added chromecast (Still in progress)\n
-        - Added statusbar toggle\n
-        - Added continue watching\n
-        - Added title text to cards\n
-        - Fixed next episode\n
-        - Fixed crashing on 6.0.0 (Again)\n
-        - Fixed search not updating properly\n
-        - Fixed app update crash\n
+        - Fully fixed chromecast\n
+        - Added downloads for donors\n
+        - Added skip OP button\n
+        - Added toggle to allow screen rotation (good for tablets)\n
+        - Added link support, opening https://fastani.net/watch/… will open the app with the episode\n
+        - Made player controls smaller\n
+        - Made swipe to seek less sensitive\n
+        - Fixed keyboard not disappearing after search\n
+        - Fixed a bunch of crashes (and probably added some)\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>
@@ -19,8 +20,6 @@
     <string name="fastani_name">FASTANI</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="main_watch_button_text">WATCH</string>
     <string name="bookmark_btt">Bookmark</string>
     <string name="bookmark_btt_hint">Toggle Bookmark</string>
