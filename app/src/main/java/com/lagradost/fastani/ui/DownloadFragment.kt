@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.lagradost.fastani.*
+import com.lagradost.fastani.ui.result.ResultFragment
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
@@ -70,9 +71,11 @@ class DownloadFragment : Fragment() {
                             epData[id] = EpisodesDownloaded(1, if (isDownloading) 1 else 0, child.maxFileSize)
                         } else {
                             val current = epData[id]!!
-                            epData[id] = EpisodesDownloaded(current.count + 1,
+                            epData[id] = EpisodesDownloaded(
+                                current.count + 1,
                                 current.countDownloading + (if (isDownloading) 1 else 0),
-                                current.countBytes + child.maxFileSize)
+                                current.countBytes + child.maxFileSize
+                            )
                         }
                     }
                 }
@@ -96,7 +99,7 @@ class DownloadFragment : Fragment() {
                                 "${childData.count} Episode${(if (childData.count == 1) "" else "s")} | $megaBytes MB"
 
                         cardView.cardBg.setOnClickListener {
-                            MainActivity.activity?.supportFragmentManager?.beginTransaction()
+                            activity?.supportFragmentManager?.beginTransaction()
                                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                                 ?.add(
                                     R.id.homeRoot, DownloadFragmentChild(
@@ -104,6 +107,14 @@ class DownloadFragment : Fragment() {
                                     )
                                 )
                                 ?.commit()
+                            /*MainActivity.activity?.supportFragmentManager?.beginTransaction()
+                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                ?.replace(
+                                    R.id.homeRoot, DownloadFragmentChild(
+                                        parent.anilistId
+                                    )
+                                )
+                                ?.commit()*/
                         }
 
                         downloadRoot.addView(cardView)

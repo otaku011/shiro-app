@@ -1,6 +1,7 @@
 package com.lagradost.fastani.ui.result
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
@@ -13,8 +14,6 @@ import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
-import androidx.mediarouter.app.MediaRouteControllerDialogFragment
-import androidx.mediarouter.media.MediaRouteSelector
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
@@ -48,24 +47,30 @@ import com.google.android.gms.common.images.WebImage
 import com.google.android.exoplayer2.Player
 
 import com.google.android.exoplayer2.ext.cast.CastPlayer
-import com.google.android.exoplayer2.ext.cast.SessionAvailabilityListener
-import com.google.android.gms.cast.CastMediaControlIntent
-import com.google.android.gms.cast.framework.media.uicontroller.UIMediaController
+import com.lagradost.fastani.DataStore.mapper
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 const val DESCRIPTION_LENGTH = 200
 const val has_download_perms = true
 
-class ResultFragment(data: FastAniApi.Card) : Fragment() {
-    var data: FastAniApi.Card = data
-    var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data.anilistId)
+class ResultFragment() : Fragment() {
+    var data: FastAniApi.Card? = null
+    private lateinit var resultViewModel: ResultViewModel
+    private var isMovie: Boolean = false
+    var isBookmarked = false
 
     companion object {
         var isInResults: Boolean = false
         var isViewState: Boolean = true
 
-        fun fixEpTitle(_title: String?, epNum: Int, seNum: Int,isMovie : Boolean, formatBefore: Boolean = false): String {
+        fun fixEpTitle(
+            _title: String?,
+            epNum: Int,
+            seNum: Int,
+            isMovie: Boolean,
+            formatBefore: Boolean = false
+        ): String {
             var title = _title
             if (title == null || title.replace(" ", "") == "") {
                 title = "Episode $epNum"
@@ -79,10 +84,15 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
             }
             return title
         }
+
+        fun newInstance(data: FastAniApi.Card) =
+            ResultFragment().apply {
+                arguments = Bundle().apply {
+                    putString("data", mapper.writeValueAsString(data))
+                }
+            }
     }
 
-    private val isMovie: Boolean = data.episodes == 1 && data.status == "FINISHED"
-    private lateinit var resultViewModel: ResultViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -94,6 +104,14 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        arguments?.getString("data")?.let {
+            data = mapper.readValue(it, FastAniApi.Card::class.java)
+        }
+        isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
+        isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.anilistId)
+    }
     /*
     private fun ToggleViewState(_isViewState: Boolean) {
         isViewState = _isViewState
@@ -118,11 +136,11 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         if (_isBookmarked) {
             DataStore.setKey<BookmarkedTitle>(
                 BOOKMARK_KEY,
-                data.anilistId,
-                BookmarkedTitle(data.id, data.anilistId, data.description, data.title, data.coverImage)
+                data!!.anilistId,
+                BookmarkedTitle(data!!.id, data!!.anilistId, data!!.description, data!!.title, data!!.coverImage)
             )
         } else {
-            DataStore.removeKey(BOOKMARK_KEY, data.anilistId)
+            DataStore.removeKey(BOOKMARK_KEY, data!!.anilistId)
         }
         thread {
             requestHome(true)
@@ -132,14 +150,17 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
         castContext.castOptions
-        val ep = data.cdnData.seasons[seasonIndex].episodes[episodeIndex]
+        val ep = data!!.cdnData.seasons[seasonIndex].episodes[episodeIndex]
         val poster = ep.thumb
         val url = ep.file
-        val key = MainActivity.getViewKey(data.anilistId, seasonIndex, episodeIndex)
+        val key = MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
 
         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
-        movieMetadata.putString(MediaMetadata.KEY_TITLE, fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, isMovie,true))
-        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.title.english)
+        movieMetadata.putString(
+            MediaMetadata.KEY_TITLE,
+            fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, isMovie, true)
+        )
+        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.title.english)
         if (poster != null) {
             movieMetadata.addImage(WebImage(Uri.parse(poster)))
         }
@@ -177,8 +198,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         val save = settingsManager.getBoolean("save_history", true)
 
         // When fastani is down it doesn't report any seasons and this is needed.
-        if (data.cdnData.seasons.isNotEmpty()) {
-            data.cdnData.seasons[index].episodes.forEach { fullEpisode ->
+        if (data!!.cdnData.seasons.isNotEmpty()) {
+            data!!.cdnData.seasons[index].episodes.forEach { fullEpisode ->
                 val epIndex = epNum
                 epNum++
 
@@ -195,11 +216,11 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     }
                 }
 
-                val key = MainActivity.getViewKey(data.anilistId, index, epIndex)
+                val key = MainActivity.getViewKey(data!!.anilistId, index, epIndex)
 
                 if (MainActivity.isDonor) {
                     card.cardDownloadIcon.setOnClickListener {
-                        DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(data, index, epIndex))
+                        DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(data!!, index, epIndex))
                     }
                 } else {
                     card.cardDownloadIcon.visibility = View.GONE
@@ -223,7 +244,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                         castEpsiode(index, epIndex)
                         loadSeason(index)
                     } else {
-                        MainActivity.loadPlayer(epIndex, index, data)
+                        MainActivity.loadPlayer(epIndex, index, data!!)
                     }
                 }
 
@@ -239,7 +260,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     return@setOnLongClickListener true
                 }
 
-                val title = fixEpTitle(fullEpisode.title, epNum, index + 1,isMovie )
+                val title = fixEpTitle(fullEpisode.title, epNum, index + 1, isMovie)
 
                 card.cardTitle.text = title
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
@@ -250,7 +271,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                     )
                 }
 
-                val pro = MainActivity.getViewPosDur(data.anilistId, index, epIndex)
+                val pro = MainActivity.getViewPosDur(data!!.anilistId, index, epIndex)
                 println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
@@ -285,8 +306,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (!FastAniApi.lastCards.containsKey(data.id)) {
-            FastAniApi.lastCards[data.id] = data
+        if (!FastAniApi.lastCards.containsKey(data!!.id)) {
+            FastAniApi.lastCards[data!!.id] = data!!
         }
 
         val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
@@ -333,18 +354,18 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         )
 
         val glideUrl =
-            GlideUrl("https://fastani.net/" + data.bannerImage) { FastAniApi.currentHeaders }
+            GlideUrl("https://fastani.net/" + data!!.bannerImage) { FastAniApi.currentHeaders }
 
-        if (data.trailer != null) {
+        if (data!!.trailer != null) {
             title_background.setOnLongClickListener {
-                Toast.makeText(context, data.title.english + " - Trailer", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, data!!.title.english + " - Trailer", Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
             }
 
             title_background.setOnClickListener() {
                 MainActivity.loadPlayer(
-                    data.title.english + " - Trailer",
-                    "https://fastani.net/" + data.trailer!!,
+                    data!!.title.english + " - Trailer",
+                    "https://fastani.net/" + data!!.trailer!!,
                     null
                 )
             }
@@ -353,7 +374,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
         }
 
         // SEASON SELECTOR
-        val seasonsTxt = data.cdnData.seasons.mapIndexed { i: Int, _: FastAniApi.Seasons -> "Season ${i + 1}" }
+        val seasonsTxt = data!!.cdnData.seasons.mapIndexed { i: Int, _: FastAniApi.Seasons -> "Season ${i + 1}" }
         val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, seasonsTxt)
         spinner.adapter = arrayAdapter
         class SpinnerClickListener : AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
@@ -363,7 +384,7 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 loadSeason(p2)
             }
         }
-        if (data.cdnData.seasons.size <= 1) {
+        if (data!!.cdnData.seasons.size <= 1) {
             spinner.background = null
             spinner.isEnabled = false
             spinnerRoot.backgroundTintList = ColorStateList.valueOf(getColor(requireContext(), R.color.background));
@@ -377,8 +398,8 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 .into(title_background)
         }
 
-        title_name.text = data.title.english
-        var descript = data.description
+        title_name.text = data!!.title.english
+        var descript = data!!.description
         if (descript.length > DESCRIPTION_LENGTH) {
             descript = descript.substring(0, DESCRIPTION_LENGTH)
                 .replace("<br>", "")
@@ -387,10 +408,10 @@ class ResultFragment(data: FastAniApi.Card) : Fragment() {
                 .replace("\n", " ") + "..."
         }
         title_descript.text = descript
-        title_duration.text = data.duration.toString() + "min"
-        var ratTxt = (data.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
+        title_duration.text = data!!.duration.toString() + "min"
+        var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
         if (!ratTxt.contains('.')) ratTxt += ".0"
         title_rating.text = "Rated: $ratTxt"
-        title_genres.text = data.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
+        title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
     }
 }

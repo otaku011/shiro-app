@@ -106,9 +106,11 @@ class MainActivity : AppCompatActivity() {
         var focusRequest: AudioFocusRequest? = null
 
         fun getViewKey(data: PlayerData): String {
-            return getViewKey(if (data.card != null) data.card.anilistId else data.anilistId!!,
+            return getViewKey(
+                if (data.card != null) data.card.anilistId else data.anilistId!!,
                 data.seasonIndex!!,
-                data.episodeIndex!!)
+                data.episodeIndex!!
+            )
         }
 
         fun getViewKey(aniListId: String, seasonIndex: Int, episodeIndex: Int): String {
@@ -232,8 +234,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun popCurrentPage() {
+            println("POPP")
             val currentFragment = activity?.supportFragmentManager!!.fragments.last()
-
+            println(currentFragment)
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
             if (settingsManager.getBoolean("rotation_enabled", false)) {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
@@ -312,7 +315,7 @@ class MainActivity : AppCompatActivity() {
 
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                ?.replace(R.id.homeRoot, ResultFragment(card))
+                ?.replace(R.id.homeRoot, ResultFragment.newInstance(card))
                 ?.commit()
             /*
             activity?.runOnUiThread {

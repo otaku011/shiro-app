@@ -20,6 +20,7 @@ import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.fixEpTitle
+import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import kotlinx.android.synthetic.main.fragment_results.*
@@ -34,11 +35,16 @@ class DownloadFragmentChild(_anilistId: String) : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        isInResults = true
 
         println("ANILIST: " + anilistId)
         loadData()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        isInResults = false
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun loadData() {
@@ -90,13 +96,17 @@ class DownloadFragmentChild(_anilistId: String) : Fragment() {
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
-                    MainActivity.loadPlayer(PlayerData(child.videoTitle,
-                        child.videoPath,
-                        child.episodeIndex,
-                        child.seasonIndex,
-                        null,
-                        null,
-                        anilistId))
+                    MainActivity.loadPlayer(
+                        PlayerData(
+                            child.videoTitle,
+                            child.videoPath,
+                            child.episodeIndex,
+                            child.seasonIndex,
+                            null,
+                            null,
+                            anilistId
+                        )
+                    )
                     //MainActivity.loadPlayer(epIndex, index, data)
                 }
 
@@ -112,8 +122,10 @@ class DownloadFragmentChild(_anilistId: String) : Fragment() {
                     return@setOnLongClickListener true
                 }
 
-                val title = fixEpTitle(child.videoTitle, child.episodeIndex + 1, child.seasonIndex + 1,
-                    parent?.isMovie == true)
+                val title = fixEpTitle(
+                    child.videoTitle, child.episodeIndex + 1, child.seasonIndex + 1,
+                    parent?.isMovie == true
+                )
 
                 card.cardTitle.text = title
                 val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()

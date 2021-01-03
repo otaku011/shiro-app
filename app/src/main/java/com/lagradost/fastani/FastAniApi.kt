@@ -206,6 +206,7 @@ class FastAniApi {
         }
 
         fun requestHome(canBeCached: Boolean = true): HomePageResponse? {
+            println("LOAD HOME $currentToken")
             if (currentToken == null) return null
             return getHome(canBeCached)
         }
