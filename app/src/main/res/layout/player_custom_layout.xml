@@ -183,12 +183,14 @@
                         android:layout_gravity="center"
                         android:textFontWeight="900"
                         android:gravity="center"
-                        android:layout_width="50dp" android:layout_height="50dp">
+                        android:layout_width="40dp"
+                        android:layout_height="40dp">
                 </TextView>
                 <ImageButton
                         android:id="@id/exo_rew"
                         android:layout_height="50dp"
                         android:layout_width="50dp"
+                        android:padding="5dp"
                         android:background="@drawable/video_tap_button_skip"
                         android:src="@drawable/netflix_skip_back"
                         android:scaleType="fitCenter"
@@ -203,8 +205,8 @@
             <ImageButton
                     android:id="@id/exo_play"
                     android:scaleType="fitCenter"
-                    android:layout_height="80dp"
-                    android:layout_width="80dp"
+                    android:layout_height="70dp"
+                    android:layout_width="70dp"
                     android:layout_gravity="center"
 
                     android:background="@drawable/video_tap_button"
@@ -214,8 +216,8 @@
             <ImageButton
                     android:id="@id/exo_pause"
                     android:scaleType="fitCenter"
-                    android:layout_height="80dp"
-                    android:layout_width="80dp"
+                    android:layout_height="70dp"
+                    android:layout_width="70dp"
                     android:layout_gravity="center"
 
                     android:background="@drawable/video_tap_button"
@@ -235,12 +237,14 @@
                         android:layout_gravity="center"
                         android:textFontWeight="900"
                         android:gravity="center"
-                        android:layout_width="50dp" android:layout_height="50dp">
+                        android:layout_width="40dp"
+                        android:layout_height="40dp">
                 </TextView>
                 <ImageButton
                         android:id="@id/exo_ffwd"
                         android:layout_height="50dp"
                         android:layout_width="50dp"
+                        android:padding="5dp"
                         android:background="@drawable/video_tap_button_skip"
                         android:src="@drawable/netflix_skip_forward"
                         android:scaleType="fitCenter"

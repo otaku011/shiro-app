@@ -39,6 +39,7 @@ import android.widget.Toast
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
 import java.io.File
 import kotlin.math.*
@@ -331,7 +332,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {
-                val distance = motionEvent.rawX - currentX
+                val distanceMultiplier = 0.7F
+                val distance = (motionEvent.rawX - currentX) * distanceMultiplier
 
                 val diffX = distance * 2.0 / width
                 skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
@@ -364,19 +366,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
                 timeText.startAnimation(fadeAnimation)
 
-            }
-        }
-    }
-
-    fun Context.hideKeyboard(view: View) {
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-    }
-
-    fun Fragment.hideKeyboard() {
-        view.let {
-            if (it != null) {
-                activity?.hideKeyboard(it)
             }
         }
     }

@@ -48,6 +48,7 @@ import com.google.android.exoplayer2.Player
 
 import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.lagradost.fastani.DataStore.mapper
+import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -306,7 +307,7 @@ class ResultFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        hideKeyboard()
         if (!FastAniApi.lastCards.containsKey(data!!.id)) {
             FastAniApi.lastCards[data!!.id] = data!!
         }

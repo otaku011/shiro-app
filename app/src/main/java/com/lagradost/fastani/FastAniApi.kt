@@ -56,6 +56,7 @@ class FastAniApi {
     data class EpisodeResponse(val anime: Card, val nextEpisode: Int)
 
     data class Update(val shouldUpdate: Boolean, val updateURL: String?, val updateVersion: String?)
+    data class Donor(val id: String)
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -116,14 +117,14 @@ class FastAniApi {
             try {
                 val url = "https://cdn1.fastani.net/donors.json"
                 val response = khttp.get(url).text
-                val users = mapper.readValue<List<String>>(response)
+                val users = mapper.readValue<List<Donor>>(response)
                 users.forEach lit@{
                     println(it)
                     try {
-                        val responseId = decode(it, DEFAULT).toString(charset("UTF-8"))
+                        val responseId = decode(it.id, DEFAULT).toString(charset("UTF-8"))
                         val androidId: String =
                             Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
-                        if (androidId == responseId || it == "all") {
+                        if (androidId == responseId || it.id == "all") {
                             return true
                         }
                     } catch (e: Exception) {

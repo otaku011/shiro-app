@@ -117,6 +117,19 @@ class MainActivity : AppCompatActivity() {
             return aniListId + "S" + seasonIndex + "E" + episodeIndex
         }
 
+        fun Context.hideKeyboard(view: View) {
+            val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+
+        fun Fragment.hideKeyboard() {
+            view.let {
+                if (it != null) {
+                    activity?.hideKeyboard(it)
+                }
+            }
+        }
+
         fun requestAudioFocus() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
                 val audioManager = activity!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -182,7 +195,7 @@ class MainActivity : AppCompatActivity() {
             // HANDLES THE LOGIC FOR NEXT EPISODE
             var episodeIndex = data.episodeIndex!!
             var seasonIndex = data.seasonIndex!!
-            val maxValue = 95
+            val maxValue = 90
             var canContinue: Boolean = (pos * 100 / dur) > maxValue
             var isFound: Boolean = true
             var _pos = pos
