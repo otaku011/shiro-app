@@ -50,6 +50,7 @@ object DownloadManager {
     val downloadStatus = hashMapOf<Int, DownloadStatusType>()
     val downloadMustUpdateStatus = hashMapOf<Int, Boolean>()
     val downloadEvent = Event<DownloadEvent>()
+    val downloadPauseEvent = Event<Int>()
 
     fun init(_context: Context) {
         localContext = _context
@@ -415,9 +416,13 @@ object DownloadManager {
                                 lastUpdate = currentTime
                                 bytesPerSec = 0
                                 try {
-                                    while (downloadStatus[id] == DownloadStatusType.IsPaused) {
-                                        Thread.sleep(100)
+                                    if(downloadStatus[id] == DownloadStatusType.IsPaused) {
+                                        downloadPauseEvent.invoke(id)
+                                        while (downloadStatus[id] == DownloadStatusType.IsPaused) {
+                                            Thread.sleep(100)
+                                        }
                                     }
+
                                 } catch (e: Exception) {
                                 }
                             }

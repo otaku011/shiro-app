@@ -279,7 +279,7 @@ class ResultFragment : Fragment() {
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(
                         requireContext().getColorFromAttr(
-                            R.attr.colorPrimaryDark
+                            R.attr.colorPrimaryMegaDark
                         )
                     )
                 }

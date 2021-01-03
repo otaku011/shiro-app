@@ -2,17 +2,20 @@ package com.lagradost.fastani.ui.downloads
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import com.google.android.gms.cast.framework.CastContext
 import com.lagradost.fastani.*
@@ -21,13 +24,22 @@ import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
+import kotlinx.android.synthetic.main.episode_result_downloaded.*
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
+import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
 import kotlin.concurrent.thread
+import android.R
+import android.widget.PopupMenu
+
+import com.lagradost.fastani.MainActivity
+
+
+
 
 class DownloadFragmentChild() : Fragment() {
     var anilistId: String? = null
@@ -159,15 +171,66 @@ class DownloadFragmentChild() : Fragment() {
 
                 card.cardTitle.text = title
                 val megaBytesTotal = DownloadManager.convertBytesToAny(child.maxFileSize, 0, 2.0).toInt()
-                val localBytesTotal = DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt()
+                val localBytesTotal = maxOf(DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt(), 1)
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
+
+                fun updateIcon(megabytes: Int) {
+                    if (megabytes - 2 >= localBytesTotal) {
+                        card.progressBar.visibility = View.GONE
+                        card.cardPauseIcon.visibility = View.GONE
+                        card.cardRemoveIcon.visibility = View.VISIBLE
+                    } else {
+                        card.progressBar.visibility = View.VISIBLE
+                        card.cardRemoveIcon.visibility = View.GONE
+                        card.cardPauseIcon.visibility = View.VISIBLE
+                    }
+                }
+
+                fun setStatus() {
+                    if (DownloadManager.downloadStatus.containsKey(child.internalId)) {
+                        if (DownloadManager.downloadStatus[child.internalId] == DownloadManager.DownloadStatusType.IsPaused) {
+                            card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
+                        } else {
+                            card.cardPauseIcon.setImageResource(R.drawable.exo_icon_stop)
+                        }
+                    } else {
+                        card.cardPauseIcon.setImageResource(R.drawable.netflix_play)
+                    }
+                }
+
+                setStatus()
+                updateIcon(localBytesTotal)
+
+                /*
+                card.cardPauseIcon.setOnClickListener {
+                    val popup = PopupMenu(context, card.cardPauseIcon)
+                    popup.setOnMenuItemClickListener(context)
+                    popup.inflate(R.menu)
+                    popup.show()
+                }*/
+                /*
+                else {
+                    card.cardRemoveIcon.setImageResource(R.drawable.netflix_pause)
+                    card.cardRemoveIcon.setColorFilter(requireContext().getColorFromAttr(R.attr.colorPrimary))
+                }*/
+                card.progressBar.progress = maxOf(minOf(localBytesTotal * 100 / megaBytesTotal, 100), 0)
+
+                DownloadManager.downloadPauseEvent += {
+                    if (it == child.internalId) {
+                        setStatus()
+                    }
+                }
 
                 DownloadManager.downloadEvent += {
                     if (it.id == child.internalId) {
                         val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
                         card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
+                        card.progressBar.setProgress(maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0), true)
+                        updateIcon(megaBytes)
                     }
                 }
+
+
                 // RESUME FUNCTION
                 /*
                 if (parent != null) {
@@ -183,7 +246,7 @@ class DownloadFragmentChild() : Fragment() {
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(
                         requireContext().getColorFromAttr(
-                            R.attr.colorPrimaryDark
+                            R.attr.colorPrimaryMegaDark
                         )
                     )
                 }

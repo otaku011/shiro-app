@@ -18,6 +18,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorOnPrimary">@color/colorAccent</item>
         <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="colorPrimaryMegaDark">@color/colorPrimaryMegaDark</item>
         <!-- <item name="android:windowBackground">@color/darkBar</item>-->
         <item name="castExpandedControllerStyle">
             @style/CustomCastExpandedController
@@ -35,6 +36,7 @@
     </style>
 
     <style name="OverlayPrimaryColorBlue">
+        <item name="colorPrimaryMegaDark">#121840</item>
         <item name="colorPrimary">#3F51B5</item>
         <item name="colorPrimaryDark">#303F9F</item>
         <item name="colorAccent">#007dfe</item>
