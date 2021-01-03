@@ -562,6 +562,7 @@ object DownloadManager {
             .setAutoCancel(true)
             .setColorized(true)
             .setAutoCancel(true)
+            .setOnlyAlertOnce(true)
             .setColor(localContext!!.getColorFromAttr(R.attr.colorAccent))
 
         if (type == DownloadType.IsDownloading) {
