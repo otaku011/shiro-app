@@ -54,7 +54,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 const val DESCRIPTION_LENGTH = 200
 const val has_download_perms = true
 
-class ResultFragment() : Fragment() {
+class ResultFragment : Fragment() {
     var data: FastAniApi.Card? = null
     private lateinit var resultViewModel: ResultViewModel
     private var isMovie: Boolean = false
@@ -109,6 +109,7 @@ class ResultFragment() : Fragment() {
         arguments?.getString("data")?.let {
             data = mapper.readValue(it, FastAniApi.Card::class.java)
         }
+        println(data)
         isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
         isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.anilistId)
     }

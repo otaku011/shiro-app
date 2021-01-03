@@ -29,14 +29,14 @@ import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import java.io.File
 
-class DownloadFragmentChild(_anilistId: String) : Fragment() {
-
-    val anilistId = _anilistId
-
+class DownloadFragmentChild() : Fragment() {
+    var anilistId: String? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
-
+        arguments?.getString("anilist_id")?.let {
+            anilistId = it
+        }
         println("ANILIST: " + anilistId)
         loadData()
     }
@@ -54,7 +54,8 @@ class DownloadFragmentChild(_anilistId: String) : Fragment() {
 
         // When fastani is down it doesn't report any seasons and this is needed.
         val episodeKeys = DownloadFragment.childMetadataKeys[anilistId]
-        val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, anilistId)
+        println(anilistId)
+        val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, anilistId!!)
         println("PPAP:" + parent)
 
         for (k in episodeKeys!!) {
@@ -71,7 +72,7 @@ class DownloadFragmentChild(_anilistId: String) : Fragment() {
                     card.imageView.setImageURI(Uri.parse(child.thumbPath))
                 }
 
-                val key = MainActivity.getViewKey(anilistId, child.seasonIndex, child.episodeIndex)
+                val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
 
                 card.cardRemoveIcon.setOnClickListener {
                     //TODO REMOVE?
@@ -140,7 +141,7 @@ class DownloadFragmentChild(_anilistId: String) : Fragment() {
                     )
                 }
 
-                val pro = MainActivity.getViewPosDur(anilistId, child.seasonIndex, child.episodeIndex)
+                val pro = MainActivity.getViewPosDur(anilistId!!, child.seasonIndex, child.episodeIndex)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
                     if (progress < 5) {
@@ -164,5 +165,13 @@ class DownloadFragmentChild(_anilistId: String) : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_download_child, container, false)
+    }
+    companion object {
+        fun newInstance(_anilistId: String) =
+            DownloadFragmentChild().apply {
+                arguments = Bundle().apply {
+                    putString("anilist_id", _anilistId)
+                }
+            }
     }
 }

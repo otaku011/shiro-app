@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.lagradost.fastani.*
-import com.lagradost.fastani.ui.result.ResultFragment
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
@@ -102,7 +101,7 @@ class DownloadFragment : Fragment() {
                             activity?.supportFragmentManager?.beginTransaction()
                                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                                 ?.add(
-                                    R.id.homeRoot, DownloadFragmentChild(
+                                    R.id.homeRoot, DownloadFragmentChild.newInstance(
                                         parent.anilistId
                                     )
                                 )
