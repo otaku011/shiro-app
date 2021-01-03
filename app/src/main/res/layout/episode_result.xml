@@ -58,10 +58,33 @@
                 android:layout_marginEnd="50dp"
         >
         </TextView>
+        <ProgressBar
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/progressBar"
+                android:indeterminate="false"
+                android:progressDrawable="@drawable/circular_progress_bar"
+                android:background="@drawable/circle_shape"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:max="100"
+                android:layout_margin="10dp"
+                android:layout_gravity="end|center_vertical"
+                android:progress="0"
+                android:visibility="gone"
+        />
 
         <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
-                   android:id="@+id/cardDownloadIcon"
+                   android:src="@drawable/exo_icon_stop"
+                   android:id="@+id/progressBarStop"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+                   app:tint="@color/white"
+                   android:visibility="gone"
+        />
+
+        <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
                    android:src="@drawable/netflix_download"
+                   android:id="@+id/cardDownloadIcon"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
         />
