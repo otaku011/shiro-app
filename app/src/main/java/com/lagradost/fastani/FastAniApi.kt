@@ -9,10 +9,11 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.fastani.MainActivity.Companion.activity
+import com.lagradost.fastani.MainActivity.Companion.md5
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 import java.net.URLEncoder
-import java.util.*
+import org.apache.commons.codec.binary.Base64
 import kotlin.concurrent.thread
 
 class FastAniApi {
@@ -119,12 +120,10 @@ class FastAniApi {
                 val response = khttp.get(url).text
                 val users = mapper.readValue<List<Donor>>(response)
                 users.forEach lit@{
-                    println(it)
                     try {
-                        val responseId = decode(it.id, DEFAULT).toString(charset("UTF-8"))
                         val androidId: String =
                             Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
-                        if (androidId == responseId || it.id == "all") {
+                        if (androidId.md5() == it.id || it.id == "all") {
                             return true
                         }
                     } catch (e: Exception) {

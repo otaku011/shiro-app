@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Base64.URL_SAFE
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -18,10 +19,11 @@ import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
 import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.MainActivity.Companion.isDonor
+import com.lagradost.fastani.MainActivity.Companion.md5
 import com.lagradost.fastani.MainActivity.Companion.statusHeight
 import com.lagradost.fastani.R
 import com.lagradost.fastani.VIEW_LST_KEY
-import java.util.*
+import org.apache.commons.codec.binary.Base64
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -85,8 +87,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         val donatorId = findPreference("donator_id") as Preference?
         val id: String = Settings.Secure.getString(context?.contentResolver, Settings.Secure.ANDROID_ID)
-        val encodedString =
-            Base64.getEncoder().withoutPadding().encodeToString(id.toByteArray())
+
+        val encodedString = id.md5()
         donatorId?.summary = if (isDonor) "Thanks for the donation :D" else encodedString
         donatorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -158,10 +160,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         val allowRotation = findPreference("rotation_enabled") as SwitchPreference?
         allowRotation?.setOnPreferenceChangeListener { preference, newValue ->
-            if (newValue == true){
+            if (newValue == true) {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
-            }
-            else {
+            } else {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
             return@setOnPreferenceChangeListener true

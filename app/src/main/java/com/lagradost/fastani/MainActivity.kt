@@ -55,6 +55,7 @@ import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
+import java.security.MessageDigest
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
@@ -291,6 +292,20 @@ class MainActivity : AppCompatActivity() {
                     )
         }
 
+        fun String.md5(): String {
+            return hashString(this, "MD5")
+        }
+
+        fun String.sha256(): String {
+            return hashString(this, "SHA-256")
+        }
+
+        private fun hashString(input: String, algorithm: String): String {
+            return MessageDigest
+                .getInstance(algorithm)
+                .digest(input.toByteArray())
+                .fold("", { str, it -> str + "%02x".format(it) })
+        }
 
         // Shows the system bars by removing all the flags
 // except for the ones that make the content appear under the system bars.
@@ -485,7 +500,7 @@ class MainActivity : AppCompatActivity() {
             FastAniApi.init()
         }
         thread {
-            isDonor = true//TODO FIX getDonorStatus()
+            isDonor = getDonorStatus()
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
