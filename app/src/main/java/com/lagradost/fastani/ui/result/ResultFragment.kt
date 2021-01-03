@@ -70,7 +70,7 @@ class ResultFragment : Fragment() {
             epNum: Int,
             seNum: Int,
             isMovie: Boolean,
-            formatBefore: Boolean = false
+            formatBefore: Boolean = false,
         ): String {
             var title = _title
             if (title == null || title.replace(" ", "") == "") {
@@ -222,7 +222,18 @@ class ResultFragment : Fragment() {
 
                 if (MainActivity.isDonor) {
                     card.cardDownloadIcon.setOnClickListener {
-                        DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(data!!, index, epIndex))
+                        if (data != null) {
+                            DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(
+                                index,
+                                epIndex,
+                                data!!.title,
+                                isMovie,
+                                data!!.anilistId,
+                                data!!.id,
+                                data!!.cdnData.seasons[index].episodes[epIndex],
+                                data!!.coverImage.large
+                            ))
+                        }
                     }
                 } else {
                     card.cardDownloadIcon.visibility = View.GONE

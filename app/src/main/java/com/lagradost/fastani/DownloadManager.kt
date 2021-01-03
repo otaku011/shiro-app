@@ -49,6 +49,7 @@ object DownloadManager {
     private var localContext: Context? = null
     val downloadStatus = hashMapOf<Int, DownloadStatusType>()
     val downloadMustUpdateStatus = hashMapOf<Int, Boolean>()
+    val downloadEvent = Event<DownloadEvent>()
 
     fun init(_context: Context) {
         localContext = _context
@@ -72,10 +73,21 @@ object DownloadManager {
         }
     }
 
+    data class DownloadEvent(
+        val id: Int,
+        val bytes: Long,
+    )
+
     data class DownloadInfo(
-        val card: FastAniApi.Card,
+        //val card: FastAniApi.Card?,
         val seasonIndex: Int,
         val episodeIndex: Int,
+        val title: FastAniApi.Title,
+        val isMovie: Boolean,
+        val anilistId: String,
+        val id: String,
+        val ep: FastAniApi.FullEpisode,
+        val coverImage: String?,
     )
 
     enum class DownloadType {
@@ -223,7 +235,7 @@ object DownloadManager {
             Toast.makeText(activity, "This is for donors only.", Toast.LENGTH_SHORT).show()
             return
         }
-        val id = (info.card.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
+        val id = (info.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
         if (downloadStatus.containsKey(id)) { // PREVENT DUPLICATE DOWNLOADS
             if (downloadStatus[id] == DownloadStatusType.IsPaused) {
                 downloadStatus[id] = DownloadStatusType.IsDownloading
@@ -233,9 +245,12 @@ object DownloadManager {
         }
 
         thread {
+            var fullResume = false // IF FULL RESUME
+
             try {
-                val isMovie: Boolean = info.card.episodes == 1 && info.card.status == "FINISHED"
-                val ep = info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
+                val isMovie: Boolean = info.isMovie//info.card.episodes == 1 && info.card.status == "FINISHED"
+                val mainTitle = info.title
+                val ep = info.ep //info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
                 var title = ep.title
                 if (title?.replace(" ", "") == "") {
                     title = "Episode " + info.episodeIndex + 1
@@ -244,7 +259,7 @@ object DownloadManager {
                 // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
                 val path = activity!!.filesDir.toString() +
                         "/Download/Anime/" +
-                        censorFilename(info.card.title.english) +
+                        censorFilename(mainTitle.english) +
                         if (isMovie)
                             ".mp4"
                         else
@@ -256,10 +271,12 @@ object DownloadManager {
                 }
                 val mainPosterPath =
                     //android.os.Environment.getExternalStorageDirectory().path +
-                            activity!!.filesDir.toString() +
+                    activity!!.filesDir.toString() +
                             "/Download/MainPosters/" +
-                            censorFilename(info.card.title.english) + ".jpg"
-                downloadPoster(mainPosterPath, info.card.coverImage.large)
+                            censorFilename(info.title.english) + ".jpg"
+                if (info.coverImage != null) {
+                    downloadPoster(mainPosterPath, info.coverImage)
+                }
 
                 // =================== MAKE DIRS ===================
                 val rFile: File = File(path)
@@ -335,8 +352,8 @@ object DownloadManager {
                 // =================== SET KEYS ===================
                 DataStore.setKey(DOWNLOAD_CHILD_KEY, id.toString(), // MUST HAVE ID TO NOT OVERRIDE
                     DownloadFileMetadata(id,
-                        info.card.id,
-                        info.card.anilistId,
+                        info.id,
+                        info.anilistId,
                         if (ep.thumb == null) null else posterPath,
                         path,
                         ep.title,
@@ -346,13 +363,14 @@ object DownloadManager {
                         bytesTotal,
                         url))
 
-                DataStore.setKey(DOWNLOAD_PARENT_KEY, info.card.anilistId,
-                    DownloadParentFileMetadata(info.card.id,
-                        info.card.anilistId,
-                        info.card.title,
+                //if(info.card != null) {
+                DataStore.setKey(DOWNLOAD_PARENT_KEY, info.anilistId,
+                    DownloadParentFileMetadata(info.id,
+                        info.anilistId,
+                        info.title,
                         mainPosterPath,
                         isMovie))
-
+                //}
                 // =================== DOWNLOAD ===================
                 while (true) {
                     try {
@@ -391,6 +409,9 @@ object DownloadManager {
 
                                     info
                                 )
+
+                                downloadEvent.invoke(DownloadEvent(id, bytesRead))
+
                                 lastUpdate = currentTime
                                 bytesPerSec = 0
                                 try {
@@ -403,10 +424,23 @@ object DownloadManager {
                         }
                     } catch (_ex: Exception) {
                         println("CONNECT TRUE:::$_ex")
-                        showNot(bytesRead, bytesTotal, 0, DownloadType.IsFailed, info)
+                        fullResume = true
+                        /*if (isFromPaused) {
+                        } else {
+                            showNot(bytesRead, bytesTotal, 0, DownloadType.IsFailed, info)
+                        }*/
+                        break
                     }
                 }
-                showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
+
+                if (fullResume) { // IF FULL RESUME DELETE CURRENT AND DONT SHOW DONE
+                    with(NotificationManagerCompat.from(localContext!!)) {
+                        cancel(id)
+                    }
+                } else {
+                    showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
+                }
+
                 output.flush()
                 output.close()
                 input.close()
@@ -417,12 +451,15 @@ object DownloadManager {
                 if (downloadStatus.containsKey(id)) {
                     downloadStatus.remove(id)
                 }
+                if (fullResume) {
+                    downloadEpisode(info, true)
+                }
             }
         }
     }
 
     private fun showNot(progress: Long, total: Long, progressPerSec: Long, type: DownloadType, info: DownloadInfo) {
-        val isMovie: Boolean = info.card.episodes == 1 && info.card.status == "FINISHED"
+        val isMovie: Boolean = info.isMovie//info.card.episodes == 1 && info.card.status == "FINISHED"
 
         // Create an explicit intent for an Activity in your app
         val intent = Intent(localContext, MainActivity::class.java).apply {
@@ -432,8 +469,8 @@ object DownloadManager {
 
         val progressPro = minOf(maxOf((progress * 100 / maxOf(total, 1)).toInt(), 0), 100)
 
-        val ep = info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
-        val id = (info.card.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
+        val ep = info.ep//.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
+        val id = (info.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
 
         var title = ep.title
         if (title?.replace(" ", "") == "") {
@@ -466,14 +503,14 @@ object DownloadManager {
             .setContentTitle(
                 when (type) {
                     DownloadType.IsDone -> "Download Done"
-                    DownloadType.IsDownloading -> "${info.card.title.english} - ${
+                    DownloadType.IsDownloading -> "${info.title.english} - ${
                         convertBytesToAny(
                             progressPerSec,
                             2,
                             2.0
                         )
                     } MB/s"
-                    DownloadType.IsPaused -> "${info.card.title.english} - Paused"
+                    DownloadType.IsPaused -> "${info.title.english} - Paused"
                     DownloadType.IsFailed -> "Download Failed"
                     DownloadType.IsStopped -> "Download Stopped"
                 }

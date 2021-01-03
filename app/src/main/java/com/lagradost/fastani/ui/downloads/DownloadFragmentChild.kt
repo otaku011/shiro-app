@@ -1,6 +1,7 @@
 package com.lagradost.fastani.ui.downloads
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,6 +11,7 @@ import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.preference.PreferenceManager
 import com.google.android.gms.cast.framework.CastContext
@@ -25,6 +27,7 @@ import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import java.io.File
+import kotlin.concurrent.thread
 
 class DownloadFragmentChild() : Fragment() {
     var anilistId: String? = null
@@ -76,14 +79,32 @@ class DownloadFragmentChild() : Fragment() {
                 val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
 
                 card.cardRemoveIcon.setOnClickListener {
-                    file.delete()
-                    card.visibility = GONE
-                    DataStore.removeKey(k)
-                    Toast.makeText(
-                        context,
-                        "${child.videoTitle} S${child.seasonIndex + 1} E${child.episodeIndex + 1} deleted",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    val alertDialog: AlertDialog? = activity?.let {
+                        val builder = AlertDialog.Builder(it)
+                        builder.apply {
+                            setPositiveButton("Delete",
+                                DialogInterface.OnClickListener { dialog, id ->
+                                    file.delete()
+                                    card.visibility = GONE
+                                    DataStore.removeKey(k)
+                                    Toast.makeText(
+                                        context,
+                                        "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                })
+                            setNegativeButton("Cancel",
+                                DialogInterface.OnClickListener { dialog, id ->
+                                    // User cancelled the dialog
+                                })
+                        }
+                        // Set other dialog properties
+                        builder.setTitle("Delete ${child.videoTitle} - S${child.seasonIndex + 1}:E${child.episodeIndex + 1}")
+
+                        // Create the AlertDialog
+                        builder.create()
+                    }
+                    alertDialog?.show()
                 }
 
                 // CANT DOWNLOAD DOWNLOADED FILES
@@ -133,7 +154,7 @@ class DownloadFragmentChild() : Fragment() {
 
                 val title = fixEpTitle(
                     child.videoTitle, child.episodeIndex + 1, child.seasonIndex + 1,
-                    parent?.isMovie == true
+                    parent?.isMovie == true, true
                 )
 
                 card.cardTitle.text = title
@@ -141,6 +162,24 @@ class DownloadFragmentChild() : Fragment() {
                 val localBytesTotal = DownloadManager.convertBytesToAny(file.length(), 0, 2.0).toInt()
                 card.cardTitleExtra.text = "$localBytesTotal / $megaBytesTotal MB"
 
+                DownloadManager.downloadEvent += {
+                    if (it.id == child.internalId) {
+                        val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
+                        card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
+                    }
+                }
+                // RESUME FUNCTION
+                /*
+                if (parent != null) {
+                    DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(child.seasonIndex,
+                        child.episodeIndex,
+                        parent.title,
+                        parent.isMovie,
+                        child.anilistId,
+                        child.fastAniId,
+                        FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
+                        null), true)
+                }*/
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                     card.cardBg.setCardBackgroundColor(
                         requireContext().getColorFromAttr(
