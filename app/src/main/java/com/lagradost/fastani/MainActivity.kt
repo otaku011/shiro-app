@@ -333,7 +333,7 @@ class MainActivity : AppCompatActivity() {
 
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                ?.replace(R.id.homeRoot, ResultFragment.newInstance(card))
+                ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
                 ?.commit()
             /*
             activity?.runOnUiThread {
@@ -584,7 +584,7 @@ class MainActivity : AppCompatActivity() {
 
         if (data != null) {
             thread {
-                val urlRegex = Regex("""fastani\.net\/watch\/(.*?)\/(\d+)\/(\d+)$""")
+                val urlRegex = Regex("""fastani\.net\/watch\/(.*?)\/(\d+)\/(\d+)""")
                 val found = urlRegex.find(data.toString())
                 if (found != null) {
                     val (id, season, episode) = found.destructured
