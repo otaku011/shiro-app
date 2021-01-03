@@ -9,20 +9,53 @@
     <View android:layout_width="wrap_content" android:layout_height="0dp" android:id="@+id/top_padding_download_child"/>
 
     <ScrollView
-
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:backgroundTint="@color/background"
             android:background="@color/background"
             tools:context=".ui.downloads.DownloadFragmentChild">
-        <LinearLayout
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:id="@+id/downloadRootChild"
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+        <LinearLayout android:orientation="vertical" android:layout_height="wrap_content"
+                      android:layout_width="match_parent">
+            <LinearLayout android:orientation="horizontal" android:layout_width="match_parent"
+                          android:layout_height="70dp">
+                <FrameLayout
+                        android:layout_margin="5dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/download_go_back_holder"
+                >
+                    <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/arrow_back">
+                    </ImageView>
+                    <ImageView
+                            android:id="@+id/download_go_back"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center"
+                            android:focusable="true"
+                            android:clickable="true"
+                            android:background="@drawable/video_tap_button">
+                    </ImageView>
+                </FrameLayout>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                          android:layout_gravity="center_vertical" android:layout_margin="5dp"
+                          android:textSize="17sp" android:textStyle="bold"
+                          android:id="@+id/download_header_text">
+                </TextView>
+            </LinearLayout>
+            <LinearLayout
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:id="@+id/downloadRootChild"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
+            </LinearLayout>
         </LinearLayout>
+
     </ScrollView>
 </LinearLayout>

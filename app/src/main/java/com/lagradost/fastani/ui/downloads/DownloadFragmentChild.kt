@@ -53,7 +53,9 @@ class DownloadFragmentChild() : Fragment() {
         )
         top_padding_download_child.layoutParams = topParams
         PlayerFragment.onLeftPlayer += ::onPlayerLeft
-
+        download_go_back.setOnClickListener {
+            MainActivity.popCurrentPage()
+        }
         println("ANILIST: " + anilistId)
         loadData()
     }
@@ -77,6 +79,7 @@ class DownloadFragmentChild() : Fragment() {
         // When fastani is down it doesn't report any seasons and this is needed.
         val episodeKeys = DownloadFragment.childMetadataKeys[anilistId]
         val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, anilistId!!)
+        download_header_text.text = parent?.title?.english
 
         for (k in episodeKeys!!) {
             val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
