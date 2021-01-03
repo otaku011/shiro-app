@@ -350,8 +350,10 @@ object DownloadManager {
                 try {
                     connection.connect()
                     clen = connection.contentLength
+                    println("CONTENTN LENGTH: " + clen)
                 } catch (_ex: Exception) {
                     println("CONNECT:::$_ex")
+                    _ex.printStackTrace()
                 }
 
                 // =================== VALIDATE ===================
@@ -418,6 +420,7 @@ object DownloadManager {
                                 if(rFile.exists()) {
                                     rFile.delete()
                                 }
+                                println("FILE STOPPED")
                                 //downloadDeleteEvent.invoke(id)
                                 showNot(0, bytesTotal, 0, DownloadType.IsStopped, info)
                                 output.flush()
@@ -449,7 +452,6 @@ object DownloadManager {
                                             Thread.sleep(100)
                                         }
                                     }
-
                                 } catch (e: Exception) {
                                 }
                             }
