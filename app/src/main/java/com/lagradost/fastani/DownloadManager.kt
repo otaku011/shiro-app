@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -12,6 +13,7 @@ import com.bumptech.glide.Glide
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.MainActivity.Companion.isDonor
+import com.lagradost.fastani.MainActivity.Companion.md5
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
@@ -316,7 +318,9 @@ object DownloadManager {
                 val connection: URLConnection = _url.openConnection()
 
                 var bytesRead = 0L
-                val referer = ""
+                val androidId: String =
+                    Settings.Secure.getString(localContext?.contentResolver, Settings.Secure.ANDROID_ID)
+                val referer = androidId.md5()
 
                 // =================== STORAGE ===================
                 try {
@@ -343,6 +347,7 @@ object DownloadManager {
                 // =================== CONNECTION ===================
                 connection.setRequestProperty("Accept-Encoding", "identity")
                 if (referer != "") {
+                    println("REFERER: " + referer)
                     connection.setRequestProperty("Referer", referer)
                 }
                 connection.connectTimeout = 10000
@@ -417,7 +422,7 @@ object DownloadManager {
 
                             if (downloadStatus[id] == DownloadStatusType.IsStoped) {
                                 downloadStatus.remove(id)
-                                if(rFile.exists()) {
+                                if (rFile.exists()) {
                                     rFile.delete()
                                 }
                                 println("FILE STOPPED")
