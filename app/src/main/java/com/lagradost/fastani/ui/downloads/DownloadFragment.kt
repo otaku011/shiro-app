@@ -1,4 +1,4 @@
-package com.lagradost.fastani.ui
+package com.lagradost.fastani.ui.downloads
 
 import android.content.Context
 import android.net.Uri
@@ -6,29 +6,20 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import androidx.appcompat.widget.LinearLayoutCompat
 import com.lagradost.fastani.*
+import com.lagradost.fastani.MainActivity.Companion.isDonor
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
 import java.lang.Exception
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [DownloadFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class DownloadFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-
     data class EpisodesDownloaded(
         val count: Int,
         val countDownloading: Int,
@@ -37,6 +28,12 @@ class DownloadFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+            MainActivity.statusHeight // view height
+        )
+        top_padding_download.layoutParams = topParams
+
         println("TTLLLL::: ")
         val inflator = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         childMetadataKeys.clear()
@@ -44,6 +41,10 @@ class DownloadFragment : Fragment() {
         val epData = hashMapOf<String, EpisodesDownloaded>()
         try {
             val childKeys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
+
+            downloadCenterText.text = if (isDonor) "Download something to make it show up here" else "Donate to download shows"
+            downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
+
             for (k in childKeys) {
                 val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
                 if (child != null) {
@@ -134,12 +135,7 @@ class DownloadFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
         val path = requireActivity().filesDir.toString() + "/Download/"
-
         File(path).walk().forEach {
             println("PATH: " + it)
         }

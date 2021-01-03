@@ -1,4 +1,4 @@
-package com.lagradost.fastani.ui
+package com.lagradost.fastani.ui.downloads
 
 import android.annotation.SuppressLint
 import android.net.Uri
@@ -6,25 +6,22 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginTop
-import androidx.core.view.updateMarginsRelative
+import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.preference.PreferenceManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
 import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.framework.CastState
 import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
+import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.fixEpTitle
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import kotlinx.android.synthetic.main.fragment_results.*
-import kotlinx.android.synthetic.main.fragment_results.title_season_cards
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import java.io.File
@@ -37,6 +34,12 @@ class DownloadFragmentChild() : Fragment() {
         arguments?.getString("anilist_id")?.let {
             anilistId = it
         }
+        val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
+            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+            MainActivity.statusHeight // view height
+        )
+        top_padding_download_child.layoutParams = topParams
+
         println("ANILIST: " + anilistId)
         loadData()
     }
@@ -54,9 +57,7 @@ class DownloadFragmentChild() : Fragment() {
 
         // When fastani is down it doesn't report any seasons and this is needed.
         val episodeKeys = DownloadFragment.childMetadataKeys[anilistId]
-        println(anilistId)
         val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, anilistId!!)
-        println("PPAP:" + parent)
 
         for (k in episodeKeys!!) {
             val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
@@ -75,7 +76,14 @@ class DownloadFragmentChild() : Fragment() {
                 val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
 
                 card.cardRemoveIcon.setOnClickListener {
-                    //TODO REMOVE?
+                    file.delete()
+                    card.visibility = GONE
+                    DataStore.removeKey(k)
+                    Toast.makeText(
+                        context,
+                        "${child.videoTitle} S${child.seasonIndex + 1} E${child.episodeIndex + 1} deleted",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
 
                 // CANT DOWNLOAD DOWNLOADED FILES
@@ -153,8 +161,8 @@ class DownloadFragmentChild() : Fragment() {
                 } else {
                     card.video_progress.alpha = 0f
                 }
-
                 downloadRootChild.addView(card)
+                downloadRootChild.invalidate()
             }
         }
     }
@@ -166,6 +174,8 @@ class DownloadFragmentChild() : Fragment() {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_download_child, container, false)
     }
+
+
     companion object {
         fun newInstance(_anilistId: String) =
             DownloadFragmentChild().apply {
