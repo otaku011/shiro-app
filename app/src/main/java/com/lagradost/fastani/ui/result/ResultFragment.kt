@@ -229,7 +229,7 @@ class ResultFragment : Fragment() {
 
                 val key = MainActivity.getViewKey(data!!.anilistId, index, epIndex)
 
-                if (MainActivity.d) {
+                if (MainActivity.isInResult) {
                     card.cdi.setOnClickListener {
                         if (data != null) {
                             DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(
@@ -307,7 +307,7 @@ class ResultFragment : Fragment() {
                     card.video_progress.alpha = 0f
                 }
 
-                if (MainActivity.d) {
+                if (MainActivity.isInResult) {
                     val internalId = (data!!.anilistId + "S${index}E${epIndex}").hashCode()
                     val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(DOWNLOAD_CHILD_KEY,
                         internalId.toString())

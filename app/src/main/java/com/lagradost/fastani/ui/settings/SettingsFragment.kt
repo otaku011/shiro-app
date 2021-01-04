@@ -14,7 +14,7 @@ import com.bumptech.glide.Glide
 import com.lagradost.fastani.*
 import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
-import com.lagradost.fastani.MainActivity.Companion.d
+import com.lagradost.fastani.MainActivity.Companion.isInResult
 import com.lagradost.fastani.MainActivity.Companion.md5
 import com.lagradost.fastani.R
 import com.lagradost.fastani.VIEW_LST_KEY
@@ -83,7 +83,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val id: String = Settings.Secure.getString(context?.contentResolver, Settings.Secure.ANDROID_ID)
 
         val encodedString = id.md5()
-        donatorId?.summary = if (d) "Thanks for the donation :D" else encodedString
+        donatorId?.summary = if (isInResult) "Thanks for the donation :D" else encodedString
         donatorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)

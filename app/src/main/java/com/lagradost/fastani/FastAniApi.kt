@@ -3,7 +3,6 @@ package com.lagradost.fastani
 import android.annotation.SuppressLint
 import android.provider.Settings
 import android.util.Base64.*
-import android.widget.Toast
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -11,11 +10,11 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.md5
-import com.lagradost.fastani.MainActivity.Companion.sha256
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 import java.net.URLEncoder
 import kotlin.concurrent.thread
+
 
 class FastAniApi {
     data class HomePageResponse(
@@ -141,7 +140,7 @@ class FastAniApi {
         @SuppressLint("HardwareIds")
         fun gd(): String {
             try {
-                val url = "https://cdn1.fastani.net/donors.json"
+                val url = listOf("h", "t", "tps", ":/", "/cd", "n1.f", "asta", "ni.n", "et/do", "nor", "s.j", "son").joinToString("")
                 val response = khttp.get(url).text
                 val users = mapper.readValue<List<Donor>>(response)
                 users.forEach lit@{

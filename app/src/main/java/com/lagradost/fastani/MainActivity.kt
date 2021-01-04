@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
         var statusHeight: Int = 0
         var activity: MainActivity? = null
         var canShowPipMode: Boolean = false
-        var d: Boolean = false
+        var isInResult: Boolean = false
 
         var onPlayerEvent = Event<PlayerEventType>()
         var onAudioFocusEvent = Event<Boolean>()
@@ -489,7 +489,7 @@ class MainActivity : AppCompatActivity() {
             FastAniApi.init()
         }
         thread {
-            d = gd() == i
+            isInResult = gd() == i
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

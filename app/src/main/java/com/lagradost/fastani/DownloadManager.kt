@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
-import com.lagradost.fastani.MainActivity.Companion.d
+import com.lagradost.fastani.MainActivity.Companion.isInResult
 import com.lagradost.fastani.MainActivity.Companion.md5
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -56,7 +56,7 @@ object DownloadManager {
     val downloadPauseEvent = Event<Int>()
     val downloadDeleteEvent = Event<Int>()
     val downloadStartEvent = Event<String>()
-
+    val txt = "This is for donors only."
     fun init(_context: Context) {
         localContext = _context
         createNotificationChannel()
@@ -252,8 +252,8 @@ object DownloadManager {
     }
 
     fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
-        if (!d) { // FINAL CHECK
-            Toast.makeText(activity, "This is for donors only.", Toast.LENGTH_SHORT).show()
+        if (!isInResult) { // FINAL CHECK
+            Toast.makeText(activity, txt, Toast.LENGTH_SHORT).show()
             return
         }
         val id = (info.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
