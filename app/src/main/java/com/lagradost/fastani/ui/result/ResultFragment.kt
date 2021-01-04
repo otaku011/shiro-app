@@ -96,6 +96,7 @@ class ResultFragment : Fragment() {
         fun newInstance(data: FastAniApi.Card) =
             ResultFragment().apply {
                 arguments = Bundle().apply {
+                    println(data)
                     putString("data", mapper.writeValueAsString(data))
                 }
             }
@@ -115,6 +116,7 @@ class ResultFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("data")?.let {
+            println("FGHJDHDHDH $it")
             data = mapper.readValue(it, FastAniApi.Card::class.java)
         }
         println(data)
@@ -227,8 +229,8 @@ class ResultFragment : Fragment() {
 
                 val key = MainActivity.getViewKey(data!!.anilistId, index, epIndex)
 
-                if (MainActivity.isDonor) {
-                    card.cardDownloadIcon.setOnClickListener {
+                if (MainActivity.d) {
+                    card.cdi.setOnClickListener {
                         if (data != null) {
                             DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(
                                 index,
@@ -243,7 +245,7 @@ class ResultFragment : Fragment() {
                         }
                     }
                 } else {
-                    card.cardDownloadIcon.visibility = View.GONE
+                    card.cdi.visibility = View.GONE
                     val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
                     param.updateMarginsRelative(
                         card.cardTitle.marginLeft,
@@ -305,7 +307,7 @@ class ResultFragment : Fragment() {
                     card.video_progress.alpha = 0f
                 }
 
-                if (MainActivity.isDonor) {
+                if (MainActivity.d) {
                     val internalId = (data!!.anilistId + "S${index}E${epIndex}").hashCode()
                     val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(DOWNLOAD_CHILD_KEY,
                         internalId.toString())
@@ -320,12 +322,12 @@ class ResultFragment : Fragment() {
 
                             fun updateIcon(megabytes: Int) {
                                 if (!file.exists()) {
-                                    card.cardDownloadIcon.visibility = View.VISIBLE
+                                    card.cdi.visibility = View.VISIBLE
                                     card.progressBar.visibility = View.GONE
                                     card.cardPauseIcon.visibility = View.GONE
                                     card.cardRemoveIcon.visibility = View.GONE
                                 } else {
-                                    card.cardDownloadIcon.visibility = View.GONE
+                                    card.cdi.visibility = View.GONE
                                     if (megabytes + 3 >= megaBytesTotal) {
                                         card.progressBar.visibility = View.GONE
                                         card.cardPauseIcon.visibility = View.GONE

@@ -9,11 +9,11 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.fastani.*
-import com.lagradost.fastani.MainActivity.Companion.isDonor
+import com.lagradost.fastani.MainActivity.Companion.d
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
@@ -21,9 +21,9 @@ import java.lang.Exception
 
 class DownloadFragment : Fragment() {
     data class EpisodesDownloaded(
-        val count: Int,
-        val countDownloading: Int,
-        val countBytes: Long,
+        @JsonProperty("count") val count: Int,
+        @JsonProperty("countDownloading") val countDownloading: Int,
+        @JsonProperty("countBytes") val countBytes: Long,
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,7 +42,8 @@ class DownloadFragment : Fragment() {
         try {
             val childKeys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
 
-            downloadCenterText.text = if (isDonor) "Download something to make it show up here" else "Donate to download shows"
+            downloadCenterText.text =
+                if (d) "Download something to make it show up here" else "Donate to download shows"
             downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
 
             for (k in childKeys) {

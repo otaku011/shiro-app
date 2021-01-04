@@ -36,6 +36,7 @@ import android.view.*
 import android.view.View.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
@@ -62,14 +63,14 @@ const val EXTRA_CONTROL_TYPE = "control_type"
 // TITLE AND URL OR CARD MUST BE PROVIDED
 // EPISODE AND SEASON SHOULD START AT 0
 data class PlayerData(
-    val title: String?,
-    val url: String?,
+    @JsonProperty("title") val title: String?,
+    @JsonProperty("url") val url: String?,
 
-    var episodeIndex: Int?,
-    var seasonIndex: Int?,
-    val card: FastAniApi.Card?,
-    val startAt: Long?,
-    val anilistId: String?,
+    @JsonProperty("episodeIndex") var episodeIndex: Int?,
+    @JsonProperty("seasonIndex") var seasonIndex: Int?,
+    @JsonProperty("card") val card: FastAniApi.Card?,
+    @JsonProperty("startAt") val startAt: Long?,
+    @JsonProperty("anilistId") val anilistId: String?,
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -104,7 +105,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var hasPassedSkipLimit = false
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
-    private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", true)
+    private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
     var width = 0
 
     private fun canPlayNextEpisode(): Boolean {

@@ -71,7 +71,7 @@
 
         <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
                    android:src="@drawable/netflix_download"
-                   android:id="@+id/cardDownloadIcon"
+                   android:id="@+id/cdi"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
         />

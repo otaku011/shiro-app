@@ -19,6 +19,14 @@ android {
 
     buildTypes {
         release {
+            packagingOptions {
+                pickFirst 'kotlin/**'
+            }
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -63,5 +71,4 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
     implementation 'com.google.android.exoplayer:exoplayer:2.12.1'
     implementation 'com.google.android.exoplayer:extension-cast:2.12.1'
-    implementation 'commons-codec:commons-codec:1.15'
 }

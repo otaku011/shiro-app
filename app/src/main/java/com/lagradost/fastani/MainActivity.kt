@@ -1,5 +1,6 @@
 package com.lagradost.fastani
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
 import android.app.PictureInPictureParams
@@ -14,46 +15,33 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
 import android.view.*
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.getSystemService
-import androidx.fragment.app.DialogFragment.STYLE_NO_FRAME
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.concurrent.thread
 
-import androidx.navigation.Navigation
-import androidx.preference.AndroidResources
-import androidx.transition.ChangeBounds
-import androidx.transition.Transition
-import androidx.transition.TransitionManager
-import com.google.android.gms.cast.framework.CastContext
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.fastani.FastAniApi.Companion.getCardById
-import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
+import com.lagradost.fastani.FastAniApi.Companion.gd
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerEventType
 import com.lagradost.fastani.ui.PlayerFragment
 import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
-import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
 import java.security.MessageDigest
 
@@ -61,37 +49,37 @@ val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).
 val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
 
 data class EpisodePosDurInfo(
-    val pos: Long,
-    val dur: Long,
+    @JsonProperty("pos") val pos: Long,
+    @JsonProperty("dur") val dur: Long,
 )
 
 data class LastEpisodeInfo(
-    val pos: Long,
-    val dur: Long,
-    val seenAt: Long,
-    val id: String,
-    val aniListId: String,
-    val episodeIndex: Int,
-    val seasonIndex: Int,
-    val isMovie: Boolean,
-    val episode: FastAniApi.FullEpisode,
-    val coverImage: FastAniApi.CoverImage,
-    val title: FastAniApi.Title,
-    val bannerImage: String,
+    @JsonProperty("pos") val pos: Long,
+    @JsonProperty("dur") val dur: Long,
+    @JsonProperty("seenAt") val seenAt: Long,
+    @JsonProperty("id") val id: String,
+    @JsonProperty("aniListId") val aniListId: String,
+    @JsonProperty("episodeIndex") val episodeIndex: Int,
+    @JsonProperty("seasonIndex") val seasonIndex: Int,
+    @JsonProperty("isMovie") val isMovie: Boolean,
+    @JsonProperty("episode") val episode: FastAniApi.FullEpisode,
+    @JsonProperty("coverImage") val coverImage: FastAniApi.CoverImage,
+    @JsonProperty("title") val title: FastAniApi.Title,
+    @JsonProperty("bannerImage") val bannerImage: String,
 )
 
 data class NextEpisode(
-    val isFound: Boolean,
-    val episodeIndex: Int,
-    val seasonIndex: Int,
+    @JsonProperty("isFound") val isFound: Boolean,
+    @JsonProperty("episodeIndex") val episodeIndex: Int,
+    @JsonProperty("seasonIndex") val seasonIndex: Int,
 )
 
 data class BookmarkedTitle(
-    val id: String,
-    val anilistId: String,
-    val description: String,
-    val title: FastAniApi.Title,
-    val coverImage: FastAniApi.CoverImage,
+    @JsonProperty("id") val id: String,
+    @JsonProperty("anilistId") val anilistId: String,
+    @JsonProperty("description") val description: String,
+    @JsonProperty("title") val title: FastAniApi.Title,
+    @JsonProperty("coverImage") val coverImage: FastAniApi.CoverImage,
 )
 
 class MainActivity : AppCompatActivity() {
@@ -101,8 +89,7 @@ class MainActivity : AppCompatActivity() {
         var statusHeight: Int = 0
         var activity: MainActivity? = null
         var canShowPipMode: Boolean = false
-
-        var isDonor: Boolean = false
+        var d: Boolean = false
 
         var onPlayerEvent = Event<PlayerEventType>()
         var onAudioFocusEvent = Event<Boolean>()
@@ -489,6 +476,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
+        @SuppressLint("HardwareIds")
+        val i: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         if (settingsManager.getBoolean("rotation_enabled", false)) {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
@@ -500,7 +489,7 @@ class MainActivity : AppCompatActivity() {
             FastAniApi.init()
         }
         thread {
-            isDonor = getDonorStatus()
+            d = gd() == i
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

@@ -10,9 +10,10 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bumptech.glide.Glide
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
-import com.lagradost.fastani.MainActivity.Companion.isDonor
+import com.lagradost.fastani.MainActivity.Companion.d
 import com.lagradost.fastani.MainActivity.Companion.md5
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -21,7 +22,6 @@ import java.lang.Exception
 import java.net.URL
 import java.net.URLConnection
 import java.io.*
-import java.util.concurrent.Executors
 
 const val UPDATE_TIME = 1000
 const val CHANNEL_ID = "fastani.general"
@@ -35,12 +35,14 @@ class DownloadService : IntentService("DownloadService") {
             val id = intent.getIntExtra("id", -1)
             val type = intent.getStringExtra("type")
             if (id != -1 && type != null) {
-                DownloadManager.invokeDownloadAction(id, when (type) {
-                    "resume" -> DownloadManager.DownloadStatusType.IsDownloading
-                    "pause" -> DownloadManager.DownloadStatusType.IsPaused
-                    "stop" -> DownloadManager.DownloadStatusType.IsStoped
-                    else -> DownloadManager.DownloadStatusType.IsDownloading
-                })
+                DownloadManager.invokeDownloadAction(
+                    id, when (type) {
+                        "resume" -> DownloadManager.DownloadStatusType.IsDownloading
+                        "pause" -> DownloadManager.DownloadStatusType.IsPaused
+                        "stop" -> DownloadManager.DownloadStatusType.IsStoped
+                        else -> DownloadManager.DownloadStatusType.IsDownloading
+                    }
+                )
             }
         }
     }
@@ -78,20 +80,20 @@ object DownloadManager {
     }
 
     data class DownloadEvent(
-        val id: Int,
-        val bytes: Long,
+        @JsonProperty("animeData") val id: Int,
+        @JsonProperty("animeData") val bytes: Long,
     )
 
     data class DownloadInfo(
         //val card: FastAniApi.Card?,
-        val seasonIndex: Int,
-        val episodeIndex: Int,
-        val title: FastAniApi.Title,
-        val isMovie: Boolean,
-        val anilistId: String,
-        val id: String,
-        val ep: FastAniApi.FullEpisode,
-        val coverImage: String?,
+        @JsonProperty("animeData") val seasonIndex: Int,
+        @JsonProperty("animeData") val episodeIndex: Int,
+        @JsonProperty("animeData") val title: FastAniApi.Title,
+        @JsonProperty("animeData") val isMovie: Boolean,
+        @JsonProperty("animeData") val anilistId: String,
+        @JsonProperty("animeData") val id: String,
+        @JsonProperty("animeData") val ep: FastAniApi.FullEpisode,
+        @JsonProperty("animeData") val coverImage: String?,
     )
 
     enum class DownloadType {
@@ -115,28 +117,28 @@ object DownloadManager {
     }
 
     data class DownloadParentFileMetadata(
-        val fastAniId: String,
-        val anilistId: String, // ID
-        val title: FastAniApi.Title,
-        val coverImagePath: String,
-        val isMovie: Boolean,
+        @JsonProperty("fastAniId") val fastAniId: String,
+        @JsonProperty("anilistId") val anilistId: String, // ID
+        @JsonProperty("title") val title: FastAniApi.Title,
+        @JsonProperty("coverImagePath") val coverImagePath: String,
+        @JsonProperty("isMovie") val isMovie: Boolean,
     )
 
     data class DownloadFileMetadata(
-        val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
-        val fastAniId: String,
-        val anilistId: String, // USED AS PARENT ID
+        @JsonProperty("internalId") val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
+        @JsonProperty("fastAniId") val fastAniId: String,
+        @JsonProperty("anilistId") val anilistId: String, // USED AS PARENT ID
 
-        val thumbPath: String?,
-        val videoPath: String,
+        @JsonProperty("thumbPath") val thumbPath: String?,
+        @JsonProperty("videoPath") val videoPath: String,
 
-        val videoTitle: String?,
-        val seasonIndex: Int,
-        val episodeIndex: Int,
+        @JsonProperty("videoTitle") val videoTitle: String?,
+        @JsonProperty("seasonIndex") val seasonIndex: Int,
+        @JsonProperty("episodeIndex") val episodeIndex: Int,
 
-        val downloadAt: Long,
-        val maxFileSize: Long, // IF MUST RESUME
-        val downloadFileUrl: String, // IF RESUME, DO IT FROM THIS URL
+        @JsonProperty("downloadAt") val downloadAt: Long,
+        @JsonProperty("maxFileSize") val maxFileSize: Long, // IF MUST RESUME
+        @JsonProperty("downloadFileUrl") val downloadFileUrl: String, // IF RESUME, DO IT FROM THIS URL
     )
 
     fun invokeDownloadAction(id: Int, type: DownloadStatusType) {
@@ -217,7 +219,8 @@ object DownloadManager {
                 val rUrl =
                     (if (url.startsWith("https://") || url.startsWith("http://")) url else "https://fastani.net/$url").replace(
                         " ",
-                        "%20")
+                        "%20"
+                    )
                 println("RRLL: " + rUrl)
                 val _url = URL(rUrl)
                 val connection: URLConnection = _url.openConnection()
@@ -249,7 +252,7 @@ object DownloadManager {
     }
 
     fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
-        if (!isDonor) { // FINAL CHECK
+        if (!d) { // FINAL CHECK
             Toast.makeText(activity, "This is for donors only.", Toast.LENGTH_SHORT).show()
             return
         }
@@ -311,7 +314,7 @@ object DownloadManager {
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
-                val url = ep.file.replace(" ","%20")
+                val url = ep.file.replace(" ", "%20")
 
                 val _url = URL(url)
 
@@ -381,8 +384,10 @@ object DownloadManager {
                 var lastUpdate = System.currentTimeMillis()
 
                 // =================== SET KEYS ===================
-                DataStore.setKey(DOWNLOAD_CHILD_KEY, id.toString(), // MUST HAVE ID TO NOT OVERRIDE
-                    DownloadFileMetadata(id,
+                DataStore.setKey(
+                    DOWNLOAD_CHILD_KEY, id.toString(), // MUST HAVE ID TO NOT OVERRIDE
+                    DownloadFileMetadata(
+                        id,
                         info.id,
                         info.anilistId,
                         if (ep.thumb == null) null else posterPath,
@@ -392,14 +397,20 @@ object DownloadManager {
                         info.episodeIndex,
                         System.currentTimeMillis(),
                         bytesTotal,
-                        url))
+                        url
+                    )
+                )
 
-                DataStore.setKey(DOWNLOAD_PARENT_KEY, info.anilistId,
-                    DownloadParentFileMetadata(info.id,
+                DataStore.setKey(
+                    DOWNLOAD_PARENT_KEY, info.anilistId,
+                    DownloadParentFileMetadata(
+                        info.id,
                         info.anilistId,
                         info.title,
                         mainPosterPath,
-                        isMovie))
+                        isMovie
+                    )
+                )
 
                 downloadStartEvent.invoke(info.anilistId)
 

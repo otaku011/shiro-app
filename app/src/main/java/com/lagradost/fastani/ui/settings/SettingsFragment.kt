@@ -5,11 +5,8 @@ import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Base64.URL_SAFE
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
@@ -17,13 +14,10 @@ import com.bumptech.glide.Glide
 import com.lagradost.fastani.*
 import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
-import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
-import com.lagradost.fastani.MainActivity.Companion.isDonor
+import com.lagradost.fastani.MainActivity.Companion.d
 import com.lagradost.fastani.MainActivity.Companion.md5
-import com.lagradost.fastani.MainActivity.Companion.statusHeight
 import com.lagradost.fastani.R
 import com.lagradost.fastani.VIEW_LST_KEY
-import org.apache.commons.codec.binary.Base64
 import kotlin.concurrent.thread
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -89,7 +83,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val id: String = Settings.Secure.getString(context?.contentResolver, Settings.Secure.ANDROID_ID)
 
         val encodedString = id.md5()
-        donatorId?.summary = if (isDonor) "Thanks for the donation :D" else encodedString
+        donatorId?.summary = if (d) "Thanks for the donation :D" else encodedString
         donatorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)

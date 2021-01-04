@@ -4,60 +4,85 @@ import android.annotation.SuppressLint
 import android.provider.Settings
 import android.util.Base64.*
 import android.widget.Toast
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.md5
+import com.lagradost.fastani.MainActivity.Companion.sha256
 import khttp.structures.cookie.CookieJar
 import java.lang.Exception
 import java.net.URLEncoder
-import org.apache.commons.codec.binary.Base64
 import kotlin.concurrent.thread
 
 class FastAniApi {
     data class HomePageResponse(
-        val animeData: AnimeData,
-        val homeSlidesData: List<Card>,
-        val recentlyAddedData: List<Card>,
-        val trendingData: List<Card>,
-        var favorites: List<BookmarkedTitle?>?,
-        var recentlySeen: List<LastEpisodeInfo?>?,
+        @JsonProperty("animeData") val animeData: AnimeData,
+        @JsonProperty("homeSlidesData") val homeSlidesData: List<Card>,
+        @JsonProperty("recentlyAddedData") val recentlyAddedData: List<Card>,
+        @JsonProperty("trendingData") val trendingData: List<Card>,
+        @JsonProperty("favorites") var favorites: List<BookmarkedTitle?>?,
+        @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?,
     )
 
-    data class Token(val headers: Map<String, String>, val cookies: CookieJar)
-    data class Title(val romaji: String, val english: String, val native: String)
-    data class EndDate(val year: Int, val month: Int, val day: Int)
-    data class FullEpisode(val file: String, val title: String?, val thumb: String?)
-    data class Episode(val file: String)
-    data class CoverImage(val large: String)
-    data class Seasons(val episodes: List<FullEpisode>)
-    data class CdnData(val seasons: List<Seasons>)
+    data class Token(
+        @JsonProperty("headers") val headers: Map<String, String>,
+        @JsonProperty("cookies") val cookies: CookieJar
+    )
+
+    data class Title(
+        @JsonProperty("romaji") val romaji: String,
+        @JsonProperty("english") val english: String,
+        @JsonProperty("native") val native: String
+    )
+
+    data class EndDate(
+        @JsonProperty("year") val year: Int,
+        @JsonProperty("month") val month: Int,
+        @JsonProperty("day") val day: Int
+    )
+
+    data class FullEpisode(
+        @JsonProperty("file") val file: String,
+        @JsonProperty("title") val title: String?,
+        @JsonProperty("thumb") val thumb: String?
+    )
+
+    data class Episode(@JsonProperty("file") val file: String)
+    data class CoverImage(@JsonProperty("large") val large: String)
+    data class Seasons(@JsonProperty("episodes") val episodes: List<FullEpisode>)
+    data class CdnData(@JsonProperty("seasons") val seasons: List<Seasons>)
     data class Card(
-        val title: Title,
-        val endDate: EndDate,
-        val episodes: Int,
-        val duration: Int,
-        val trailer: String?,
-        val averageScore: Int,
-        val isAdult: Boolean,
-        val status: String,
-        val coverImage: CoverImage,
-        val bannerImage: String,
-        val anilistId: String,
-        val id: String,
-        val description: String,
-        val cdnData: CdnData,
-        val genres: List<String>,
+        @JsonProperty("title") val title: Title,
+        @JsonProperty("endDate") val endDate: EndDate,
+        @JsonProperty("episodes") val episodes: Int,
+        @JsonProperty("duration") val duration: Int,
+        @JsonProperty("trailer") val trailer: String?,
+        @JsonProperty("averageScore") val averageScore: Int,
+        @JsonProperty("isAdult") val isAdult: Boolean,
+        @JsonProperty("status") val status: String,
+        @JsonProperty("coverImage") val coverImage: CoverImage,
+        @JsonProperty("bannerImage") val bannerImage: String,
+        @JsonProperty("anilistId") val anilistId: String,
+        @JsonProperty("id") val id: String,
+        @JsonProperty("description") val description: String,
+        @JsonProperty("cdnData") val cdnData: CdnData,
+        @JsonProperty("genres") val genres: List<String>,
     )
 
-    data class AnimeData(val cards: List<Card>)
-    data class SearchResponse(val animeData: AnimeData)
-    data class EpisodeResponse(val anime: Card, val nextEpisode: Int)
+    data class AnimeData(@JsonProperty("cards") val cards: List<Card>)
+    data class SearchResponse(@JsonProperty("animeData") val animeData: AnimeData)
+    data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("native") val nextEpisode: Int)
 
-    data class Update(val shouldUpdate: Boolean, val updateURL: String?, val updateVersion: String?)
-    data class Donor(val id: String)
+    data class Update(
+        @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
+        @JsonProperty("updateURL") val updateURL: String?,
+        @JsonProperty("updateVersion") val updateVersion: String?
+    )
+
+    data class Donor(@JsonProperty("id") val id: String)
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -114,7 +139,7 @@ class FastAniApi {
         }
 
         @SuppressLint("HardwareIds")
-        fun getDonorStatus(): Boolean {
+        fun gd(): String {
             try {
                 val url = "https://cdn1.fastani.net/donors.json"
                 val response = khttp.get(url).text
@@ -124,15 +149,15 @@ class FastAniApi {
                         val androidId: String =
                             Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
                         if (androidId.md5() == it.id || it.id == "all") {
-                            return true
+                            return it.id
                         }
                     } catch (e: Exception) {
                         return@lit
                     }
                 }
-                return false
+                return ""
             } catch (e: Exception) {
-                return false
+                return ""
             }
         }
 

@@ -3,8 +3,10 @@ package com.lagradost.fastani
 import android.content.Context
 import android.content.SharedPreferences
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
 const val PREFERENCES_NAME: String = "rebuild_preference"
 const val VIEW_POS_KEY: String = "view_pos" // VIDEO POSITION
@@ -17,7 +19,7 @@ const val DOWNLOAD_PARENT_KEY: String = "dload_parent" // DownloadParentFileMeta
 
 object DataStore {
 
-    val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
+    val mapper = JsonMapper.builder().addModule(KotlinModule())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
     private fun getPreferences(context: Context): SharedPreferences {
