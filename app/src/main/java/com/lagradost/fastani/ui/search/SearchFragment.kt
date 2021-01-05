@@ -14,6 +14,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.fastani.R
 import com.lagradost.fastani.FastAniApi
@@ -25,10 +26,22 @@ import kotlin.concurrent.thread
 
 class SearchFragment : Fragment() {
     private lateinit var searchViewModel: SearchViewModel
+    val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
+    private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
+    val spanCountLandscape = if (compactView) 2 else 6
+    val spanCountPortrait = if (compactView) 1 else 3
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         super.onViewCreated(view, savedInstanceState)
+        val orientation = resources.configuration.orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            cardSpace.spanCount = spanCountLandscape
+        } else {
+            cardSpace.spanCount = spanCountPortrait
+        }
+
         val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
             LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
             MainActivity.statusHeight // view height
@@ -110,10 +123,10 @@ class SearchFragment : Fragment() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            cardSpace.spanCount = 6
+            cardSpace.spanCount = spanCountLandscape
             //Toast.makeText(activity, "landscape", Toast.LENGTH_SHORT).show();
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            cardSpace.spanCount = 3
+            cardSpace.spanCount = spanCountPortrait
             //Toast.makeText(activity, "portrait", Toast.LENGTH_SHORT).show();
         }
     }

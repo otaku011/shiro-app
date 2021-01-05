@@ -60,7 +60,6 @@ import java.io.File
 
 
 const val DESCRIPTION_LENGTH = 200
-const val has_download_perms = true
 
 class ResultFragment : Fragment() {
     var data: FastAniApi.Card? = null
@@ -116,10 +115,8 @@ class ResultFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("data")?.let {
-            println("FGHJDHDHDH $it")
             data = mapper.readValue(it, FastAniApi.Card::class.java)
         }
-        println(data)
         isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
         isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.anilistId)
     }
@@ -133,7 +130,7 @@ class ResultFragment : Fragment() {
         }
     }*/
 
-    private fun ToggleHeartVisual(_isBookmarked: Boolean) {
+    private fun toggleHeartVisual(_isBookmarked: Boolean) {
         if (_isBookmarked) {
             title_bookmark.setImageResource(R.drawable.filled_heart)
         } else {
@@ -141,9 +138,9 @@ class ResultFragment : Fragment() {
         }
     }
 
-    private fun ToggleHeart(_isBookmarked: Boolean) {
+    private fun toggleHeart(_isBookmarked: Boolean) {
         this.isBookmarked = _isBookmarked
-        ToggleHeartVisual(_isBookmarked)
+        toggleHeartVisual(_isBookmarked)
         if (_isBookmarked) {
             DataStore.setKey<BookmarkedTitle>(
                 BOOKMARK_KEY,
@@ -158,7 +155,7 @@ class ResultFragment : Fragment() {
         }
     }
 
-    fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
+    private fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
         castContext.castOptions
         val ep = data!!.cdnData.seasons[seasonIndex].episodes[episodeIndex]
@@ -232,16 +229,18 @@ class ResultFragment : Fragment() {
                 if (MainActivity.isInResult) {
                     card.cdi.setOnClickListener {
                         if (data != null) {
-                            DownloadManager.downloadEpisode(DownloadManager.DownloadInfo(
-                                index,
-                                epIndex,
-                                data!!.title,
-                                isMovie,
-                                data!!.anilistId,
-                                data!!.id,
-                                data!!.cdnData.seasons[index].episodes[epIndex],
-                                data!!.coverImage.large
-                            ))
+                            DownloadManager.downloadEpisode(
+                                DownloadManager.DownloadInfo(
+                                    index,
+                                    epIndex,
+                                    data!!.title,
+                                    isMovie,
+                                    data!!.anilistId,
+                                    data!!.id,
+                                    data!!.cdnData.seasons[index].episodes[epIndex],
+                                    data!!.coverImage.large
+                                )
+                            )
                         }
                     }
                 } else {
@@ -309,8 +308,10 @@ class ResultFragment : Fragment() {
 
                 if (MainActivity.isInResult) {
                     val internalId = (data!!.anilistId + "S${index}E${epIndex}").hashCode()
-                    val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(DOWNLOAD_CHILD_KEY,
-                        internalId.toString())
+                    val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(
+                        DOWNLOAD_CHILD_KEY,
+                        internalId.toString()
+                    )
                     // ================ DOWNLOAD STUFF ================
                     if (child != null) {
                         println("CHILD NOT NULL:" + epIndex)
@@ -384,14 +385,16 @@ class ResultFragment : Fragment() {
 
 
                             fun getDownload(): DownloadManager.DownloadInfo {
-                                return DownloadManager.DownloadInfo(child.seasonIndex,
+                                return DownloadManager.DownloadInfo(
+                                    child.seasonIndex,
                                     child.episodeIndex,
                                     data!!.title,
                                     isMovie,
                                     child.anilistId,
                                     child.fastAniId,
                                     FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
-                                    null)
+                                    null
+                                )
                             }
 
                             fun getStatus(): Boolean { // IF CAN RESUME
@@ -424,8 +427,10 @@ class ResultFragment : Fragment() {
                                                 DownloadManager.downloadEpisode(getDownload(), true)
                                             }
                                             R.id.res_stopdload -> {
-                                                DownloadManager.invokeDownloadAction(child.internalId,
-                                                    DownloadManager.DownloadStatusType.IsStoped)
+                                                DownloadManager.invokeDownloadAction(
+                                                    child.internalId,
+                                                    DownloadManager.DownloadStatusType.IsStoped
+                                                )
                                                 deleteFile()
                                             }
                                         }
@@ -436,12 +441,16 @@ class ResultFragment : Fragment() {
                                     popup.setOnMenuItemClickListener {
                                         when (it.itemId) {
                                             R.id.stop_pauseload -> {
-                                                DownloadManager.invokeDownloadAction(child.internalId,
-                                                    DownloadManager.DownloadStatusType.IsPaused)
+                                                DownloadManager.invokeDownloadAction(
+                                                    child.internalId,
+                                                    DownloadManager.DownloadStatusType.IsPaused
+                                                )
                                             }
                                             R.id.stop_stopdload -> {
-                                                DownloadManager.invokeDownloadAction(child.internalId,
-                                                    DownloadManager.DownloadStatusType.IsStoped)
+                                                DownloadManager.invokeDownloadAction(
+                                                    child.internalId,
+                                                    DownloadManager.DownloadStatusType.IsStoped
+                                                )
                                                 deleteFile()
                                             }
                                         }
@@ -471,9 +480,13 @@ class ResultFragment : Fragment() {
                                     if (it.id == child.internalId) {
                                         val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
                                         //card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
-                                        card.progressBar.setProgress(maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100),
-                                            0),
-                                            true)
+                                        card.progressBar.setProgress(
+                                            maxOf(
+                                                minOf(megaBytes * 100 / megaBytesTotal, 100),
+                                                0
+                                            ),
+                                            true
+                                        )
                                         updateIcon(megaBytes)
                                     }
                                 }
@@ -533,7 +546,7 @@ class ResultFragment : Fragment() {
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
         DownloadManager.downloadStartEvent += ::onDownloadStarted
-        ToggleHeartVisual(isBookmarked)
+        toggleHeartVisual(isBookmarked)
 
         title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
@@ -543,7 +556,7 @@ class ResultFragment : Fragment() {
         }
 
         bookmark_holder.setOnClickListener {
-            ToggleHeart(!isBookmarked)
+            toggleHeart(!isBookmarked)
         }
 
         /*
