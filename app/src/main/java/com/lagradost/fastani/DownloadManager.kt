@@ -252,6 +252,7 @@ object DownloadManager {
     }
 
     fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
+        // IsInResult == isDonor
         if (!isInResult) { // FINAL CHECK
             Toast.makeText(activity, txt, Toast.LENGTH_SHORT).show()
             return

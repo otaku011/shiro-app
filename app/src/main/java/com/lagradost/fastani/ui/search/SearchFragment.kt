@@ -92,9 +92,11 @@ class SearchFragment : Fragment() {
     ): View? {
         searchViewModel =
             ViewModelProviders.of(this).get(SearchViewModel::class.java)
-        activity?.window?.setSoftInputMode(
-            WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
-        )
+        if (this.isVisible) {
+            activity?.window?.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+            )
+        }
         return inflater.inflate(R.layout.fragment_search, container, false)
     }
 

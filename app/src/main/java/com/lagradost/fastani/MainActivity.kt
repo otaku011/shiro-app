@@ -189,8 +189,8 @@ class MainActivity : AppCompatActivity() {
             val maxValue = 90
             var canContinue: Boolean = (pos * 100 / dur) > maxValue
             var isFound: Boolean = true
-            val _pos = pos
-            val _dur = dur
+            var _pos = pos
+            var _dur = dur
 
             val card = data.card
             while (canContinue) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
@@ -200,6 +200,8 @@ class MainActivity : AppCompatActivity() {
                     seasonIndex = next.seasonIndex
                     episodeIndex = next.episodeIndex
                     if ((nextPro.pos * 100) / dur <= maxValue) {
+                        _pos = nextPro.pos
+                        _dur = nextPro.dur
                         canContinue = false
                         isFound = true
                     }
@@ -267,7 +269,7 @@ class MainActivity : AppCompatActivity() {
             // Enables regular immersive mode.
             // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
             // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            MainActivity.activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     // Set the content to appear under the system bars so that the
                     // content doesn't resize when the system bars hide and show.
                     or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -297,7 +299,7 @@ class MainActivity : AppCompatActivity() {
         // Shows the system bars by removing all the flags
 // except for the ones that make the content appear under the system bars.
         fun showSystemUI() {
-            MainActivity.activity!!.getWindow().decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            activity!!.window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
         }

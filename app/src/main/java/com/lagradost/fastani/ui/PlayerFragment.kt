@@ -486,6 +486,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, isFullscreen)
         outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
+        savePos()
         super.onSaveInstanceState(outState)
     }
 

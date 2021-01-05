@@ -15,6 +15,7 @@ import java.lang.Exception
 import java.net.URLEncoder
 import kotlin.concurrent.thread
 
+val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
 
 class FastAniApi {
     data class HomePageResponse(
@@ -140,7 +141,8 @@ class FastAniApi {
         @SuppressLint("HardwareIds")
         fun gd(): String {
             try {
-                val url = listOf("h", "t", "tps", ":/", "/cd", "n1.f", "asta", "ni.n", "et/do", "nor", "s.j", "son").joinToString("")
+                // Change cache with this
+                // , headers = mapOf("Cache-Control" to "max-age=60")
                 val response = khttp.get(url).text
                 val users = mapper.readValue<List<Donor>>(response)
                 users.forEach lit@{
@@ -206,7 +208,7 @@ class FastAniApi {
             }
         }
 
-        fun getLastWatch(): List<LastEpisodeInfo?> {
+        private fun getLastWatch(): List<LastEpisodeInfo?> {
             val keys = DataStore.getKeys(VIEW_LST_KEY)
             thread {
                 keys.pmap {
