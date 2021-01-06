@@ -149,6 +149,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        fun openBrowser(url : String) {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            activity!!.startActivity(intent)
+        }
+
         fun getViewPosDur(aniListId: String, seasonIndex: Int, episodeIndex: Int): EpisodePosDurInfo {
             val key = getViewKey(aniListId, seasonIndex, episodeIndex)
 
