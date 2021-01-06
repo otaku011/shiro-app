@@ -367,6 +367,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    // AUTH FOR LOGIN
+    override fun onNewIntent(intent: Intent?) {
+        if(intent != null) {
+            val dataString = intent.dataString
+            if(dataString != null && dataString != "") {
+                if(dataString.contains("fastaniapp")) {
+                    AniListApi.authenticateLogin(dataString)
+                }
+            }
+        }
+
+        super.onNewIntent(intent)
+    }
+
     override fun onBackPressed() {
         println("BACK PRESSED!!!!")
 
