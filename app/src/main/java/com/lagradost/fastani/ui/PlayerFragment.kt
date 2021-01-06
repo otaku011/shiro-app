@@ -1,7 +1,6 @@
 package com.lagradost.fastani.ui
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -9,8 +8,6 @@ import androidx.fragment.app.Fragment
 import android.view.animation.AnimationUtils
 import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.getViewPosDur
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.*
 import com.google.android.exoplayer2.util.MimeTypes
@@ -27,24 +24,24 @@ import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
 import android.net.Uri
 import android.preference.PreferenceManager
 import android.view.*
 import android.view.View.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
+import com.lagradost.fastani.R
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.*
-import androidx.core.content.ContextCompat.getSystemService as getSystemService
 
 
 const val STATE_RESUME_WINDOW = "resumeWindow"
@@ -53,6 +50,7 @@ const val STATE_PLAYER_FULLSCREEN = "playerFullscreen"
 const val STATE_PLAYER_PLAYING = "playerOnPlay"
 const val ACTION_MEDIA_CONTROL = "media_control"
 const val EXTRA_CONTROL_TYPE = "control_type"
+const val PLAYBACK_SPEED = "playback_speed"
 
 /**
  * A simple [Fragment] subclass.
@@ -103,9 +101,11 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var isMovingStartTime = 0L
     private var skipTime = 0L
     private var hasPassedSkipLimit = false
+    private var playbackSpeed = DataStore.getKey<Float>(PLAYBACK_SPEED_KEY, 1f)
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
+    private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
     var width = 0
 
     private fun canPlayNextEpisode(): Boolean {
@@ -181,6 +181,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         video_go_back.isClickable = isClick
         exo_progress.isClickable = isClick
         next_episode_btt.isClickable = isClick
+        playback_speed_btt.isClickable = isClick
         skip_op.isClickable = isClick
 
         val fadeTo = if (!isLocked) 1f else 0f
@@ -410,6 +411,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
         click_overlay.setOnClickListener {
             onClickChange()
+            hideSystemUI()
         }
         player_holder.setOnClickListener {
             onClickChange()
@@ -455,6 +457,31 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             seekTime(10000L)
         }
 
+        playback_speed_holder.visibility = if (playBackSpeedEnabled) VISIBLE else GONE
+        playback_speed_btt.setOnClickListener {
+            lateinit var dialog: AlertDialog
+            val speedsText = arrayOf("0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x")
+            val speedsNumbers = arrayOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
+            val builder = AlertDialog.Builder(requireContext())
+            builder.setTitle("Pick playback speed")
+
+            builder.setSingleChoiceItems(speedsText, speedsNumbers.indexOf(playbackSpeed)) { _, which ->
+
+                //val speed = speedsText[which]
+                //Toast.makeText(requireContext(), "$speed selected.", Toast.LENGTH_SHORT).show()
+
+                playbackSpeed = speedsNumbers[which]
+                DataStore.setKey(PLAYBACK_SPEED_KEY, playbackSpeed)
+                val param = PlaybackParameters(playbackSpeed!!)
+                exoPlayer.setPlaybackParameters(param)
+
+                dialog.dismiss()
+            }
+            dialog = builder.create()
+            dialog.show()
+
+        }
+
         if (skipOpEnabled) {
             skip_op_holder.visibility = VISIBLE
             skip_op.setOnClickListener {
@@ -467,6 +494,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             playbackPosition = savedInstanceState.getLong(STATE_RESUME_POSITION)
             isFullscreen = savedInstanceState.getBoolean(STATE_PLAYER_FULLSCREEN)
             isPlayerPlaying = savedInstanceState.getBoolean(STATE_PLAYER_PLAYING)
+            playbackSpeed = savedInstanceState.getFloat(PLAYBACK_SPEED)
         }
     }
 
@@ -486,6 +514,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, isFullscreen)
         outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
+        outState.putFloat(PLAYBACK_SPEED, playbackSpeed!!)
         savePos()
         super.onSaveInstanceState(outState)
     }
@@ -587,6 +616,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         }
         exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
         player_view.player = exoPlayer
+        // Sets the speed
+        exoPlayer.setPlaybackParameters(PlaybackParameters(playbackSpeed!!))
 
         //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
         exoPlayer.addListener(object : DefaultEventListener() {
@@ -601,7 +632,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        MainActivity.hideSystemUI()
+        hideSystemUI()
         if (data.card != null) {
             val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME

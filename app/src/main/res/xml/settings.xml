@@ -44,6 +44,13 @@
                 app:defaultValue="false"
         />
         <SwitchPreference
+                android:icon="@drawable/ic_baseline_speed_24"
+                app:key="playback_speed_enabled"
+                android:title="Playback speed button"
+                android:summary="Your preferred playback speed will still be used with this disabled"
+                app:defaultValue="false"
+        />
+        <SwitchPreference
                 android:icon="@drawable/ic_baseline_view_list_24"
                 app:key="compact_search_enabled"
                 android:title="Compact search results"

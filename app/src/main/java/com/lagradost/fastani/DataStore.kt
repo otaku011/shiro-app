@@ -16,6 +16,7 @@ const val BOOKMARK_KEY: String = "bookmark" // BOOKMARK/FAVORITE BookmarkedTitle
 const val VIEWSTATE_KEY: String = "viewstate" // BOOKMARK/FAVORITE BookmarkedTitle
 const val DOWNLOAD_CHILD_KEY: String = "dload_child" // DownloadFileMetadata
 const val DOWNLOAD_PARENT_KEY: String = "dload_parent" // DownloadParentFileMetadata
+const val PLAYBACK_SPEED_KEY: String = "playback_speed" // Last used playback speed
 
 object DataStore {
 
