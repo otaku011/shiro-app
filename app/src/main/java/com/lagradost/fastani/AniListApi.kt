@@ -73,7 +73,9 @@ class AniListApi {
             return try {
                 if (!checkToken()) {
                     val response = khttp.post(url + args,
-                        headers = mapOf("Authorization" to DataStore.getKey(ANILIST_TOKEN_KEY, ACCOUNT_ID, "")!!))
+                        headers = mapOf("Authorization" to "Bearer " + DataStore.getKey(ANILIST_TOKEN_KEY,
+                            ACCOUNT_ID,
+                            "")!!))
 
                     response.text
                 } else {
