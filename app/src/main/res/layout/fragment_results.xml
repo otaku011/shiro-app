@@ -201,8 +201,6 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                 </TextView>
 
 
-                <!-- OPTION FOR VIEWSTATE ECT -->
-                <!--
                 <LinearLayout
 
                         android:paddingTop="10dp"
@@ -219,22 +217,23 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                     >
                         <ImageView
                                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                                android:id="@+id/title_bookmark"
+                                android:id="@+id/score_btt"
                                 android:layout_width="30dp"
                                 android:layout_height="30dp"
                                 android:elevation="10dp"
                                 android:clickable="true"
                                 android:focusable="true"
-                                android:src="@drawable/outlined_heart"
-
+                                android:src="@drawable/ic_baseline_star_border_24"
                                 android:layout_gravity="center"
-                                android:contentDescription="@string/bookmark_btt_hint"/>
-                        <TextView android:text="@string/bookmark_btt"
-                                  android:layout_gravity="center" android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content">
+                        />
+                        <TextView
+                                android:text="Rate"
+                                android:layout_gravity="center"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
                         </TextView>
                     </LinearLayout>
-                    <LinearLayout
+                    <!--<LinearLayout
                             android:layout_weight="1"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -257,6 +256,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                                   android:layout_height="wrap_content">
                         </TextView>
                     </LinearLayout>
+                    -->
                     <LinearLayout
                             android:layout_weight="1"
                             android:layout_width="0dp"
@@ -272,16 +272,16 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                                 android:clickable="true"
                                 android:focusable="true"
                                 android:src="@drawable/ic_anilist_icon"
-
                                 android:layout_gravity="center"
-                                android:contentDescription="@string/anilist_btt_hint"/>
+                                android:contentDescription="@string/anilist_btt_hint"
+                        />
                         <TextView android:text="@string/anilist_btt"
                                   android:layout_gravity="center" android:layout_width="wrap_content"
                                   android:layout_height="wrap_content">
                         </TextView>
                     </LinearLayout>
                 </LinearLayout>
--->
+
                 <androidx.cardview.widget.CardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

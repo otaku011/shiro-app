@@ -51,6 +51,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.lagradost.fastani.DataStore.mapper
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
+import com.lagradost.fastani.MainActivity.Companion.openBrowser
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.episode_result.view.cardBg
 import kotlinx.android.synthetic.main.episode_result.view.cardTitle
@@ -633,5 +634,10 @@ class ResultFragment : Fragment() {
         if (!ratTxt.contains('.')) ratTxt += ".0"
         title_rating.text = "Rated: $ratTxt"
         title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
+
+
+        title_anilist.setOnClickListener {
+            openBrowser("https://anilist.co/anime/${data!!.anilistId}")
+        }
     }
 }

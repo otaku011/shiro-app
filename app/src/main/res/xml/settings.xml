@@ -11,6 +11,32 @@
             app:isPreferenceVisible="true"
     >
         <SwitchPreference
+                android:icon="@drawable/ic_baseline_fullscreen_24"
+                app:key="statusbar_hidden"
+                android:title="Hide statusbar"
+                app:defaultValue="true"
+        />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_screen_rotation_24"
+                app:key="rotation_enabled"
+                android:title="Allow screen rotation"
+                android:summary="Useful for tablets"
+                app:defaultValue="false"
+        />
+
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_view_list_24"
+                app:key="compact_search_enabled"
+                android:title="Compact search results"
+                app:defaultValue="true"
+        />
+    </PreferenceCategory>
+    <PreferenceCategory
+            android:key="player"
+            android:title="Player"
+            app:isPreferenceVisible="true"
+    >
+        <SwitchPreference
                 android:icon="@drawable/ic_baseline_picture_in_picture_alt_24"
                 app:key="pip_enabled"
                 android:title="Picture-in-picture"
@@ -25,19 +51,6 @@
                 app:defaultValue="true"
         />
         <SwitchPreference
-                android:icon="@drawable/ic_baseline_fullscreen_24"
-                app:key="statusbar_hidden"
-                android:title="Hide statusbar"
-                app:defaultValue="true"
-        />
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_screen_rotation_24"
-                app:key="rotation_enabled"
-                android:title="Allow screen rotation"
-                android:summary="Useful for tablets"
-                app:defaultValue="false"
-        />
-        <SwitchPreference
                 android:icon="@drawable/exo_controls_fastforward"
                 app:key="skip_op_enabled"
                 android:title="Skip OP button"
@@ -50,13 +63,9 @@
                 android:summary="Your preferred playback speed will still be used with this disabled"
                 app:defaultValue="false"
         />
-        <SwitchPreference
-                android:icon="@drawable/ic_baseline_view_list_24"
-                app:key="compact_search_enabled"
-                android:title="Compact search results"
-                app:defaultValue="true"
-        />
     </PreferenceCategory>
+
+
     <PreferenceCategory
             android:key="theme"
             android:title="Theme"
@@ -96,9 +105,25 @@
         />
     </PreferenceCategory>
     <PreferenceCategory
+            android:key="accounts"
+            android:title="Accounts"
+    >
+        <Preference
+                android:title="Anilist account"
+                app:key="anilist_setting_btt"
+                android:icon="@drawable/ic_anilist_icon"
+        />
+        <Preference
+                android:title="Donor ID"
+                app:key="donator_id"
+                android:icon="@drawable/ic_baseline_perm_identity_24"
+        />
+    </PreferenceCategory>
+    <PreferenceCategory
             android:key="info"
             android:title="Info"
     >
+
         <Preference
                 android:icon="@drawable/ic_baseline_build_24"
                 app:key="version"
@@ -130,11 +155,6 @@
                     android:data="https://www.patreon.com/fastani"/>
 
         </Preference>
-        <Preference
-                android:title="Donor ID"
-                app:key="donator_id"
-                android:icon="@drawable/ic_baseline_perm_identity_24"
-        />
         <Preference
                 android:title="Discord"
                 android:icon="@drawable/ic_baseline_discord_24"

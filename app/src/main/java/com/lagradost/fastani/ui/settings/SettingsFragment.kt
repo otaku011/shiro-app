@@ -96,6 +96,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
+
+        val anilistButton = findPreference("anilist_setting_btt") as Preference?
+        anilistButton?.setOnPreferenceClickListener {
+            AniListApi.authenticate()
+            return@setOnPreferenceClickListener true
+        }
+
         // Changelog
         val changeLog = findPreference("changelog") as Preference?
         changeLog?.setOnPreferenceClickListener {
