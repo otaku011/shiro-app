@@ -223,7 +223,7 @@ class AniListApi {
 
         fun getSeason(id: Int): SeasonResponse? {
             val q: String = """
-               query (${'$'}id: Int) {
+               query (${'$'}id: Int = $id) {
                    Media (id: ${'$'}id, type: ANIME) {
                        relations {
                             edges {
@@ -250,23 +250,25 @@ class AniListApi {
 
             val data = khttp.post(
                 "https://graphql.anilist.co",
-                data = mapOf("query" to q, "variables" to mapOf("id" to "$id"))
+                data = mapOf("query" to q)
             ).text
-            println(data)
             if (data == "") return null
             return mapper.readValue(data)
         }
 
-        /*fun getAllSeasons(id: Int): List<SeasonData?> {
-            val seasons = mutableListOf<SeasonData?>()
+        fun getAllSeasons(id: Int): List<SeasonResponse?> {
+            val seasons = mutableListOf<SeasonResponse?>()
             fun getSeasonRecursive(id: Int) {
+                println(id)
                 val season = getSeason(id)
+                println(season)
                 if (season != null) {
                     seasons.add(season)
                     if (season.data.Media.format == "TV") {
-                        season.data.Media.relations.forEach {
+                        season.data.Media.relations.edges.forEach {
                             if (it.relationType == "SEQUEL" && it.node.format == "TV") {
-                                return getSeasonRecursive(it.node.id)
+                                getSeasonRecursive(it.node.id)
+                                return@forEach
                             }
                         }
                     }
@@ -274,7 +276,7 @@ class AniListApi {
             }
             getSeasonRecursive(id)
             return seasons.toList()
-        }*/
+        }
     }
 
     enum class AniListStatusType(val value: Int) {
@@ -298,7 +300,7 @@ class AniListApi {
     data class SeasonMedia(
         @JsonProperty("format") val format: String?,
         @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
-        @JsonProperty("relations") val relations: List<SeasonEdges>,
+        @JsonProperty("relations") val relations: SeasonEdges,
     )
 
     data class SeasonNextAiringEpisode(
@@ -307,9 +309,13 @@ class AniListApi {
     )
 
     data class SeasonEdges(
+        @JsonProperty("edges") val edges: List<SeasonEdge>,
+    )
+
+    data class SeasonEdge(
         @JsonProperty("id") val id: Int,
         @JsonProperty("relationType") val relationType: String,
-        //@JsonProperty("node") val node: SeasonNode
+        @JsonProperty("node") val node: SeasonNode
     )
 
     data class AniListFavoritesMediaConnection(
