@@ -3,6 +3,7 @@ package com.lagradost.fastani
 import android.content.DialogInterface
 import android.net.UrlQuerySanitizer
 import androidx.appcompat.app.AlertDialog
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -16,7 +17,7 @@ class AniListApi {
     companion object {
         val aniListStatusString = arrayOf("CURRENT", "COMPLETED", "PAUSED", "DROPPED", "PLANNING", "REPEATING")
 
-        private val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
+        val mapper = JsonMapper.builder().addModule(KotlinModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
         fun fromInt(value: Int) = AniListStatusType.values().first { it.value == value }
@@ -72,10 +73,16 @@ class AniListApi {
         private fun postApi(url: String, args: String): String {
             return try {
                 if (!checkToken()) {
-                    val response = khttp.post(url + args,
-                        headers = mapOf("Authorization" to "Bearer " + DataStore.getKey(ANILIST_TOKEN_KEY,
-                            ACCOUNT_ID,
-                            "")!!))
+                    val response = khttp.post(
+                        url + args,
+                        headers = mapOf(
+                            "Authorization" to "Bearer " + DataStore.getKey(
+                                ANILIST_TOKEN_KEY,
+                                ACCOUNT_ID,
+                                ""
+                            )!!
+                        )
+                    )
 
                     response.text
                 } else {
@@ -176,6 +183,61 @@ class AniListApi {
             }
             return user
         }
+
+        fun getSeason(id: Int): SeasonResponse? {
+            val q: String = """
+               query (${'$'}id: Int) {
+                   Media (id: ${'$'}id, type: ANIME) {
+                       relations {
+                            edges {
+                                 id
+                                 relationType(version: 2)
+                                 node {
+                                      id
+                                      format
+                                      nextAiringEpisode {
+                                           timeUntilAiring
+                                           episode
+                                      }
+                                 }
+                            }
+                       }
+                       nextAiringEpisode {
+                            timeUntilAiring
+                            episode
+                       }
+                       format
+                   }
+               }
+        """
+
+            val data = khttp.post(
+                "https://graphql.anilist.co",
+                data = mapOf("query" to q, "variables" to mapOf("id" to "$id"))
+            ).text
+            println(data)
+            if (data == "") return null
+            return mapper.readValue(data)
+        }
+
+        /*fun getAllSeasons(id: Int): List<SeasonData?> {
+            val seasons = mutableListOf<SeasonData?>()
+            fun getSeasonRecursive(id: Int) {
+                val season = getSeason(id)
+                if (season != null) {
+                    seasons.add(season)
+                    if (season.data.Media.format == "TV") {
+                        season.data.Media.relations.forEach {
+                            if (it.relationType == "SEQUEL" && it.node.format == "TV") {
+                                return getSeasonRecursive(it.node.id)
+                            }
+                        }
+                    }
+                }
+            }
+            getSeasonRecursive(id)
+            return seasons.toList()
+        }*/
     }
 
     enum class AniListStatusType(val value: Int) {
@@ -188,90 +250,120 @@ class AniListApi {
         None(-1)
     }
 
+    data class SeasonResponse(
+        @JsonProperty("data") val data: SeasonData
+    )
+
+    data class SeasonData(
+        @JsonProperty("Media") val Media: SeasonMedia
+    )
+
+    data class SeasonMedia(
+        @JsonProperty("format") val format: String?,
+        @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
+        @JsonProperty("relations") val relations: List<SeasonEdges>,
+    )
+
+    data class SeasonNextAiringEpisode(
+        @JsonProperty("episode") val episode: Int,
+        @JsonProperty("timeUntilAiring") val timeUntilAiring: Int
+    )
+
+    data class SeasonEdges(
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("relationType") val relationType: String,
+        //@JsonProperty("node") val node: SeasonNode
+    )
+
+    data class SeasonNode(
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("format") val format: String,
+        @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?
+    )
 
     data class AniListAvatar(
-        val large: String,
+        @JsonProperty("large") val large: String,
     )
 
     data class AniListViewer(
-        val id: Int,
-        val name: String,
-        val avatar: AniListAvatar,
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("name") val name: String,
+        @JsonProperty("avatar") val avatar: AniListAvatar,
     )
 
     data class AniListData(
-        val Viewer: AniListViewer,
+        @JsonProperty("Viewer") val Viewer: AniListViewer,
     )
 
     data class AniListRoot(
-        val data: AniListData,
+        @JsonProperty("data") val data: AniListData,
     )
 
     data class AniListUser(
-        val id: Int,
-        val name: String,
-        val picture: String,
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("name") val name: String,
+        @JsonProperty("picture") val picture: String,
     )
 
 
     data class LikeNode(
-        val id: Int,
-        //public int idMal;
+        @JsonProperty("id") val id: Int,
+        //@JsonProperty("idMal") public int idMal;
     )
 
     data class LikePageInfo(
-        val total: Int,
-        val currentPage: Int,
-        val lastPage: Int,
-        val perPage: Int,
-        val hasNextPage: Boolean,
+        @JsonProperty("total") val total: Int,
+        @JsonProperty("currentPage") val currentPage: Int,
+        @JsonProperty("lastPage") val lastPage: Int,
+        @JsonProperty("perPage") val perPage: Int,
+        @JsonProperty("hasNextPage") val hasNextPage: Boolean,
     )
 
     data class LikeAnime(
-        val nodes: List<LikeNode>,
-        val pageInfo: LikePageInfo,
+        @JsonProperty("nodes") val nodes: List<LikeNode>,
+        @JsonProperty("pageInfo") val pageInfo: LikePageInfo,
     )
 
     data class LikeFavourites(
-        val anime: LikeAnime,
+        @JsonProperty("anime") val anime: LikeAnime,
     )
 
     data class LikeViewer(
-        val favourites: LikeFavourites,
+        @JsonProperty("favourites") val favourites: LikeFavourites,
     )
 
     data class LikeData(
-        val Viewer: LikeViewer,
+        @JsonProperty("Viewer") val Viewer: LikeViewer,
     )
 
     data class LikeRoot(
-        val data: LikeData,
+        @JsonProperty("data") val data: LikeData,
     )
 
     data class AniListTitleHolder(
-        val isFavourite: Boolean,
-        val id: Int,
-        val progress: Int,
-        val score: Int,
-        val type: AniListStatusType,
+        @JsonProperty("isFavourite") val isFavourite: Boolean,
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("progress") val progress: Int,
+        @JsonProperty("score") val score: Int,
+        @JsonProperty("type") val type: AniListStatusType,
     )
 
     data class GetDataMediaListEntry(
-        val progress: Int,
-        val status: String,
-        val score: Int,
+        @JsonProperty("progress") val progress: Int,
+        @JsonProperty("status") val status: String,
+        @JsonProperty("score") val score: Int,
     )
 
     data class GetDataMedia(
-        val isFavourite: Boolean,
-        val mediaListEntry: GetDataMediaListEntry,
+        @JsonProperty("isFavourite") val isFavourite: Boolean,
+        @JsonProperty("mediaListEntry") val mediaListEntry: GetDataMediaListEntry,
     )
 
     data class GetDataData(
-        val media: GetDataMedia,
+        @JsonProperty("media") val media: GetDataMedia,
     )
 
     data class GetDataRoot(
-        val data: GetDataData,
+        @JsonProperty("data") val data: GetDataData,
     )
 }

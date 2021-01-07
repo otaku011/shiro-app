@@ -12,6 +12,7 @@ import androidx.preference.*
 import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
 import com.lagradost.fastani.*
+import com.lagradost.fastani.AniListApi.Companion.getSeason
 import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
 import com.lagradost.fastani.MainActivity.Companion.isInResult
@@ -99,7 +100,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
         anilistButton?.setOnPreferenceClickListener {
-            AniListApi.authenticate()
+            //AniListApi.authenticate()
+            thread {
+                val test = getSeason(101759)
+
+                println(test)
+            }
             return@setOnPreferenceClickListener true
         }
 
