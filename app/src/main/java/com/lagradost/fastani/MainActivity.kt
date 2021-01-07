@@ -372,8 +372,11 @@ class MainActivity : AppCompatActivity() {
         if(intent != null) {
             val dataString = intent.dataString
             if(dataString != null && dataString != "") {
+                println("GOT fastaniapp auth" + dataString)
                 if(dataString.contains("fastaniapp")) {
-                    AniListApi.authenticateLogin(dataString)
+                    if(dataString.contains("/anilistlogin")) {
+                        AniListApi.authenticateLogin(dataString)
+                    }
                 }
             }
         }
@@ -609,6 +612,16 @@ class MainActivity : AppCompatActivity() {
         val data: Uri? = intent?.data
 
         if (data != null) {
+            val dataString = data.toString()
+            if(dataString != "") {
+                println("GOT fastaniapp auth awake: " + dataString)
+                if(dataString.contains("fastaniapp")) {
+                    if(dataString.contains("/anilistlogin")) {
+                        AniListApi.authenticateLogin(dataString)
+                    }
+                }
+            }
+
             thread {
                 val urlRegex = Regex("""fastani\.net\/watch\/(.*?)\/(\d+)\/(\d+)""")
                 val found = urlRegex.find(data.toString())
@@ -623,6 +636,8 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        } else {
+           AniListApi.initGetUser()
         }
     }
 }

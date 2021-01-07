@@ -1,7 +1,6 @@
 package com.lagradost.fastani
 
 import android.content.DialogInterface
-import android.net.UrlQuerySanitizer
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -9,6 +8,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.fastani.MainActivity.Companion.activity
+import java.net.URL
+import java.net.URLDecoder
+import kotlin.concurrent.thread
 
 const val CLIENT_ID = "4636"
 const val ACCOUNT_ID = "0" // MIGHT WANT TO BE USED IF YOU WANT MULTIPLE ACCOUNT LOGINS
@@ -27,16 +29,42 @@ class AniListApi {
             MainActivity.openBrowser(request);
         }
 
+        public fun initGetUser() {
+            if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ACCOUNT_ID, null) == null) return
+            thread {
+                getUser()
+            }
+        }
+
+        fun splitQuery(url: URL): Map<String, String>? {
+            val query_pairs: MutableMap<String, String> = LinkedHashMap()
+            val query: String = url.getQuery()
+            val pairs = query.split("&").toTypedArray()
+            for (pair in pairs) {
+                val idx = pair.indexOf("=")
+                query_pairs[URLDecoder.decode(pair.substring(0, idx), "UTF-8")] =
+                    URLDecoder.decode(pair.substring(idx + 1), "UTF-8")
+            }
+            return query_pairs
+        }
+
         fun authenticateLogin(data: String) {
             try {
-                val sanitizer = UrlQuerySanitizer(data)
-                val token = sanitizer.getValue("access_token")
-                val expiresIn = sanitizer.getValue("expires_in")
+                val sanitizer = splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?")))!! // FIX ERROR
+                val token = sanitizer["access_token"]!!
+                val expiresIn = sanitizer["expires_in"]!!
+                println("DATA: " + token + "|" + expiresIn)
+
                 val unixTime = System.currentTimeMillis() / 1000L
                 val endTime = unixTime + expiresIn.toLong()
 
                 DataStore.setKey(ANILIST_UNIXTIME_KEY, ACCOUNT_ID, endTime)
                 DataStore.setKey(ANILIST_TOKEN_KEY, ACCOUNT_ID, token)
+
+                println("ANILIST LOGIN DONE")
+                thread {
+                    getUser()
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -70,21 +98,16 @@ class AniListApi {
             }
         }
 
-        private fun postApi(url: String, args: String): String {
+        private fun postApi(url: String,  q: String, vars: String?): String {
             return try {
                 if (!checkToken()) {
-                    val response = khttp.post(
-                        url + args,
-                        headers = mapOf(
-                            "Authorization" to "Bearer " + DataStore.getKey(
-                                ANILIST_TOKEN_KEY,
-                                ACCOUNT_ID,
-                                ""
-                            )!!
-                        )
-                    )
-
-                    response.text
+                    khttp.post(
+                        "https://graphql.anilist.co/",
+                        headers = mapOf("Authorization" to "Bearer " + DataStore.getKey(ANILIST_TOKEN_KEY,
+                            ACCOUNT_ID,
+                            "")!!),
+                        data = (if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
+                    ).text.replace("\\","")
                 } else {
                     ""
                 }
@@ -106,8 +129,8 @@ class AniListApi {
                         score (format: POINT_10)
                     }
                 }
-                }&variables={ "id":"$id" }"""
-            val data = postApi("https://graphql.anilist.co", "&query=$q")
+                 }"""
+            val data = postApi("https://graphql.anilist.co", q, """"id":"$id"""")
             val d = mapper.readValue<GetDataRoot>(data)
             val main = d.data.media
 
@@ -132,10 +155,8 @@ class AniListApi {
 						}
 					}
 				}
-				}&variables={
-					"animeId": $id
-				}";"""
-            val data = postApi("https://graphql.anilist.co", "&query=$q")
+					}"""
+            val data = postApi("https://graphql.anilist.co", q, """"animeId": $id""")
             return data != ""
         }
 
@@ -148,13 +169,13 @@ class AniListApi {
                     progress
                     score
                 }
-                }&variables={
-                    "id": $id,
+                }"""
+            val vars = """"id": $id,
                     "status":"${aniListStatusString[type.value]}",
                     "scoreRaw":${score * 10},
-                    "progress":$progress
-                }";"""
-            val data = postApi("https://graphql.anilist.co", "&query=$q")
+                    "progress":$progress"""
+
+            val data = postApi("https://graphql.anilist.co", q, vars)
             return data != ""
         }
 
@@ -167,10 +188,22 @@ class AniListApi {
 						avatar {
 							large
 						}
+                        favourites {
+                            anime {
+                                nodes {
+                                    id
+                                    title {
+                                        romaji
+                                        english
+                                    }
+                                }
+                            }
+                        }
   					}
-				}";"""
-            val data = postApi("https://graphql.anilist.co", "&query=$q")
+				}"""
+            val data = postApi("https://graphql.anilist.co", q, "")
             if (data == "") return null
+            println("RESULT: " + data)
             val userData = mapper.readValue<AniListRoot>(data)
             val u = userData.data.Viewer
             val user = AniListUser(
@@ -181,6 +214,10 @@ class AniListApi {
             if (setSettings) {
                 DataStore.setKey(ANILIST_USER_KEY, ACCOUNT_ID, user)
             }
+            /* // TODO FIX FAVS
+            for(i in u.favourites.anime.nodes) {
+                println("FFAV:" + i.id)
+            }*/
             return user
         }
 
@@ -275,6 +312,14 @@ class AniListApi {
         //@JsonProperty("node") val node: SeasonNode
     )
 
+    data class AniListFavoritesMediaConnection(
+        @JsonProperty("nodes") val nodes: List<LikeNode>,
+    )
+
+    data class AniListFavourites(
+        @JsonProperty("anime") val anime: AniListFavoritesMediaConnection,
+    )
+
     data class SeasonNode(
         @JsonProperty("id") val id: Int,
         @JsonProperty("format") val format: String,
@@ -289,6 +334,7 @@ class AniListApi {
         @JsonProperty("id") val id: Int,
         @JsonProperty("name") val name: String,
         @JsonProperty("avatar") val avatar: AniListAvatar,
+        @JsonProperty("favourites") val favourites: AniListFavourites,
     )
 
     data class AniListData(
