@@ -30,7 +30,7 @@ class AniListApi {
             MainActivity.openBrowser(request);
         }
 
-        public fun initGetUser() {
+        fun initGetUser() {
             if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ACCOUNT_ID, null) == null) return
             thread {
                 getUser()
@@ -99,9 +99,10 @@ class AniListApi {
             }
         }
 
-        private fun postApi(url: String, q: String, vars: String?): String {
+        private fun postApi(url: String, q: String): String {
             return try {
                 if (!checkToken()) {
+                    // println("VARS_ " + vars)
                     khttp.post(
                         "https://graphql.anilist.co/",
                         headers = mapOf(
@@ -111,7 +112,7 @@ class AniListApi {
                                 ""
                             )!!
                         ),
-                        data = (if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
+                        data = mapOf("query" to q)//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
                     ).text.replace("\\", "")
                 } else {
                     ""
@@ -122,11 +123,12 @@ class AniListApi {
             }
         }
 
-        fun getDataAboutId(id: Int): AniListTitleHolder {
+        fun getDataAboutId(id: Int): AniListTitleHolder? {
             val q: String =
-                """query (${'$'}id: Int) { # Define which variables will be used in the query (id)
+                """query (${'$'}id: Int = $id) { # Define which variables will be used in the query (id)
                 Media (id: ${'$'}id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
-                    #id
+                    id
+                    episodes
                     isFavourite
                     mediaListEntry {
                         progress
@@ -134,22 +136,42 @@ class AniListApi {
                         score (format: POINT_10)
                     }
                 }
-                 }"""
-            val data = postApi("https://graphql.anilist.co", q, """"id":"$id"""")
-            val d = mapper.readValue<GetDataRoot>(data)
-            val main = d.data.media
+            }"""
+            try {
+                println("ID::::: " + id)
+                val data = postApi("https://graphql.anilist.co", q)
+                println(data)
+                val d = mapper.readValue<GetDataRoot>(data)
+                val main = d.data.media
+                if(main.mediaListEntry != null) {
+                    return AniListTitleHolder(
+                        id = id,
+                        isFavourite = main.isFavourite,
+                        progress = main.mediaListEntry.progress,
+                        episodes = main.episodes,
+                        score = main.mediaListEntry.score,
+                        type = fromInt(aniListStatusString.indexOf(main.mediaListEntry.status))
+                    )
+                }
+                else {
+                    return AniListTitleHolder(
+                        id = id,
+                        isFavourite = main.isFavourite,
+                        progress = 0,
+                        episodes = main.episodes,
+                        score = 0,
+                        type = fromInt(-1)
+                    )
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+                return null
+            }
 
-            return AniListTitleHolder(
-                id = id,
-                isFavourite = main.isFavourite,
-                progress = main.mediaListEntry.progress,
-                score = main.mediaListEntry.score,
-                type = fromInt(aniListStatusString.indexOf(main.mediaListEntry.status))
-            )
         }
 
         fun toggleLike(id: Int): Boolean {
-            val q: String = """mutation (${'$'}animeId: Int) {
+            val q: String = """mutation (${'$'}animeId: Int = $id) {
 				ToggleFavourite (animeId: ${'$'}animeId) {
 					anime {
 						nodes {
@@ -160,14 +182,14 @@ class AniListApi {
 						}
 					}
 				}
-					}"""
-            val data = postApi("https://graphql.anilist.co", q, """"animeId": $id""")
+			}"""
+            val data = postApi("https://graphql.anilist.co", q)
             return data != ""
         }
 
         fun postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
             val q: String =
-                """mutation (${'$'}id: Int, ${'$'}status: MediaListStatus, ${'$'}scoreRaw: Int, ${'$'}progress: Int) {
+                """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
                 SaveMediaListEntry (mediaId: ${'$'}id, status: ${'$'}status, scoreRaw: ${'$'}scoreRaw, progress: ${'$'}progress) {
                     id
                     status
@@ -175,12 +197,8 @@ class AniListApi {
                     score
                 }
                 }"""
-            val vars = """"id": $id,
-                    "status":"${aniListStatusString[type.value]}",
-                    "scoreRaw":${score * 10},
-                    "progress":$progress"""
 
-            val data = postApi("https://graphql.anilist.co", q, vars)
+            val data = postApi("https://graphql.anilist.co", q)
             return data != ""
         }
 
@@ -206,30 +224,37 @@ class AniListApi {
                         }
   					}
 				}"""
-            val data = postApi("https://graphql.anilist.co", q, "")
-            if (data == "") return null
-            println("RESULT: " + data)
-            val userData = mapper.readValue<AniListRoot>(data)
-            val u = userData.data.Viewer
-            val user = AniListUser(
-                u.id,
-                u.name,
-                u.avatar.large,
-            )
-            if (setSettings) {
-                DataStore.setKey(ANILIST_USER_KEY, ACCOUNT_ID, user)
+            try {
+                val data = postApi("https://graphql.anilist.co", q)
+                if (data == "") return null
+                println("RESULT: " + data)
+                val userData = mapper.readValue<AniListRoot>(data)
+                val u = userData.data.Viewer
+                val user = AniListUser(
+                    u.id,
+                    u.name,
+                    u.avatar.large,
+                )
+                if (setSettings) {
+                    DataStore.setKey(ANILIST_USER_KEY, ACCOUNT_ID, user)
+                }
+                /* // TODO FIX FAVS
+                for(i in u.favourites.anime.nodes) {
+                    println("FFAV:" + i.id)
+                }*/
+                return user
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+                return null
             }
-            /* // TODO FIX FAVS
-            for(i in u.favourites.anime.nodes) {
-                println("FFAV:" + i.id)
-            }*/
-            return user
         }
 
         fun getSeason(id: Int): SeasonResponse? {
             val q: String = """
                query (${'$'}id: Int = $id) {
                    Media (id: ${'$'}id, type: ANIME) {
+                       id
+                       idMal
                        relations {
                             edges {
                                  id
@@ -269,9 +294,9 @@ class AniListApi {
                 println(season)
                 if (season != null) {
                     seasons.add(season)
-                    if (season.data.Media.format == "TV") {
+                    if (season.data.Media.format?.startsWith("TV") == true) {
                         season.data.Media.relations.edges.forEach {
-                            if (it.relationType == "SEQUEL" && it.node.format == "TV") {
+                            if (it.relationType == "SEQUEL" && it.node.format.startsWith("TV")) {
                                 getSeasonRecursive(it.node.id)
                                 return@forEach
                             }
@@ -312,14 +337,16 @@ class AniListApi {
     }
 
     data class SeasonResponse(
-        @JsonProperty("data") val data: SeasonData
+        @JsonProperty("data") val data: SeasonData,
     )
 
     data class SeasonData(
-        @JsonProperty("Media") val Media: SeasonMedia
+        @JsonProperty("Media") val Media: SeasonMedia,
     )
 
     data class SeasonMedia(
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("idMal") val idMal: Int?,
         @JsonProperty("format") val format: String?,
         @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
         @JsonProperty("relations") val relations: SeasonEdges,
@@ -327,7 +354,7 @@ class AniListApi {
 
     data class SeasonNextAiringEpisode(
         @JsonProperty("episode") val episode: Int,
-        @JsonProperty("timeUntilAiring") val timeUntilAiring: Int
+        @JsonProperty("timeUntilAiring") val timeUntilAiring: Int,
     )
 
     data class SeasonEdges(
@@ -337,7 +364,7 @@ class AniListApi {
     data class SeasonEdge(
         @JsonProperty("id") val id: Int,
         @JsonProperty("relationType") val relationType: String,
-        @JsonProperty("node") val node: SeasonNode
+        @JsonProperty("node") val node: SeasonNode,
     )
 
     data class AniListFavoritesMediaConnection(
@@ -351,7 +378,7 @@ class AniListApi {
     data class SeasonNode(
         @JsonProperty("id") val id: Int,
         @JsonProperty("format") val format: String,
-        @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?
+        @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
     )
 
     data class AniListAvatar(
@@ -415,11 +442,12 @@ class AniListApi {
     )
 
     data class AniListTitleHolder(
-        @JsonProperty("isFavourite") val isFavourite: Boolean,
-        @JsonProperty("id") val id: Int,
-        @JsonProperty("progress") val progress: Int,
-        @JsonProperty("score") val score: Int,
-        @JsonProperty("type") val type: AniListStatusType,
+        val isFavourite: Boolean,
+        val id: Int,
+        val progress: Int,
+        val episodes: Int,
+        val score: Int,
+        val type: AniListStatusType,
     )
 
     data class GetDataMediaListEntry(
@@ -430,11 +458,12 @@ class AniListApi {
 
     data class GetDataMedia(
         @JsonProperty("isFavourite") val isFavourite: Boolean,
-        @JsonProperty("mediaListEntry") val mediaListEntry: GetDataMediaListEntry,
+        @JsonProperty("episodes") val episodes: Int,
+        @JsonProperty("mediaListEntry") val mediaListEntry: GetDataMediaListEntry?,
     )
 
     data class GetDataData(
-        @JsonProperty("media") val media: GetDataMedia,
+        @JsonProperty("Media") val media: GetDataMedia,
     )
 
     data class GetDataRoot(

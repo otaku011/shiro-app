@@ -60,6 +60,7 @@ import kotlinx.android.synthetic.main.episode_result.view.cardTitle
 import kotlinx.android.synthetic.main.episode_result.view.progressBar
 import kotlinx.android.synthetic.main.episode_result.view.video_progress
 import java.io.File
+import java.lang.Exception
 
 
 const val DESCRIPTION_LENGTH = 200
@@ -69,7 +70,7 @@ class ResultFragment : Fragment() {
     private lateinit var resultViewModel: ResultViewModel
     private var isMovie: Boolean = false
     var isBookmarked = false
-    private lateinit var seasons: List<AniListApi.SeasonResponse?>
+    private var seasons: List<AniListApi.SeasonResponse?>? = null
 
     companion object {
         var isInResults: Boolean = false
@@ -204,6 +205,7 @@ class ResultFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     private fun loadSeason(index: Int) {
         currentSeasonIndex = index
+        seasonChange()
         title_season_cards.removeAllViews()
         var epNum = 0
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
@@ -524,10 +526,43 @@ class ResultFragment : Fragment() {
     }
 
     var currentSeasonIndex: Int = 0
+    var currentAniListId: Int = 0
+    var currentMalId: Int? = null
+
+    private fun loadGetDataAboutId() {
+        var holder = AniListApi.getDataAboutId(currentAniListId)
+        if (holder != null) {
+            activity!!.runOnUiThread {
+                anilist_holder.visibility = View.VISIBLE
+                aniList_progressbar.progress = holder.progress * 100 / holder.episodes
+                anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
+            }
+        }
+    }
+
+    private fun seasonChange() {
+        if (seasons != null) {
+            thread {
+                try {
+                    val currentData = seasons!![currentSeasonIndex]!!.data.Media
+                    currentAniListId = currentData.id
+                    currentMalId = currentData.idMal
+                    println("GET DATA ABOUT: " + currentAniListId)
+                    if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ACCOUNT_ID, null) != null) {
+                        loadGetDataAboutId()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        currentAniListId = data!!.anilistId.toInt()
+
         hideKeyboard()
         if (!FastAniApi.lastCards.containsKey(data!!.id)) {
             FastAniApi.lastCards[data!!.id] = data!!
@@ -535,12 +570,19 @@ class ResultFragment : Fragment() {
         title_duration.text = data!!.duration.toString() + "min"
         thread {
             seasons = getAllSeasons(data!!.anilistId.toInt())
-            if (seasons.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
+            if (seasons != null) {
                 activity?.runOnUiThread {
-                    title_duration.text =
-                        data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(seasons.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!)
+                    if (seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
+
+                        title_duration.text =
+                            data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!)
+                    } else {
+                        title_duration.text =
+                            data!!.duration.toString() + "min | Completed"
+                    }
                 }
             }
+            seasonChange()
         }
 
         val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
@@ -647,11 +689,9 @@ class ResultFragment : Fragment() {
         title_rating.text = "Rated: $ratTxt"
         title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
 
-
+        /*
         title_anilist.setOnClickListener {
-            openBrowser("https://anilist.co/anime/${data!!.anilistId}")
-        }
-
-
+            openBrowser("https://anilist.co/anime/${currentAniListId}")
+        }*/
     }
 }
