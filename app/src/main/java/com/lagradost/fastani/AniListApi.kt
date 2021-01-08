@@ -10,6 +10,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.fastani.MainActivity.Companion.activity
 import java.net.URL
 import java.net.URLDecoder
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 const val CLIENT_ID = "4636"
@@ -98,16 +99,20 @@ class AniListApi {
             }
         }
 
-        private fun postApi(url: String,  q: String, vars: String?): String {
+        private fun postApi(url: String, q: String, vars: String?): String {
             return try {
                 if (!checkToken()) {
                     khttp.post(
                         "https://graphql.anilist.co/",
-                        headers = mapOf("Authorization" to "Bearer " + DataStore.getKey(ANILIST_TOKEN_KEY,
-                            ACCOUNT_ID,
-                            "")!!),
+                        headers = mapOf(
+                            "Authorization" to "Bearer " + DataStore.getKey(
+                                ANILIST_TOKEN_KEY,
+                                ACCOUNT_ID,
+                                ""
+                            )!!
+                        ),
                         data = (if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
-                    ).text.replace("\\","")
+                    ).text.replace("\\", "")
                 } else {
                     ""
                 }
@@ -276,6 +281,23 @@ class AniListApi {
             }
             getSeasonRecursive(id)
             return seasons.toList()
+        }
+
+        fun secondsToReadable(seconds: Int): String {
+            var secondsLong = seconds.toLong()
+            val days = TimeUnit.SECONDS
+                .toDays(secondsLong)
+            secondsLong -= TimeUnit.DAYS.toSeconds(days)
+
+            val hours = TimeUnit.SECONDS
+                .toHours(secondsLong)
+            secondsLong -= TimeUnit.HOURS.toSeconds(hours)
+
+            val minutes = TimeUnit.SECONDS
+                .toMinutes(secondsLong)
+            secondsLong -= TimeUnit.MINUTES.toSeconds(minutes)
+
+            return "${if (days != 0L) "$days" + "d " else ""}${if (hours != 0L && days != 0L) "$hours" + "h " else ""}${minutes}m"
         }
     }
 

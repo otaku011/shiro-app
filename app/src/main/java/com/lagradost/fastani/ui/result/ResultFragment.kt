@@ -49,6 +49,8 @@ import com.google.android.gms.common.images.WebImage
 import com.google.android.exoplayer2.Player
 
 import com.google.android.exoplayer2.ext.cast.CastPlayer
+import com.lagradost.fastani.AniListApi.Companion.getAllSeasons
+import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.DataStore.mapper
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.openBrowser
@@ -67,6 +69,7 @@ class ResultFragment : Fragment() {
     private lateinit var resultViewModel: ResultViewModel
     private var isMovie: Boolean = false
     var isBookmarked = false
+    private lateinit var seasons: List<AniListApi.SeasonResponse?>
 
     companion object {
         var isInResults: Boolean = false
@@ -529,6 +532,16 @@ class ResultFragment : Fragment() {
         if (!FastAniApi.lastCards.containsKey(data!!.id)) {
             FastAniApi.lastCards[data!!.id] = data!!
         }
+        title_duration.text = data!!.duration.toString() + "min"
+        thread {
+            seasons = getAllSeasons(data!!.anilistId.toInt())
+            if (seasons.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
+                activity?.runOnUiThread {
+                    title_duration.text =
+                        data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(seasons.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!)
+                }
+            }
+        }
 
         val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
@@ -629,7 +642,6 @@ class ResultFragment : Fragment() {
                 .replace("\n", " ") + "..."
         }
         title_descript.text = descript
-        title_duration.text = data!!.duration.toString() + "min"
         var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
         if (!ratTxt.contains('.')) ratTxt += ".0"
         title_rating.text = "Rated: $ratTxt"
@@ -639,5 +651,7 @@ class ResultFragment : Fragment() {
         title_anilist.setOnClickListener {
             openBrowser("https://anilist.co/anime/${data!!.anilistId}")
         }
+
+
     }
 }

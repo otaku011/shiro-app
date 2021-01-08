@@ -233,6 +233,30 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                                 android:layout_height="wrap_content">
                         </TextView>
                     </LinearLayout>
+                    <LinearLayout
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                    >
+                        <ImageView
+                                android:background="?android:attr/selectableItemBackgroundBorderless"
+                                android:id="@+id/status_btt"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:elevation="10dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:src="@drawable/filled_viewstate"
+                                android:layout_gravity="center"
+                                app:tint="@color/white"/>
+                        <TextView
+                                android:text="Completed"
+                                android:layout_gravity="center"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+                        </TextView>
+                    </LinearLayout>
                     <!--<LinearLayout
                             android:layout_weight="1"
                             android:layout_width="0dp"
@@ -273,9 +297,9 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                                 android:focusable="true"
                                 android:src="@drawable/ic_anilist_icon"
                                 android:layout_gravity="center"
-                                android:contentDescription="@string/anilist_btt_hint"
-                        />
+                                android:contentDescription="@string/anilist_btt_hint"/>
                         <TextView android:text="@string/anilist_btt"
+                                  android:id="@+id/anilist_btt_text"
                                   android:layout_gravity="center" android:layout_width="wrap_content"
                                   android:layout_height="wrap_content">
                         </TextView>
