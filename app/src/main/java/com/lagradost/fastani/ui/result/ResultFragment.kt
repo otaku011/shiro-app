@@ -693,16 +693,44 @@ class ResultFragment : Fragment() {
         title_rating.text = "Rated: $ratTxt"
         title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
 
+
+        // TODO SET TO CURRENT EPISODE COUNT WHEN ENTERING
+        // TODO SET MAX TO MAX EPISODE COUNT
         edit_episodes_btt.setOnClickListener {
             val dialog = Dialog(requireContext())
-            dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             dialog.setTitle("Select episodes seen")
             dialog.setContentView(R.layout.number_picker_dialog)
+            dialog.number_picker_episode_up.setOnClickListener {
+                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                ) 1 else dialog.number_picker_episode_text.text.toString().toInt() + 1
+                dialog.number_picker_episode_text.setText(number.toString())
+            }
+            dialog.number_picker_episode_down.setOnClickListener {
+                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
+                dialog.number_picker_episode_text.setText(number.toString())
+            }
             dialog.show()
         }
-        /*
+        score_btt.setOnClickListener {
+            val dialog = Dialog(requireContext())
+            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.setTitle("Rate")
+            dialog.setContentView(R.layout.rating_pick_dialog)
+            dialog.show()
+        }
+
+        status_btt.setOnClickListener {
+            val dialog = Dialog(requireContext())
+            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.setTitle("Pick status")
+            dialog.setContentView(R.layout.status_picker_dialog)
+            dialog.show()
+        }
+
         title_anilist.setOnClickListener {
             openBrowser("https://anilist.co/anime/${currentAniListId}")
-        }*/
+        }
     }
 }

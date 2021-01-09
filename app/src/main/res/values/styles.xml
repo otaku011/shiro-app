@@ -35,6 +35,18 @@
         <item name="colorPrimary">@color/textColor</item>
     </style>
 
+    <style name="DialogButton" parent="@style/Widget.AppCompat.Button.Borderless">
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:backgroundTint">@color/transparent</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:paddingStart">50dp</item>
+        <item name="android:paddingEnd">50dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:textAllCaps">false</item>
+
+    </style>
+
     <style name="OverlayPrimaryColorBlue">
         <item name="colorPrimaryMegaDark">#121840</item>
         <item name="colorPrimary">#3F51B5</item>
