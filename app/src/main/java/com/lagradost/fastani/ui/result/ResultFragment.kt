@@ -1,9 +1,12 @@
 package com.lagradost.fastani.ui.result
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -59,6 +62,7 @@ import kotlinx.android.synthetic.main.episode_result.view.cardBg
 import kotlinx.android.synthetic.main.episode_result.view.cardTitle
 import kotlinx.android.synthetic.main.episode_result.view.progressBar
 import kotlinx.android.synthetic.main.episode_result.view.video_progress
+import kotlinx.android.synthetic.main.number_picker_dialog.*
 import java.io.File
 import java.lang.Exception
 
@@ -689,6 +693,13 @@ class ResultFragment : Fragment() {
         title_rating.text = "Rated: $ratTxt"
         title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
 
+        edit_episodes_btt.setOnClickListener {
+            val dialog = Dialog(requireContext())
+            dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.setTitle("Select episodes seen")
+            dialog.setContentView(R.layout.number_picker_dialog)
+            dialog.show()
+        }
         /*
         title_anilist.setOnClickListener {
             openBrowser("https://anilist.co/anime/${currentAniListId}")
