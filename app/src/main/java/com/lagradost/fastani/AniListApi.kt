@@ -23,7 +23,7 @@ class AniListApi {
         val mapper = JsonMapper.builder().addModule(KotlinModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
-        fun fromInt(value: Int) = AniListStatusType.values().first { it.value == value }
+        fun fromInt(inp: Int) = AniListStatusType.values().first { it.value == inp }
 
         fun authenticate() {
             val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$CLIENT_ID&response_type=token";
@@ -144,6 +144,9 @@ class AniListApi {
                 val d = mapper.readValue<GetDataRoot>(data)
                 val main = d.data.media
                 if(main.mediaListEntry != null) {
+                    println(main.mediaListEntry.status)
+                    println(aniListStatusString)
+                    println(aniListStatusString.indexOf(main.mediaListEntry.status))
                     return AniListTitleHolder(
                         id = id,
                         isFavourite = main.isFavourite,
@@ -160,7 +163,7 @@ class AniListApi {
                         progress = 0,
                         episodes = main.episodes,
                         score = 0,
-                        type = fromInt(-1)
+                        type = AniListStatusType.None
                     )
                 }
             } catch (e: java.lang.Exception) {
@@ -189,7 +192,7 @@ class AniListApi {
 
         fun postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
             val q: String =
-                """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value + 1]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
+                """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
                 SaveMediaListEntry (mediaId: ${'$'}id, status: ${'$'}status, scoreRaw: ${'$'}scoreRaw, progress: ${'$'}progress) {
                     id
                     status

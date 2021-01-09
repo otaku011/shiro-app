@@ -540,6 +540,10 @@ class ResultFragment : Fragment() {
         var holder = AniListApi.getDataAboutId(currentAniListId)
         if (holder != null) {
             activity!!.runOnUiThread {
+                // Sets to watching if anything is done
+                if (holder.type.value < 0) {
+                    holder.type.value = 0
+                }
                 anilist_holder.visibility = VISIBLE
                 aniList_progressbar.progress = holder.progress * 100 / holder.episodes
                 anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
@@ -571,16 +575,30 @@ class ResultFragment : Fragment() {
                                     dialog.number_picker_episode_text.text.toString().toInt(),
                                     holder.episodes
                                 )
-
+                            if (holder.progress == holder.episodes) {
+                                holder.type.value = 1
+                            }
                             if (postDataAboutId(holder.id, holder.type, holder.score, holder.progress)) {
                                 dialog.dismiss()
                                 requireActivity().runOnUiThread {
                                     aniList_progressbar.progress = holder.progress * 100 / holder.episodes
                                     anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
+                                    if (holder.progress == holder.episodes) {
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "All episodes seen, marked as Completed",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             } else {
-                                Toast.makeText(requireContext(), "Error updating episode progress", Toast.LENGTH_LONG)
-                                    .show()
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Error updating episode progress",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
                         }
                     }
