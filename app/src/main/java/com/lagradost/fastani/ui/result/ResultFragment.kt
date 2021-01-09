@@ -5,9 +5,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -24,50 +22,41 @@ import androidx.mediarouter.app.MediaRouteButton
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
-import com.google.android.gms.cast.framework.CastButtonFactory
-import com.lagradost.fastani.*
-import com.lagradost.fastani.FastAniApi.Companion.requestHome
-import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
-import com.lagradost.fastani.ui.GlideApp
-import com.lagradost.fastani.ui.PlayerFragment
-import kotlinx.android.synthetic.main.episode_result.view.*
-import kotlinx.android.synthetic.main.fragment_search.*
-import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.android.synthetic.main.fragment_results.*
-import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.home_card.view.imageView
-import kotlinx.android.synthetic.main.player_custom_layout.*
-import kotlinx.android.synthetic.main.search_result.view.*
-import kotlin.concurrent.thread
-import com.google.android.gms.cast.framework.CastState
-
-import com.google.android.gms.cast.framework.CastStateListener
-import com.google.android.gms.cast.framework.CastContext
-import com.google.android.gms.cast.MediaQueueItem
-
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.google.android.exoplayer2.util.MimeTypes
-
 import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaMetadata
-
+import com.google.android.gms.cast.MediaQueueItem
+import com.google.android.gms.cast.framework.CastButtonFactory
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.framework.CastState
+import com.google.android.gms.cast.framework.CastStateListener
 import com.google.android.gms.common.images.WebImage
-import com.google.android.exoplayer2.Player
-
-import com.google.android.exoplayer2.ext.cast.CastPlayer
+import com.lagradost.fastani.*
+import com.lagradost.fastani.AniListApi.Companion.AniListStatusType
 import com.lagradost.fastani.AniListApi.Companion.getAllSeasons
 import com.lagradost.fastani.AniListApi.Companion.postDataAboutId
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.DataStore.mapper
+import com.lagradost.fastani.FastAniApi.Companion.requestHome
+import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.openBrowser
+import com.lagradost.fastani.ui.GlideApp
+import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.episode_result.view.cardBg
-import kotlinx.android.synthetic.main.episode_result.view.cardTitle
-import kotlinx.android.synthetic.main.episode_result.view.progressBar
-import kotlinx.android.synthetic.main.episode_result.view.video_progress
+import kotlinx.android.synthetic.main.episode_result.view.*
+import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.android.synthetic.main.fragment_results.*
+import kotlinx.android.synthetic.main.fragment_search.*
+import kotlinx.android.synthetic.main.home_card.view.*
+import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.number_picker_dialog.*
+import kotlinx.android.synthetic.main.player_custom_layout.*
+import kotlinx.android.synthetic.main.search_result.view.*
 import java.io.File
-import java.lang.Exception
+import kotlin.concurrent.thread
 
 
 const val DESCRIPTION_LENGTH = 200
@@ -541,9 +530,11 @@ class ResultFragment : Fragment() {
         if (holder != null) {
             activity!!.runOnUiThread {
                 // Sets to watching if anything is done
-                if (holder.type.value < 0) {
-                    holder.type.value = 0
+                val firstTimeWatching = holder.type == AniListStatusType.None
+                if (firstTimeWatching) {
+                    holder.type = AniListStatusType.Watching
                 }
+
                 anilist_holder.visibility = VISIBLE
                 aniList_progressbar.progress = holder.progress * 100 / holder.episodes
                 anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
@@ -672,8 +663,6 @@ class ResultFragment : Fragment() {
                 title_anilist.setOnClickListener {
                     openBrowser("https://anilist.co/anime/${currentAniListId}")
                 }
-
-
             }
         }
     }

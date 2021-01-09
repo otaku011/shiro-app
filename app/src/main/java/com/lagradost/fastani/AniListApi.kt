@@ -23,7 +23,29 @@ class AniListApi {
         val mapper = JsonMapper.builder().addModule(KotlinModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
-        fun fromInt(inp: Int) = AniListStatusType.values().first { it.value == inp }
+
+        enum class AniListStatusType(var value: Int) {
+            Watching(0),
+            Completed(1),
+            OnHold(2),
+            Dropped(3),
+            PlanToWatch(4),
+            ReWatching(5),
+            None(-1)
+        }
+
+        private fun fromIntToAnimeStatus(inp: Int): AniListStatusType {//= AniListStatusType.values().first { it.value == inp }
+            return when (inp) {
+                -1 -> AniListStatusType.None
+                0 -> AniListStatusType.Watching
+                1 -> AniListStatusType.Completed
+                2 -> AniListStatusType.OnHold
+                3 -> AniListStatusType.Dropped
+                4 -> AniListStatusType.PlanToWatch
+                5 -> AniListStatusType.ReWatching
+                else -> AniListStatusType.None
+            }
+        }
 
         fun authenticate() {
             val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$CLIENT_ID&response_type=token";
@@ -112,7 +134,8 @@ class AniListApi {
                                 ""
                             )!!
                         ),
-                        data = mapOf("query" to q)//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
+                        data = mapOf("query" to q),//(if (vars == null) mapOf("query" to q) else mapOf("query" to q, "variables" to vars))
+                        timeout = 5.0 // REASONABLE TIMEOUT
                     ).text.replace("\\", "")
                 } else {
                     ""
@@ -143,7 +166,7 @@ class AniListApi {
                 println(data)
                 val d = mapper.readValue<GetDataRoot>(data)
                 val main = d.data.media
-                if(main.mediaListEntry != null) {
+                if (main.mediaListEntry != null) {
                     println(main.mediaListEntry.status)
                     println(aniListStatusString)
                     println(aniListStatusString.indexOf(main.mediaListEntry.status))
@@ -153,10 +176,9 @@ class AniListApi {
                         progress = main.mediaListEntry.progress,
                         episodes = main.episodes,
                         score = main.mediaListEntry.score,
-                        type = fromInt(aniListStatusString.indexOf(main.mediaListEntry.status))
+                        type = fromIntToAnimeStatus(aniListStatusString.indexOf(main.mediaListEntry.status))
                     )
-                }
-                else {
+                } else {
                     return AniListTitleHolder(
                         id = id,
                         isFavourite = main.isFavourite,
@@ -202,6 +224,7 @@ class AniListApi {
                 }"""
 
             val data = postApi("https://graphql.anilist.co", q)
+            println("POST:" + data)
             return data != ""
         }
 
@@ -218,10 +241,6 @@ class AniListApi {
                             anime {
                                 nodes {
                                     id
-                                    title {
-                                        romaji
-                                        english
-                                    }
                                 }
                             }
                         }
@@ -327,16 +346,6 @@ class AniListApi {
 
             return "${if (days != 0L) "$days" + "d " else ""}${if (hours != 0L && days != 0L) "$hours" + "h " else ""}${minutes}m"
         }
-    }
-
-    enum class AniListStatusType(var value: Int) {
-        Watching(0),
-        Completed(1),
-        OnHold(2),
-        Dropped(3),
-        PlanToWatch(4),
-        ReWatching(5),
-        None(-1)
     }
 
     data class SeasonResponse(
