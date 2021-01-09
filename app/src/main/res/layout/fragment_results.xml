@@ -269,78 +269,85 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                         >
                         </Spinner>
                     </androidx.cardview.widget.CardView>
-
                     <LinearLayout
-                            android:layout_weight="1"
-                            android:layout_width="0dp"
+                            android:visibility="gone"
+                            android:id="@+id/anilist_btt_holder"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                     >
-                        <ImageView
-                                android:background="?android:attr/selectableItemBackgroundBorderless"
-                                android:id="@+id/score_btt"
-                                android:layout_width="30dp"
-                                android:layout_height="30dp"
-                                android:elevation="10dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                android:src="@drawable/ic_baseline_star_border_24"
-                                android:layout_gravity="center"
-                        />
-                        <TextView
-                                android:text="Rate"
-                                android:layout_gravity="center"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
-                        </TextView>
-                    </LinearLayout>
-                    <LinearLayout
-                            android:layout_weight="1"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                    >
-                        <ImageView
-                                android:background="?android:attr/selectableItemBackgroundBorderless"
-                                android:id="@+id/status_btt"
-                                android:layout_width="30dp"
-                                android:layout_height="30dp"
-                                android:elevation="10dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                android:src="@drawable/filled_viewstate"
-                                android:layout_gravity="center"
-                                app:tint="@color/white"/>
-                        <TextView
-                                android:text="Status"
-                                android:layout_gravity="center"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
-                        </TextView>
-                    </LinearLayout>
+                        <LinearLayout
+                                android:layout_weight="1"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                        >
+                            <ImageView
+                                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                                    android:id="@+id/rating_btt"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:elevation="10dp"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:src="@drawable/ic_baseline_star_border_24"
+                                    android:layout_gravity="center"
+                            />
+                            <TextView
+                                    android:text="Rate"
+                                    android:layout_gravity="center"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content">
+                            </TextView>
+                        </LinearLayout>
+                        <LinearLayout
+                                android:layout_weight="1"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                        >
+                            <ImageView
+                                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                                    android:id="@+id/status_btt"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:elevation="10dp"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:src="@drawable/filled_viewstate"
+                                    android:layout_gravity="center"
+                                    app:tint="@color/white"/>
+                            <TextView
+                                    android:text="Status"
+                                    android:layout_gravity="center"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content">
+                            </TextView>
+                        </LinearLayout>
 
-                    <LinearLayout
-                            android:layout_weight="1"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
+                        <LinearLayout
+                                android:layout_weight="1"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
 
-                        <ImageView
-                                android:background="?android:attr/selectableItemBackgroundBorderless"
-                                android:id="@+id/title_anilist"
-                                android:layout_width="30dp"
-                                android:layout_height="30dp"
-                                android:elevation="10dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                android:src="@drawable/ic_anilist_icon"
-                                android:layout_gravity="center"
-                                android:contentDescription="@string/anilist_btt_hint"/>
-                        <TextView android:text="@string/anilist_btt"
-                                  android:id="@+id/anilist_btt_text"
-                                  android:layout_gravity="center" android:layout_width="wrap_content"
-                                  android:layout_height="wrap_content">
-                        </TextView>
+                            <ImageView
+                                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                                    android:id="@+id/title_anilist"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:elevation="10dp"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:src="@drawable/ic_anilist_icon"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="@string/anilist_btt_hint"/>
+                            <TextView android:text="@string/anilist_btt"
+                                      android:id="@+id/anilist_btt_text"
+                                      android:layout_gravity="center" android:layout_width="wrap_content"
+                                      android:layout_height="wrap_content">
+                            </TextView>
+
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
                 <!--<LinearLayout

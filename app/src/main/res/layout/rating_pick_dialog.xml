@@ -4,10 +4,13 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
 
 >
 
     <Button
+            android:id="@+id/rating_text_10"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="10 - Masterpiece"
@@ -16,60 +19,71 @@
 
     </Button>
     <Button
+            android:id="@+id/rating_text_9"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="9 - Great"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_8"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="8 - Very good"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_7"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="7 - Good"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="6 - Fine"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_5"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="5 - Average"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="4 - Bad"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="3 - Very bad"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="2 - Horrible"
             style="@style/DialogButton"
     />
     <Button
+            android:id="@+id/rating_text_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="1 - Appalling"
             style="@style/DialogButton"
     />
     <Button
+            android:visibility="gone"
+            android:id="@+id/rating_text_no_rating"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="No rating"

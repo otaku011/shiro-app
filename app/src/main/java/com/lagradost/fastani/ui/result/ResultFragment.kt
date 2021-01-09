@@ -6,11 +6,13 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -53,6 +55,7 @@ import com.google.android.exoplayer2.Player
 
 import com.google.android.exoplayer2.ext.cast.CastPlayer
 import com.lagradost.fastani.AniListApi.Companion.getAllSeasons
+import com.lagradost.fastani.AniListApi.Companion.postDataAboutId
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.DataStore.mapper
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
@@ -537,9 +540,122 @@ class ResultFragment : Fragment() {
         var holder = AniListApi.getDataAboutId(currentAniListId)
         if (holder != null) {
             activity!!.runOnUiThread {
-                anilist_holder.visibility = View.VISIBLE
+                anilist_holder.visibility = VISIBLE
                 aniList_progressbar.progress = holder.progress * 100 / holder.episodes
                 anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
+                anilist_btt_holder.visibility = VISIBLE
+
+                edit_episodes_btt.setOnClickListener {
+                    val dialog = Dialog(requireContext())
+                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    dialog.setTitle("Select episodes seen")
+                    dialog.setContentView(R.layout.number_picker_dialog)
+
+                    dialog.number_picker_episode_text.setText(holder.progress.toString())
+
+                    dialog.number_picker_episode_up.setOnClickListener {
+                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                        ) 1 else minOf(dialog.number_picker_episode_text.text.toString().toInt() + 1, holder.episodes)
+                        dialog.number_picker_episode_text.setText(number.toString())
+                    }
+                    dialog.number_picker_episode_down.setOnClickListener {
+                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                        ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
+                        dialog.number_picker_episode_text.setText(number.toString())
+                    }
+                    dialog.episode_progress_btt.setOnClickListener {
+                        thread {
+                            holder.progress =
+                                if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                ) 0 else minOf(
+                                    dialog.number_picker_episode_text.text.toString().toInt(),
+                                    holder.episodes
+                                )
+
+                            if (postDataAboutId(holder.id, holder.type, holder.score, holder.progress)) {
+                                dialog.dismiss()
+                                requireActivity().runOnUiThread {
+                                    aniList_progressbar.progress = holder.progress * 100 / holder.episodes
+                                    anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
+                                }
+                            } else {
+                                Toast.makeText(requireContext(), "Error updating episode progress", Toast.LENGTH_LONG)
+                                    .show()
+                            }
+                        }
+                    }
+                    dialog.show()
+                }
+                rating_btt.setOnClickListener {
+                    val dialog = Dialog(requireContext())
+                    // Lmao this needs something better
+                    val ids = listOf(
+                        R.id.rating_text_1,
+                        R.id.rating_text_2,
+                        R.id.rating_text_3,
+                        R.id.rating_text_4,
+                        R.id.rating_text_5,
+                        R.id.rating_text_6,
+                        R.id.rating_text_7,
+                        R.id.rating_text_8,
+                        R.id.rating_text_9,
+                        R.id.rating_text_10,
+                    )
+
+                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    dialog.setTitle("Rate")
+                    dialog.setContentView(R.layout.rating_pick_dialog)
+
+                    for (i in 0..9) {
+                        val button = dialog.findViewById<Button>(ids[i])
+                        if (i + 1 == holder.score) {
+                            button.typeface = Typeface.DEFAULT_BOLD
+                        }
+                        button.setOnClickListener {
+                            holder.score = i + 1
+                            thread {
+                                postDataAboutId(holder.id, holder.type, holder.score, holder.progress)
+                            }
+                            dialog.dismiss()
+                        }
+                    }
+                    dialog.show()
+                }
+
+                status_btt.setOnClickListener {
+                    val dialog = Dialog(requireContext())
+                    val ids = listOf(
+                        R.id.status_currently_watching,
+                        R.id.status_completed,
+                        R.id.status_on_hold,
+                        R.id.status_dropped,
+                        R.id.status_plan_to_watch,
+                        R.id.status_rewatching,
+                    )
+                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    dialog.setTitle("Pick status")
+                    dialog.setContentView(R.layout.status_picker_dialog)
+                    for (i in 0..5) {
+                        val button = dialog.findViewById<Button>(ids[i])
+                        if (i == holder.type.value) {
+                            button.typeface = Typeface.DEFAULT_BOLD
+                        }
+                        button.setOnClickListener {
+                            holder.type.value = i
+                            thread {
+                                postDataAboutId(holder.id, holder.type, holder.score, holder.progress)
+                            }
+                            dialog.dismiss()
+                        }
+                    }
+                    dialog.show()
+                }
+
+                title_anilist.setOnClickListener {
+                    openBrowser("https://anilist.co/anime/${currentAniListId}")
+                }
+
+
             }
         }
     }
@@ -693,44 +809,5 @@ class ResultFragment : Fragment() {
         title_rating.text = "Rated: $ratTxt"
         title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
 
-
-        // TODO SET TO CURRENT EPISODE COUNT WHEN ENTERING
-        // TODO SET MAX TO MAX EPISODE COUNT
-        edit_episodes_btt.setOnClickListener {
-            val dialog = Dialog(requireContext())
-            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.setTitle("Select episodes seen")
-            dialog.setContentView(R.layout.number_picker_dialog)
-            dialog.number_picker_episode_up.setOnClickListener {
-                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                ) 1 else dialog.number_picker_episode_text.text.toString().toInt() + 1
-                dialog.number_picker_episode_text.setText(number.toString())
-            }
-            dialog.number_picker_episode_down.setOnClickListener {
-                val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
-                dialog.number_picker_episode_text.setText(number.toString())
-            }
-            dialog.show()
-        }
-        score_btt.setOnClickListener {
-            val dialog = Dialog(requireContext())
-            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.setTitle("Rate")
-            dialog.setContentView(R.layout.rating_pick_dialog)
-            dialog.show()
-        }
-
-        status_btt.setOnClickListener {
-            val dialog = Dialog(requireContext())
-            //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.setTitle("Pick status")
-            dialog.setContentView(R.layout.status_picker_dialog)
-            dialog.show()
-        }
-
-        title_anilist.setOnClickListener {
-            openBrowser("https://anilist.co/anime/${currentAniListId}")
-        }
     }
 }

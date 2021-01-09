@@ -189,7 +189,7 @@ class AniListApi {
 
         fun postDataAboutId(id: Int, type: AniListStatusType, score: Int, progress: Int): Boolean {
             val q: String =
-                """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
+                """mutation (${'$'}id: Int = $id, ${'$'}status: MediaListStatus = ${aniListStatusString[type.value + 1]}, ${'$'}scoreRaw: Int = ${score * 10}, ${'$'}progress: Int = $progress) {
                 SaveMediaListEntry (mediaId: ${'$'}id, status: ${'$'}status, scoreRaw: ${'$'}scoreRaw, progress: ${'$'}progress) {
                     id
                     status
@@ -326,7 +326,7 @@ class AniListApi {
         }
     }
 
-    enum class AniListStatusType(val value: Int) {
+    enum class AniListStatusType(var value: Int) {
         Watching(0),
         Completed(1),
         OnHold(2),
@@ -442,12 +442,12 @@ class AniListApi {
     )
 
     data class AniListTitleHolder(
-        val isFavourite: Boolean,
-        val id: Int,
-        val progress: Int,
-        val episodes: Int,
-        val score: Int,
-        val type: AniListStatusType,
+        var isFavourite: Boolean,
+        var id: Int,
+        var progress: Int,
+        var episodes: Int,
+        var score: Int,
+        var type: AniListStatusType,
     )
 
     data class GetDataMediaListEntry(

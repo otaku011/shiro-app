@@ -48,6 +48,7 @@
             android:layout_height="wrap_content"
             android:text="Set progress"
             android:textColor="@color/textColor"
+            android:id="@+id/episode_progress_btt"
     >
 
     </Button>
