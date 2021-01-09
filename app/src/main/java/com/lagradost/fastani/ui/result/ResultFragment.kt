@@ -569,6 +569,9 @@ class ResultFragment : Fragment() {
                             if (holder.progress == holder.episodes) {
                                 holder.type.value = 1
                             }
+                            if(holder.progress < holder.episodes && holder.type.value == AniListStatusType.Completed.value) {
+                                holder.type.value = AniListStatusType.Watching.value
+                            }
                             if (postDataAboutId(holder.id, holder.type, holder.score, holder.progress)) {
                                 dialog.dismiss()
                                 requireActivity().runOnUiThread {
@@ -652,7 +655,15 @@ class ResultFragment : Fragment() {
                         button.setOnClickListener {
                             holder.type.value = i
                             thread {
-                                postDataAboutId(holder.id, holder.type, holder.score, holder.progress)
+                                if(postDataAboutId(holder.id, holder.type, holder.score, holder.progress)) {
+                                    if(holder.type.value == AniListStatusType.Completed.value) {
+                                        activity!!.runOnUiThread{
+                                            holder.progress = holder.episodes
+                                            aniList_progressbar.progress = 100
+                                            anilist_progress_txt.text = "${holder.episodes}/${holder.episodes}"
+                                        }
+                                    }
+                                }
                             }
                             dialog.dismiss()
                         }
