@@ -527,65 +527,20 @@ class ResultFragment : Fragment() {
 
     private fun loadGetDataAboutId() {
         var holder = AniListApi.getDataAboutId(currentAniListId)
+
         if (holder != null) {
-            activity!!.runOnUiThread {
+            class CardAniListInfo {
                 // Sets to watching if anything is done
-                val firstTimeWatching = holder.type == AniListStatusType.None
-                if (firstTimeWatching) {
-                    holder.type = AniListStatusType.Watching
-                }
-
-                anilist_holder.visibility = VISIBLE
-                aniList_progressbar.progress = holder.progress * 100 / holder.episodes
-                anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
-                anilist_btt_holder.visibility = VISIBLE
-
-                edit_episodes_btt.setOnClickListener {
-                    val dialog = Dialog(requireContext())
-                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    dialog.setTitle("Select episodes seen")
-                    dialog.setContentView(R.layout.number_picker_dialog)
-
-                    dialog.number_picker_episode_text.setText(holder.progress.toString())
-
-                    dialog.number_picker_episode_up.setOnClickListener {
-                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                        ) 1 else minOf(dialog.number_picker_episode_text.text.toString().toInt() + 1, holder.episodes)
-                        dialog.number_picker_episode_text.setText(number.toString())
-                    }
-                    dialog.number_picker_episode_down.setOnClickListener {
-                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                        ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
-                        dialog.number_picker_episode_text.setText(number.toString())
-                    }
-                    dialog.episode_progress_btt.setOnClickListener {
+                // TODO THIS ISNT WORKING PROPERY
+                var type = if (holder.type == AniListStatusType.None) AniListStatusType.Watching else holder.type
+                    set(value) {
+                        field = value
+                        requireActivity().runOnUiThread {
+                            println("FJFJFJFJFJ ${field.name}")
+                            status_text.text = field.name
+                        }
                         thread {
-                            holder.progress =
-                                if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                                ) 0 else minOf(
-                                    dialog.number_picker_episode_text.text.toString().toInt(),
-                                    holder.episodes
-                                )
-                            if (holder.progress == holder.episodes) {
-                                holder.type.value = 1
-                            }
-                            if(holder.progress < holder.episodes && holder.type.value == AniListStatusType.Completed.value) {
-                                holder.type.value = AniListStatusType.Watching.value
-                            }
-                            if (postDataAboutId(holder.id, holder.type, holder.score, holder.progress)) {
-                                dialog.dismiss()
-                                requireActivity().runOnUiThread {
-                                    aniList_progressbar.progress = holder.progress * 100 / holder.episodes
-                                    anilist_progress_txt.text = "${holder.progress}/${holder.episodes}"
-                                    if (holder.progress == holder.episodes) {
-                                        Toast.makeText(
-                                            requireContext(),
-                                            "All episodes seen, marked as Completed",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            } else {
+                            if (!postDataAboutId(this.id, field, this.score, this.progress)) {
                                 requireActivity().runOnUiThread {
                                     Toast.makeText(
                                         requireContext(),
@@ -596,8 +551,105 @@ class ResultFragment : Fragment() {
                             }
                         }
                     }
+                var progress = holder.progress
+                    set(value) {
+                        field = maxOf(0, minOf(value, this.episodes))
+                        requireActivity().runOnUiThread {
+                            aniList_progressbar.progress = field * 100 / this.episodes
+                            anilist_progress_txt.text = "${field}/${this.episodes}"
+                        }
+                        /*if (field == holder.episodes) {
+                            this.type.value = AniListStatusType.Completed.value
+                        } else if (field != holder.episodes && this.type.value == AniListStatusType.Completed.value) {
+                            this.type.value = AniListStatusType.Watching.value
+                        }*/
+                        thread {
+                            if (!postDataAboutId(this.id, this.type, this.score, field)) {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Error updating episode progress",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                        }
+                    }
+                var score = holder.score
+                    set(value) {
+                        field = value
+                        requireActivity().runOnUiThread {
+                            rating_text.text = value.toString()
+                        }
+
+                        thread {
+                            if (!postDataAboutId(this.id, this.type, field, this.progress)) {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Error updating episode progress",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                        }
+                    }
+                var episodes = holder.episodes
+                var id = holder.id
+            }
+
+            val info = CardAniListInfo()
+
+            activity!!.runOnUiThread {
+                anilist_holder.visibility = VISIBLE
+                aniList_progressbar.progress = info.progress * 100 / info.episodes
+                anilist_progress_txt.text = "${info.progress}/${info.episodes}"
+                anilist_btt_holder.visibility = VISIBLE
+                status_text.text = info.type.name
+                rating_text.text = if (info.score == 0) "Rate" else info.score.toString()
+
+                edit_episodes_btt.setOnClickListener {
+                    val dialog = Dialog(requireContext())
+                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    dialog.setTitle("Select episodes seen")
+                    dialog.setContentView(R.layout.number_picker_dialog)
+
+                    dialog.number_picker_episode_text.setText(info.progress.toString())
+
+                    dialog.number_picker_episode_up.setOnClickListener {
+                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                        ) 1 else minOf(dialog.number_picker_episode_text.text.toString().toInt() + 1, info.episodes)
+                        dialog.number_picker_episode_text.setText(number.toString())
+                    }
+                    dialog.number_picker_episode_down.setOnClickListener {
+                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                        ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
+                        dialog.number_picker_episode_text.setText(number.toString())
+                    }
+                    dialog.episode_progress_btt.setOnClickListener {
+                        thread {
+                            val progress =
+                                if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
+                                ) 0 else minOf(
+                                    dialog.number_picker_episode_text.text.toString().toInt(),
+                                    info.episodes
+                                )
+
+                            if (progress == info.episodes && info.type.value != AniListStatusType.Completed.value) {
+                                info.type.value = AniListStatusType.Completed.value
+                            }
+                            if (progress != info.episodes && info.type.value == AniListStatusType.Completed.value) {
+                                info.type.value = AniListStatusType.Watching.value
+                            }
+                            // Applying progress after is needed
+                            info.progress = progress
+                            dialog.dismiss()
+                        }
+                    }
                     dialog.show()
                 }
+
+
                 rating_btt.setOnClickListener {
                     val dialog = Dialog(requireContext())
                     // Lmao this needs something better
@@ -620,14 +672,11 @@ class ResultFragment : Fragment() {
 
                     for (i in 0..9) {
                         val button = dialog.findViewById<Button>(ids[i])
-                        if (i + 1 == holder.score) {
+                        if (i + 1 == info.score) {
                             button.typeface = Typeface.DEFAULT_BOLD
                         }
                         button.setOnClickListener {
-                            holder.score = i + 1
-                            thread {
-                                postDataAboutId(holder.id, holder.type, holder.score, holder.progress)
-                            }
+                            info.score = i + 1
                             dialog.dismiss()
                         }
                     }
@@ -649,22 +698,16 @@ class ResultFragment : Fragment() {
                     dialog.setContentView(R.layout.status_picker_dialog)
                     for (i in 0..5) {
                         val button = dialog.findViewById<Button>(ids[i])
-                        if (i == holder.type.value) {
+                        if (i == info.type.value) {
                             button.typeface = Typeface.DEFAULT_BOLD
                         }
                         button.setOnClickListener {
-                            holder.type.value = i
-                            thread {
-                                if(postDataAboutId(holder.id, holder.type, holder.score, holder.progress)) {
-                                    if(holder.type.value == AniListStatusType.Completed.value) {
-                                        activity!!.runOnUiThread{
-                                            holder.progress = holder.episodes
-                                            aniList_progressbar.progress = 100
-                                            anilist_progress_txt.text = "${holder.episodes}/${holder.episodes}"
-                                        }
-                                    }
-                                }
+                            info.type.value = i
+
+                            if (i == AniListStatusType.Completed.value) {
+                                info.progress = info.episodes
                             }
+
                             dialog.dismiss()
                         }
                     }

@@ -294,6 +294,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                             />
                             <TextView
                                     android:text="Rate"
+                                    android:id="@+id/rating_text"
                                     android:layout_gravity="center"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content">
@@ -318,6 +319,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                                     app:tint="@color/white"/>
                             <TextView
                                     android:text="Status"
+                                    android:id="@+id/status_text"
                                     android:layout_gravity="center"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content">
