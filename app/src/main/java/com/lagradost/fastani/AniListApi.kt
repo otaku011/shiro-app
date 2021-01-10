@@ -27,22 +27,22 @@ class AniListApi {
         enum class AniListStatusType(var value: Int) {
             Watching(0),
             Completed(1),
-            OnHold(2),
+            Paused(2),
             Dropped(3),
-            PlanToWatch(4),
-            ReWatching(5),
+            Planning(4),
+            Rewatching(5),
             None(-1)
         }
 
-        private fun fromIntToAnimeStatus(inp: Int): AniListStatusType {//= AniListStatusType.values().first { it.value == inp }
+        fun fromIntToAnimeStatus(inp: Int): AniListStatusType {//= AniListStatusType.values().first { it.value == inp }
             return when (inp) {
                 -1 -> AniListStatusType.None
                 0 -> AniListStatusType.Watching
                 1 -> AniListStatusType.Completed
-                2 -> AniListStatusType.OnHold
+                2 -> AniListStatusType.Paused
                 3 -> AniListStatusType.Dropped
-                4 -> AniListStatusType.PlanToWatch
-                5 -> AniListStatusType.ReWatching
+                4 -> AniListStatusType.Planning
+                5 -> AniListStatusType.Rewatching
                 else -> AniListStatusType.None
             }
         }
@@ -454,12 +454,12 @@ class AniListApi {
     )
 
     data class AniListTitleHolder(
-        var isFavourite: Boolean,
-        var id: Int,
-        var progress: Int,
-        var episodes: Int,
-        var score: Int,
-        var type: AniListStatusType,
+        val isFavourite: Boolean,
+        val id: Int,
+        val progress: Int,
+        val episodes: Int,
+        val score: Int,
+        val type: AniListStatusType,
     )
 
     data class GetDataMediaListEntry(

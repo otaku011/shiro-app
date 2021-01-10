@@ -35,6 +35,7 @@ import com.google.android.gms.cast.framework.CastStateListener
 import com.google.android.gms.common.images.WebImage
 import com.lagradost.fastani.*
 import com.lagradost.fastani.AniListApi.Companion.AniListStatusType
+import com.lagradost.fastani.AniListApi.Companion.fromIntToAnimeStatus
 import com.lagradost.fastani.AniListApi.Companion.getAllSeasons
 import com.lagradost.fastani.AniListApi.Companion.postDataAboutId
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
@@ -531,71 +532,82 @@ class ResultFragment : Fragment() {
         if (holder != null) {
             class CardAniListInfo {
                 // Sets to watching if anything is done
-                // TODO THIS ISNT WORKING PROPERY
                 var type = if (holder.type == AniListStatusType.None) AniListStatusType.Watching else holder.type
                     set(value) {
-                        field = value
+                        //field = value
+                        println("Changed type")
+                        field = fromIntToAnimeStatus(this.typeValue)
                         requireActivity().runOnUiThread {
-                            println("FJFJFJFJFJ ${field.name}")
                             status_text.text = field.name
                         }
-                        thread {
-                            if (!postDataAboutId(this.id, field, this.score, this.progress)) {
-                                requireActivity().runOnUiThread {
-                                    Toast.makeText(
-                                        requireContext(),
-                                        "Error updating episode progress",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            }
-                        }
+                    }
+
+                // This is helper class to type.value because setter on type.value isn't working.
+                var typeValue = type.value
+                    set(value) {
+                        field = value
+                        // Invoke setter
+                        println("Invoked setter")
+                        this::type.setter.call(type)
                     }
                 var progress = holder.progress
                     set(value) {
-                        field = maxOf(0, minOf(value, this.episodes))
+                        field = maxOf(0, minOf(value, episodes))
                         requireActivity().runOnUiThread {
-                            aniList_progressbar.progress = field * 100 / this.episodes
-                            anilist_progress_txt.text = "${field}/${this.episodes}"
+                            aniList_progressbar.progress = field * 100 / episodes
+                            anilist_progress_txt.text = "${field}/${episodes}"
+                            status_text.text = type.name
+                        }
+                        requireActivity().runOnUiThread {
+                            if (progress == episodes && typeValue != AniListStatusType.Completed.value) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "All episodes seen, marking as Completed",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                typeValue = AniListStatusType.Completed.value
+                            }
+                            if (progress != episodes && typeValue == AniListStatusType.Completed.value) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Marking as Watching",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                typeValue = AniListStatusType.Watching.value
+                            }
                         }
                         /*if (field == holder.episodes) {
                             this.type.value = AniListStatusType.Completed.value
                         } else if (field != holder.episodes && this.type.value == AniListStatusType.Completed.value) {
                             this.type.value = AniListStatusType.Watching.value
                         }*/
-                        thread {
-                            if (!postDataAboutId(this.id, this.type, this.score, field)) {
-                                requireActivity().runOnUiThread {
-                                    Toast.makeText(
-                                        requireContext(),
-                                        "Error updating episode progress",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            }
-                        }
                     }
                 var score = holder.score
                     set(value) {
                         field = value
                         requireActivity().runOnUiThread {
-                            rating_text.text = value.toString()
+                            rating_text.text = if (value == 0) "Rate" else value.toString()
+                            status_text.text = type.name
                         }
 
-                        thread {
-                            if (!postDataAboutId(this.id, this.type, field, this.progress)) {
-                                requireActivity().runOnUiThread {
-                                    Toast.makeText(
-                                        requireContext(),
-                                        "Error updating episode progress",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            }
-                        }
+
                     }
                 var episodes = holder.episodes
                 var id = holder.id
+
+                fun syncData() {
+                    thread {
+                        if (!postDataAboutId(id, type, score, progress)) {
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Error updating episode progress",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                }
             }
 
             val info = CardAniListInfo()
@@ -605,7 +617,7 @@ class ResultFragment : Fragment() {
                 aniList_progressbar.progress = info.progress * 100 / info.episodes
                 anilist_progress_txt.text = "${info.progress}/${info.episodes}"
                 anilist_btt_holder.visibility = VISIBLE
-                status_text.text = info.type.name
+                status_text.text = if (holder.type.value == AniListStatusType.None.value) "Status" else info.type.name
                 rating_text.text = if (info.score == 0) "Rate" else info.score.toString()
 
                 edit_episodes_btt.setOnClickListener {
@@ -634,15 +646,9 @@ class ResultFragment : Fragment() {
                                     dialog.number_picker_episode_text.text.toString().toInt(),
                                     info.episodes
                                 )
-
-                            if (progress == info.episodes && info.type.value != AniListStatusType.Completed.value) {
-                                info.type.value = AniListStatusType.Completed.value
-                            }
-                            if (progress != info.episodes && info.type.value == AniListStatusType.Completed.value) {
-                                info.type.value = AniListStatusType.Watching.value
-                            }
                             // Applying progress after is needed
                             info.progress = progress
+                            info.syncData()
                             dialog.dismiss()
                         }
                     }
@@ -654,6 +660,7 @@ class ResultFragment : Fragment() {
                     val dialog = Dialog(requireContext())
                     // Lmao this needs something better
                     val ids = listOf(
+                        R.id.rating_text_no_rating,
                         R.id.rating_text_1,
                         R.id.rating_text_2,
                         R.id.rating_text_3,
@@ -670,13 +677,14 @@ class ResultFragment : Fragment() {
                     dialog.setTitle("Rate")
                     dialog.setContentView(R.layout.rating_pick_dialog)
 
-                    for (i in 0..9) {
+                    for (i in 0..10) {
                         val button = dialog.findViewById<Button>(ids[i])
-                        if (i + 1 == info.score) {
+                        if (i == info.score) {
                             button.typeface = Typeface.DEFAULT_BOLD
                         }
                         button.setOnClickListener {
-                            info.score = i + 1
+                            info.score = i
+                            info.syncData()
                             dialog.dismiss()
                         }
                     }
@@ -688,7 +696,7 @@ class ResultFragment : Fragment() {
                     val ids = listOf(
                         R.id.status_currently_watching,
                         R.id.status_completed,
-                        R.id.status_on_hold,
+                        R.id.status_paused,
                         R.id.status_dropped,
                         R.id.status_plan_to_watch,
                         R.id.status_rewatching,
@@ -698,16 +706,17 @@ class ResultFragment : Fragment() {
                     dialog.setContentView(R.layout.status_picker_dialog)
                     for (i in 0..5) {
                         val button = dialog.findViewById<Button>(ids[i])
-                        if (i == info.type.value) {
+                        if (i == info.typeValue) {
                             button.typeface = Typeface.DEFAULT_BOLD
                         }
                         button.setOnClickListener {
-                            info.type.value = i
+                            info.typeValue = i
 
                             if (i == AniListStatusType.Completed.value) {
                                 info.progress = info.episodes
                             }
 
+                            info.syncData()
                             dialog.dismiss()
                         }
                     }

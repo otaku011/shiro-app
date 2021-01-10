@@ -82,7 +82,6 @@
             style="@style/DialogButton"
     />
     <Button
-            android:visibility="gone"
             android:id="@+id/rating_text_no_rating"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
