@@ -554,7 +554,7 @@ class ResultFragment : Fragment() {
                     set(value) {
                         field = maxOf(0, minOf(value, episodes))
                         requireActivity().runOnUiThread {
-                            aniList_progressbar.progress = field * 100 / episodes
+                            aniList_progressbar.setProgress(field * 100 / episodes, true)
                             anilist_progress_txt.text = "${field}/${episodes}"
                             status_text.text = type.name
                         }
