@@ -27,6 +27,7 @@ import android.content.IntentFilter
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
 import android.net.Uri
+import android.os.SystemClock
 import android.preference.PreferenceManager
 import android.view.*
 import android.view.View.*
@@ -35,12 +36,14 @@ import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
 import com.lagradost.fastani.R
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.concurrent.thread
 import kotlin.math.*
 
 
@@ -107,6 +110,54 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
     private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
     var width = 0
+
+    abstract class DoubleClickListener : OnTouchListener {
+
+        // The time in which the second tap should be done in order to qualify as
+        // a double click
+
+        private var doubleClickQualificationSpanInMillis: Long = 300L
+        private var timestampLastClick: Long = 0
+        private var clicksLeft = 0
+        private var clicksRight = 0
+        private val width = Resources.getSystem().displayMetrics.widthPixels
+
+        abstract fun onDoubleClickRight(clicks: Int)
+        abstract fun onDoubleClickLeft(clicks: Int)
+        abstract fun onSingleClick()
+
+        override fun onTouch(v: View, event: MotionEvent): Boolean {
+            thread {
+                if (event.action == MotionEvent.ACTION_DOWN) {
+                    timestampLastClick = SystemClock.elapsedRealtime()
+                    Thread.sleep(doubleClickQualificationSpanInMillis)
+                    if ((SystemClock.elapsedRealtime() - timestampLastClick) < doubleClickQualificationSpanInMillis) {
+                        if (event.rawX >= width / 2) {
+                            clicksRight++
+                            activity?.runOnUiThread {
+                                onDoubleClickRight(clicksRight)
+                            }
+                        } else {
+                            clicksLeft++
+                            activity?.runOnUiThread {
+                                onDoubleClickLeft(clicksLeft)
+                            }
+                        }
+                    } else if (clicksLeft == 0 && clicksRight == 0) {
+                        activity?.runOnUiThread {
+                            onSingleClick()
+                        }
+                    } else {
+                        clicksLeft = 0
+                        clicksRight = 0
+                    }
+                }
+            }
+            return true
+        }
+
+
+    }
 
     private fun canPlayNextEpisode(): Boolean {
         if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
@@ -409,10 +460,37 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             return@setOnTouchListener false
         }
 
-        click_overlay.setOnClickListener {
-            onClickChange()
-            hideSystemUI()
+
+        val seekAnimation = AlphaAnimation(1f, 0f)
+        seekAnimation.duration = 1200
+        seekAnimation.fillAfter = true
+
+        class Listener : DoubleClickListener() {
+            override fun onDoubleClickRight(clicks: Int) {
+                seekTime(10000L)
+                timeText.text = "+ ${clicks * 10}"
+                timeText.alpha = 1f
+                timeText.startAnimation(seekAnimation)
+            }
+
+            override fun onDoubleClickLeft(clicks: Int) {
+                seekTime(-10000L)
+                timeText.text = "- ${clicks * 10}"
+                timeText.alpha = 1f
+                timeText.startAnimation(seekAnimation)
+            }
+
+            override fun onSingleClick() {
+                onClickChange()
+                hideSystemUI()
+            }
+
         }
+
+        click_overlay.setOnTouchListener(
+            Listener()
+        )
+
         player_holder.setOnClickListener {
             onClickChange()
             /*if(!isShowing) {
