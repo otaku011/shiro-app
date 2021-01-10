@@ -616,7 +616,8 @@ class ResultFragment : Fragment() {
             }
 
             val info = CardAniListInfo()
-
+            info.episodes = maxOf(info.episodes,
+                data!!.cdnData.seasons[currentSeasonIndex].episodes.size) // TO REMOVE DIVIDE BY 0 ERROR
             activity!!.runOnUiThread {
                 val transition: Transition = ChangeBounds()
                 transition.duration = 100 // DURATION OF ANIMATION IN MS
