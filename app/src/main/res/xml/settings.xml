@@ -51,6 +51,13 @@
                 app:defaultValue="true"
         />
         <SwitchPreference
+                android:icon="@drawable/ic_baseline_touch_app_24"
+                app:key="double_tap_enabled"
+                android:title="Double tap to seek"
+                android:summary="Tap twice on the right or left side to seek forwards or backwards"
+                app:defaultValue="false"
+        />
+        <SwitchPreference
                 android:icon="@drawable/exo_controls_fastforward"
                 app:key="skip_op_enabled"
                 android:title="Skip OP button"

@@ -109,8 +109,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
     private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
-    var width = 0
-
+    private var width = Resources.getSystem().displayMetrics.heightPixels
+    private var prevDiffX = 0.0
     abstract class DoubleClickListener : OnTouchListener {
 
         // The time in which the second tap should be done in order to qualify as
@@ -120,36 +120,59 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         private var timestampLastClick: Long = 0
         private var clicksLeft = 0
         private var clicksRight = 0
-        private val width = Resources.getSystem().displayMetrics.widthPixels
+        private var fingerLeftScreen = true
+        private val width = Resources.getSystem().displayMetrics.heightPixels
+        private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
+        private val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
 
         abstract fun onDoubleClickRight(clicks: Int)
         abstract fun onDoubleClickLeft(clicks: Int)
         abstract fun onSingleClick()
+        abstract fun onMotionEvent(event: MotionEvent)
 
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             thread {
+                activity?.runOnUiThread {
+                    onMotionEvent(event)
+                }
+
+                if (event.action == MotionEvent.ACTION_UP) {
+                    fingerLeftScreen = true
+                }
                 if (event.action == MotionEvent.ACTION_DOWN) {
-                    timestampLastClick = SystemClock.elapsedRealtime()
-                    Thread.sleep(doubleClickQualificationSpanInMillis)
-                    if ((SystemClock.elapsedRealtime() - timestampLastClick) < doubleClickQualificationSpanInMillis) {
-                        if (event.rawX >= width / 2) {
-                            clicksRight++
+                    fingerLeftScreen = false
+
+                    if (doubleTapEnabled) {
+                        timestampLastClick = SystemClock.elapsedRealtime()
+                        Thread.sleep(doubleClickQualificationSpanInMillis)
+                        if ((SystemClock.elapsedRealtime() - timestampLastClick) < doubleClickQualificationSpanInMillis) {
+                            if (event.rawX >= width / 2) {
+                                println("${event.rawX} $width")
+                                clicksRight++
+                                activity?.runOnUiThread {
+                                    onDoubleClickRight(clicksRight)
+                                }
+                            } else {
+                                clicksLeft++
+                                activity?.runOnUiThread {
+                                    onDoubleClickLeft(clicksLeft)
+                                }
+                            }
+                        } else if (clicksLeft == 0 && clicksRight == 0 && fingerLeftScreen) {
                             activity?.runOnUiThread {
-                                onDoubleClickRight(clicksRight)
+                                onSingleClick()
                             }
                         } else {
-                            clicksLeft++
-                            activity?.runOnUiThread {
-                                onDoubleClickLeft(clicksLeft)
-                            }
-                        }
-                    } else if (clicksLeft == 0 && clicksRight == 0) {
-                        activity?.runOnUiThread {
-                            onSingleClick()
+                            clicksLeft = 0
+                            clicksRight = 0
                         }
                     } else {
-                        clicksLeft = 0
-                        clicksRight = 0
+                        Thread.sleep(100L)
+                        if (fingerLeftScreen) {
+                            activity?.runOnUiThread {
+                                onSingleClick()
+                            }
+                        }
                     }
                 }
             }
@@ -373,7 +396,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         )
     }
 
-    private fun handleMotionEvent(motionEvent: MotionEvent) {
+    fun handleMotionEvent(motionEvent: MotionEvent) {
         // TIME_UNSET   ==   -9223372036854775807L
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
@@ -382,13 +405,21 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 currentX = motionEvent.rawX
+                //println("DOWN: " + currentX)
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {
-                val distanceMultiplier = 0.7F
+                val distanceMultiplier = 2F
+                //println("MOVE: " + motionEvent.rawX)
                 val distance = (motionEvent.rawX - currentX) * distanceMultiplier
 
                 val diffX = distance * 2.0 / width
+                // Forces 'smooth' moving preventing a bug where you
+                // can make it think it moved half a screen in a frame
+                if (abs(diffX - prevDiffX) > 0.5){
+                    return
+                }
+                prevDiffX = diffX
                 skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
                 if (isMovingStartTime + skipTime < 0) {
                     skipTime = -isMovingStartTime
@@ -427,7 +458,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        width = Resources.getSystem().displayMetrics.widthPixels
         MainActivity.onPlayerEvent += ::handlePlayerEvent
         MainActivity.onAudioFocusEvent += ::handleAudioFocusEvent
 
@@ -451,33 +481,32 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             !isShowing
         })*/
 
-        player_holder.setOnTouchListener { _: View, motionEvent: MotionEvent ->
-            handleMotionEvent(motionEvent)
-            return@setOnTouchListener false
-        }
-        click_overlay.setOnTouchListener { _: View, motionEvent: MotionEvent ->
-            handleMotionEvent(motionEvent)
-            return@setOnTouchListener false
-        }
-
-
-        val seekAnimation = AlphaAnimation(1f, 0f)
-        seekAnimation.duration = 1200
-        seekAnimation.fillAfter = true
 
         class Listener : DoubleClickListener() {
+            // Declaring a seekAnimation here will cause a bug
+
             override fun onDoubleClickRight(clicks: Int) {
-                seekTime(10000L)
-                timeText.text = "+ ${clicks * 10}"
-                timeText.alpha = 1f
-                timeText.startAnimation(seekAnimation)
+                if (!isLocked) {
+                    val seekAnimation = AlphaAnimation(1f, 0f)
+                    seekAnimation.duration = 1200
+                    seekAnimation.fillAfter = true
+                    seekTime(10000L)
+                    timeTextRight.text = "+ ${convertTimeToString((clicks * 10).toDouble())}"
+                    timeTextRight.alpha = 1f
+                    timeTextRight.startAnimation(seekAnimation)
+                }
             }
 
             override fun onDoubleClickLeft(clicks: Int) {
-                seekTime(-10000L)
-                timeText.text = "- ${clicks * 10}"
-                timeText.alpha = 1f
-                timeText.startAnimation(seekAnimation)
+                if (!isLocked) {
+                    val seekAnimation = AlphaAnimation(1f, 0f)
+                    seekAnimation.duration = 1200
+                    seekAnimation.fillAfter = true
+                    seekTime(-10000L)
+                    timeTextLeft.text = "- ${convertTimeToString((clicks * 10).toDouble())}"
+                    timeTextLeft.alpha = 1f
+                    timeTextLeft.startAnimation(seekAnimation)
+                }
             }
 
             override fun onSingleClick() {
@@ -485,9 +514,17 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 hideSystemUI()
             }
 
+            override fun onMotionEvent(event: MotionEvent) {
+                handleMotionEvent(event)
+            }
+
         }
 
         click_overlay.setOnTouchListener(
+            Listener()
+        )
+
+        player_holder.setOnTouchListener(
             Listener()
         )
 

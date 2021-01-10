@@ -45,13 +45,28 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:id="@+id/timeMenu"
+            android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@+id/topMenuRight"
             app:layout_constraintBottom_toTopOf="@+id/centerMenu"
     >
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/timeTextLeft"
+                android:gravity="center|start"
+                android:textSize="40sp"
+                android:alpha="0"
+                android:layout_marginStart="100dp"
+                android:shadowColor="@android:color/black"
+                android:shadowRadius="10.0"
+                android:textColor="@android:color/white"
+        >
+
+        </TextView>
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -65,7 +80,19 @@
         >
 
         </TextView>
-    </LinearLayout>
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/timeTextRight"
+                android:gravity="center|end"
+                android:layout_marginEnd="100dp"
+                android:textSize="40sp"
+                android:shadowColor="@android:color/black"
+                android:shadowRadius="10.0"
+                android:textColor="@android:color/white"
+        >
+        </TextView>
+    </RelativeLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
