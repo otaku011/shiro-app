@@ -5,6 +5,9 @@ import android.content.DialogInterface
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.transition.ChangeBounds
+import android.transition.Transition
+import android.transition.TransitionManager
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -189,14 +192,16 @@ class DownloadFragmentChild() : Fragment() {
                 }
 
                 fun getDownload(): DownloadManager.DownloadInfo {
-                    return DownloadManager.DownloadInfo(child.seasonIndex,
+                    return DownloadManager.DownloadInfo(
+                        child.seasonIndex,
                         child.episodeIndex,
                         parent!!.title,
                         parent.isMovie,
                         child.anilistId,
                         child.fastAniId,
                         FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
-                        null)
+                        null
+                    )
                 }
 
                 fun getStatus(): Boolean { // IF CAN RESUME
@@ -229,8 +234,10 @@ class DownloadFragmentChild() : Fragment() {
                                     DownloadManager.downloadEpisode(getDownload(), true)
                                 }
                                 R.id.res_stopdload -> {
-                                    DownloadManager.invokeDownloadAction(child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStoped)
+                                    DownloadManager.invokeDownloadAction(
+                                        child.internalId,
+                                        DownloadManager.DownloadStatusType.IsStoped
+                                    )
                                     deleteFile()
                                 }
                             }
@@ -241,12 +248,16 @@ class DownloadFragmentChild() : Fragment() {
                         popup.setOnMenuItemClickListener {
                             when (it.itemId) {
                                 R.id.stop_pauseload -> {
-                                    DownloadManager.invokeDownloadAction(child.internalId,
-                                        DownloadManager.DownloadStatusType.IsPaused)
+                                    DownloadManager.invokeDownloadAction(
+                                        child.internalId,
+                                        DownloadManager.DownloadStatusType.IsPaused
+                                    )
                                 }
                                 R.id.stop_stopdload -> {
-                                    DownloadManager.invokeDownloadAction(child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStoped)
+                                    DownloadManager.invokeDownloadAction(
+                                        child.internalId,
+                                        DownloadManager.DownloadStatusType.IsStoped
+                                    )
                                     deleteFile()
                                 }
                             }

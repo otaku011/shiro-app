@@ -8,6 +8,11 @@ import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputFilter
+import android.text.TextUtils
+import android.transition.ChangeBounds
+import android.transition.Transition
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
@@ -613,12 +618,16 @@ class ResultFragment : Fragment() {
             val info = CardAniListInfo()
 
             activity!!.runOnUiThread {
+                val transition: Transition = ChangeBounds()
+                transition.duration = 100 // DURATION OF ANIMATION IN MS
+
                 anilist_holder.visibility = VISIBLE
                 aniList_progressbar.progress = info.progress * 100 / info.episodes
                 anilist_progress_txt.text = "${info.progress}/${info.episodes}"
                 anilist_btt_holder.visibility = VISIBLE
                 status_text.text = if (holder.type.value == AniListStatusType.None.value) "Status" else info.type.name
                 rating_text.text = if (info.score == 0) "Rate" else info.score.toString()
+                TransitionManager.beginDelayedTransition(title_holder, transition)
 
                 edit_episodes_btt.setOnClickListener {
                     val dialog = Dialog(requireContext())
@@ -865,15 +874,24 @@ class ResultFragment : Fragment() {
         }
 
         title_name.text = data!!.title.english
-        var descript = data!!.description
-        if (descript.length > DESCRIPTION_LENGTH) {
-            descript = descript.substring(0, DESCRIPTION_LENGTH)
-                .replace("<br>", "")
-                .replace("<i>", "")
-                .replace("</i>", "")
-                .replace("\n", " ") + "..."
+        val descript = data!!.description
+            .replace("<br>", "")
+            .replace("<i>", "")
+            .replace("</i>", "")
+            .replace("\n", " ")
+
+        title_descript.text = descript.substring(0, DESCRIPTION_LENGTH - 3) + "..."
+        title_descript.setOnClickListener {
+            val transition: Transition = ChangeBounds()
+            transition.duration = 100
+            if (title_descript.text.length == 200) {
+                title_descript.text = descript
+            } else {
+                title_descript.text = descript.substring(0, DESCRIPTION_LENGTH - 3) + "..."
+            }
+            TransitionManager.beginDelayedTransition(title_holder, transition)
         }
-        title_descript.text = descript
+
         var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
         if (!ratTxt.contains('.')) ratTxt += ".0"
         title_rating.text = "Rated: $ratTxt"
