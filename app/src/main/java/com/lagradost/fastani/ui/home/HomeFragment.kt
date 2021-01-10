@@ -8,6 +8,9 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.transition.ChangeBounds
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.fastani.*
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
@@ -210,6 +213,10 @@ class HomeFragment : Fragment() {
                     }
                 }
             }
+
+            val transition: Transition = ChangeBounds()
+            transition.duration = 100
+
             displayCardData(data?.trendingData, trendingScrollView)
             displayCardData(data?.recentlyAddedData, recentScrollView)
 
@@ -233,6 +240,7 @@ class HomeFragment : Fragment() {
             main_scroll.alpha = 1f
             main_reload_data_btt.alpha = 0f
             main_reload_data_btt.isClickable = false
+            TransitionManager.beginDelayedTransition(main_scroll, transition)
             main_layout.setPadding(0, MainActivity.statusHeight, 0, 0)
         }
     }
