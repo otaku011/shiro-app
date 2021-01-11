@@ -1,5 +1,5 @@
 <resources>
-    <string name="version_code">1.0.6 Public Beta</string>
+    <string name="version_code">2.0.0 Public Release</string>
     <string name="changelog">\n
         - Added Anilist integration\n
         - Added next airing episode countdown\n

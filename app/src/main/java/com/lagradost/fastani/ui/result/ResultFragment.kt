@@ -881,14 +881,14 @@ class ResultFragment : Fragment() {
             .replace("</i>", "")
             .replace("\n", " ")
 
-        title_descript.text = descript.substring(0, DESCRIPTION_LENGTH - 3) + "..."
+        title_descript.text = descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH - 3)) + "..."
         title_descript.setOnClickListener {
             val transition: Transition = ChangeBounds()
             transition.duration = 100
             if (title_descript.text.length == 200) {
                 title_descript.text = descript
             } else {
-                title_descript.text = descript.substring(0, DESCRIPTION_LENGTH - 3) + "..."
+                title_descript.text = descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH - 3)) + "..."
             }
             TransitionManager.beginDelayedTransition(title_holder, transition)
         }

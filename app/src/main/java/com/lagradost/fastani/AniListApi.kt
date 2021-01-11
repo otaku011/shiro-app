@@ -26,12 +26,19 @@ class AniListApi {
 
         // Changing names of these will show up in UI
         enum class AniListStatusType(var value: Int) {
+            @JsonProperty("Watching")
             Watching(0),
+            @JsonProperty("Completed")
             Completed(1),
+            @JsonProperty("Paused")
             Paused(2),
+            @JsonProperty("Dropped")
             Dropped(3),
+            @JsonProperty("Planning")
             Planning(4),
+            @JsonProperty("Rewatching")
             Rewatching(5),
+            @JsonProperty("None")
             None(-1)
         }
 
@@ -455,12 +462,12 @@ class AniListApi {
     )
 
     data class AniListTitleHolder(
-        val isFavourite: Boolean,
-        val id: Int,
-        val progress: Int,
-        val episodes: Int,
-        val score: Int,
-        val type: AniListStatusType,
+        @JsonProperty("isFavourite") val isFavourite: Boolean,
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("progress") val progress: Int,
+        @JsonProperty("episodes") val episodes: Int,
+        @JsonProperty("score") val score: Int,
+        @JsonProperty("type") val type: AniListStatusType,
     )
 
     data class GetDataMediaListEntry(

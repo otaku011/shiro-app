@@ -214,8 +214,6 @@ class HomeFragment : Fragment() {
                 }
             }
 
-            val transition: Transition = ChangeBounds()
-            transition.duration = 100
 
             displayCardData(data?.trendingData, trendingScrollView)
             displayCardData(data?.recentlyAddedData, recentScrollView)
@@ -229,18 +227,20 @@ class HomeFragment : Fragment() {
                 favouriteRoot.visibility = GONE
             }
 
+            val transition: Transition = ChangeBounds()
+            transition.duration = 100
             if (data?.recentlySeen?.isNotEmpty() == true) {
                 recentlySeenRoot.visibility = VISIBLE
                 displayCardData(data.recentlySeen, recentlySeenScrollView)
             } else {
                 recentlySeenRoot.visibility = GONE
             }
+            TransitionManager.beginDelayedTransition(main_scroll, transition)
 
             main_load.alpha = 0f
             main_scroll.alpha = 1f
             main_reload_data_btt.alpha = 0f
             main_reload_data_btt.isClickable = false
-            TransitionManager.beginDelayedTransition(main_scroll, transition)
             main_layout.setPadding(0, MainActivity.statusHeight, 0, 0)
         }
     }

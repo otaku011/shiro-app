@@ -22,6 +22,22 @@
 
 # Proguard configuration for Jackson 2.x
 # Jackson
+-keep public class com.lagradost.fastani.AniListApi.**
+-keep public enum com.lagradost.fastani.AniListApi$AniListStatusType** {
+    **[] $VALUES;
+    public *;
+}
+-keep class com.lagradost.fastani.ui.result.ResultFragment.** { *; }
+
+-keepattributes *Annotation*
+
+-keep class kotlin.** { *; }
+-keep class org.jetbrains.** { *; }
+
+-keep class * {
+    enum **;
+}
+-keep class com.lagradost.fastani.ui.result.ResultFragment$loadGetDataAboutId$CardAniListInfo
 
 -keepclassmembernames class * { *;}
 # Jackson
