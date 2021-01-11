@@ -284,7 +284,7 @@ class DownloadFragmentChild() : Fragment() {
                         if (it.id == child.internalId) {
                             val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
                             card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
-                            card.progressBar.setProgress(maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0), true)
+                            card.progressBar.progress = maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0)
                             updateIcon(megaBytes)
                         }
                     }

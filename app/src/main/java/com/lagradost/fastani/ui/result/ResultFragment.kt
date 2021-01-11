@@ -488,12 +488,9 @@ class ResultFragment : Fragment() {
                                     if (it.id == child.internalId) {
                                         val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
                                         //card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
-                                        card.progressBar.setProgress(
-                                            maxOf(
-                                                minOf(megaBytes * 100 / megaBytesTotal, 100),
-                                                0
-                                            ),
-                                            true
+                                        card.progressBar.progress = maxOf(
+                                            minOf(megaBytes * 100 / megaBytesTotal, 100),
+                                            0
                                         )
                                         updateIcon(megaBytes)
                                     }
@@ -559,7 +556,7 @@ class ResultFragment : Fragment() {
                     set(value) {
                         field = maxOf(0, minOf(value, episodes))
                         requireActivity().runOnUiThread {
-                            aniList_progressbar.setProgress(field * 100 / episodes, true)
+                            aniList_progressbar.progress = field * 100 / episodes
                             anilist_progress_txt.text = "${field}/${episodes}"
                             status_text.text = type.name
                         }
