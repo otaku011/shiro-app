@@ -111,6 +111,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
     private var width = Resources.getSystem().displayMetrics.heightPixels
     private var prevDiffX = 0.0
+
     abstract class DoubleClickListener : OnTouchListener {
 
         // The time in which the second tap should be done in order to qualify as
@@ -405,18 +406,17 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 currentX = motionEvent.rawX
-                //println("DOWN: " + currentX)
+                println("DOWN: " + currentX)
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {
                 val distanceMultiplier = 2F
-                //println("MOVE: " + motionEvent.rawX)
                 val distance = (motionEvent.rawX - currentX) * distanceMultiplier
 
                 val diffX = distance * 2.0 / width
                 // Forces 'smooth' moving preventing a bug where you
                 // can make it think it moved half a screen in a frame
-                if (abs(diffX - prevDiffX) > 0.5){
+                if (abs(diffX - prevDiffX) > 0.5) {
                     return
                 }
                 prevDiffX = diffX
@@ -440,6 +440,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             }
             MotionEvent.ACTION_UP -> {
                 hasPassedSkipLimit = false
+                prevDiffX = 0.0
                 if (abs(skipTime) > 7000) {
                     exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
                 }

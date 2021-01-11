@@ -26,6 +26,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings, rootKey)
+
         var easterEggClicks = 0
         //val saveHistory = findPreference("save_history") as SwitchPreference?
         val clearHistory = findPreference("clear_history") as Preference?
@@ -100,6 +101,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
+        val isLoggedInAniList = getKeys(ANILIST_USER_KEY).isNotEmpty()
+        anilistButton?.summary = if (isLoggedInAniList) "Logged in" else "Not logged in"
         anilistButton?.setOnPreferenceClickListener {
             AniListApi.authenticate()
             return@setOnPreferenceClickListener true

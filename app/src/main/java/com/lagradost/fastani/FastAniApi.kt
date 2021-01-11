@@ -15,7 +15,8 @@ import java.lang.Exception
 import java.net.URLEncoder
 import kotlin.concurrent.thread
 
-val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
+// Makes editing donor query string in decompiled harder to find
+val url = listOf("htt","ps:/", "/ra", "w.gi", "thubu", "sercon", "tent.", "com/", "Bla", "tzar/d", "onor", "s/ma", "ster/d", "onor", "s.j", "son").joinToString("")
 
 class FastAniApi {
     data class HomePageResponse(
@@ -145,15 +146,15 @@ class FastAniApi {
                 // , headers = mapOf("Cache-Control" to "max-age=60")
                 val response = khttp.get(url).text
                 val users = mapper.readValue<List<Donor>>(response)
-                users.forEach lit@{
+                users.forEach {
                     try {
                         val androidId: String =
                             Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
-                        if (androidId.md5() == it.id || it.id == "all") {
+                        if (androidId.md5() == it.id) {
                             return it.id
                         }
                     } catch (e: Exception) {
-                        return@lit
+                        return@forEach
                     }
                 }
                 return ""

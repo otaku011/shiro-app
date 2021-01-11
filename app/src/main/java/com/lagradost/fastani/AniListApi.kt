@@ -24,6 +24,7 @@ class AniListApi {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
 
+        // Changing names of these will show up in UI
         enum class AniListStatusType(var value: Int) {
             Watching(0),
             Completed(1),
