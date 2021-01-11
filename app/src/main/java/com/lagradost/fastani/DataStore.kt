@@ -20,6 +20,7 @@ const val PLAYBACK_SPEED_KEY: String = "playback_speed" // Last used playback sp
 const val ANILIST_UNIXTIME_KEY: String = "anilist_unixtime" // When token expires
 const val ANILIST_TOKEN_KEY: String = "anilist_token" // anilist token for api
 const val ANILIST_USER_KEY: String = "anilist_user" // user data like profile
+const val MAL_USER_KEY: String = "mal_user" // user data like profile
 
 object DataStore {
 

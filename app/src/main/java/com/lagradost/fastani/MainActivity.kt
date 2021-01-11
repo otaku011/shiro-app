@@ -43,6 +43,8 @@ import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
 import java.lang.Exception
+import java.net.URL
+import java.net.URLDecoder
 import java.security.MessageDigest
 
 val Int.toPx: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
@@ -149,7 +151,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        fun openBrowser(url : String) {
+        fun openBrowser(url: String) {
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse(url)
             activity!!.startActivity(intent)
@@ -243,6 +245,18 @@ class MainActivity : AppCompatActivity() {
                     FastAniApi.requestHome(true)
                 }
             }
+        }
+
+        fun splitQuery(url: URL): Map<String, String>? {
+            val query_pairs: MutableMap<String, String> = LinkedHashMap()
+            val query: String = url.getQuery()
+            val pairs = query.split("&").toTypedArray()
+            for (pair in pairs) {
+                val idx = pair.indexOf("=")
+                query_pairs[URLDecoder.decode(pair.substring(0, idx), "UTF-8")] =
+                    URLDecoder.decode(pair.substring(idx + 1), "UTF-8")
+            }
+            return query_pairs
         }
 
         fun popCurrentPage() {
@@ -369,13 +383,16 @@ class MainActivity : AppCompatActivity() {
 
     // AUTH FOR LOGIN
     override fun onNewIntent(intent: Intent?) {
-        if(intent != null) {
+        if (intent != null) {
             val dataString = intent.dataString
-            if(dataString != null && dataString != "") {
+            if (dataString != null && dataString != "") {
                 println("GOT fastaniapp auth" + dataString)
-                if(dataString.contains("fastaniapp")) {
-                    if(dataString.contains("/anilistlogin")) {
+                if (dataString.contains("fastaniapp")) {
+                    if (dataString.contains("/anilistlogin")) {
                         AniListApi.authenticateLogin(dataString)
+                    }
+                    else if (dataString.contains("/mallogin")) {
+                        MALApi.authenticateLogin(dataString)
                     }
                 }
             }
@@ -613,11 +630,13 @@ class MainActivity : AppCompatActivity() {
 
         if (data != null) {
             val dataString = data.toString()
-            if(dataString != "") {
+            if (dataString != "") {
                 println("GOT fastaniapp auth awake: " + dataString)
-                if(dataString.contains("fastaniapp")) {
-                    if(dataString.contains("/anilistlogin")) {
+                if (dataString.contains("fastaniapp")) {
+                    if (dataString.contains("/anilistlogin")) {
                         AniListApi.authenticateLogin(dataString)
+                    } else if (dataString.contains("/mallogin")) {
+                        MALApi.authenticateLogin(dataString)
                     }
                 }
             }
@@ -637,7 +656,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         } else {
-           AniListApi.initGetUser()
+            AniListApi.initGetUser()
         }
     }
 }

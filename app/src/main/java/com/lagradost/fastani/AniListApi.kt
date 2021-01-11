@@ -13,8 +13,8 @@ import java.net.URLDecoder
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
-const val CLIENT_ID = "4636"
-const val ACCOUNT_ID = "0" // MIGHT WANT TO BE USED IF YOU WANT MULTIPLE ACCOUNT LOGINS
+const val ANILIST_CLIENT_ID = "4636"
+const val ANILIST_ACCOUNT_ID = "0" // MIGHT WANT TO BE USED IF YOU WANT MULTIPLE ACCOUNT LOGINS
 
 class AniListApi {
     companion object {
@@ -56,32 +56,20 @@ class AniListApi {
         }
 
         fun authenticate() {
-            val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$CLIENT_ID&response_type=token";
+            val request = "https://anilist.co/api/v2/oauth/authorize?client_id=$ANILIST_CLIENT_ID&response_type=token";
             MainActivity.openBrowser(request);
         }
 
         fun initGetUser() {
-            if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ACCOUNT_ID, null) == null) return
+            if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) == null) return
             thread {
                 getUser()
             }
         }
 
-        fun splitQuery(url: URL): Map<String, String>? {
-            val query_pairs: MutableMap<String, String> = LinkedHashMap()
-            val query: String = url.getQuery()
-            val pairs = query.split("&").toTypedArray()
-            for (pair in pairs) {
-                val idx = pair.indexOf("=")
-                query_pairs[URLDecoder.decode(pair.substring(0, idx), "UTF-8")] =
-                    URLDecoder.decode(pair.substring(idx + 1), "UTF-8")
-            }
-            return query_pairs
-        }
-
         fun authenticateLogin(data: String) {
             try {
-                val sanitizer = splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?")))!! // FIX ERROR
+                val sanitizer = MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?")))!! // FIX ERROR
                 val token = sanitizer["access_token"]!!
                 val expiresIn = sanitizer["expires_in"]!!
                 println("DATA: " + token + "|" + expiresIn)
@@ -89,8 +77,8 @@ class AniListApi {
                 val unixTime = System.currentTimeMillis() / 1000L
                 val endTime = unixTime + expiresIn.toLong()
 
-                DataStore.setKey(ANILIST_UNIXTIME_KEY, ACCOUNT_ID, endTime)
-                DataStore.setKey(ANILIST_TOKEN_KEY, ACCOUNT_ID, token)
+                DataStore.setKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, endTime)
+                DataStore.setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
 
                 println("ANILIST LOGIN DONE")
                 thread {
@@ -103,7 +91,7 @@ class AniListApi {
 
         fun checkToken(): Boolean {
             val unixTime = System.currentTimeMillis() / 1000L
-            if (unixTime > DataStore.getKey(ANILIST_UNIXTIME_KEY, ACCOUNT_ID, 0L)!!) {
+            if (unixTime > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
                     builder.apply {
@@ -138,7 +126,7 @@ class AniListApi {
                         headers = mapOf(
                             "Authorization" to "Bearer " + DataStore.getKey(
                                 ANILIST_TOKEN_KEY,
-                                ACCOUNT_ID,
+                                ANILIST_ACCOUNT_ID,
                                 ""
                             )!!
                         ),
@@ -266,7 +254,7 @@ class AniListApi {
                     u.avatar.large,
                 )
                 if (setSettings) {
-                    DataStore.setKey(ANILIST_USER_KEY, ACCOUNT_ID, user)
+                    DataStore.setKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID, user)
                 }
                 /* // TODO FIX FAVS
                 for(i in u.favourites.anime.nodes) {

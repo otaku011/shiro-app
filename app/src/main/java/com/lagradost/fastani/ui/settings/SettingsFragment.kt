@@ -108,6 +108,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
+        val malButton = findPreference("mal_setting_btt") as Preference?
+        val isLoggedInMAL = getKeys(MAL_USER_KEY).isNotEmpty()
+        malButton?.summary = if (isLoggedInMAL) "Logged in" else "Not logged in"
+        malButton?.setOnPreferenceClickListener {
+            MALApi.authenticate()
+            return@setOnPreferenceClickListener true
+        }
+
         // Changelog
         val changeLog = findPreference("changelog") as Preference?
         changeLog?.setOnPreferenceClickListener {

@@ -8,8 +8,6 @@ import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
-import android.text.InputFilter
-import android.text.TextUtils
 import android.transition.ChangeBounds
 import android.transition.Transition
 import android.transition.TransitionManager
@@ -745,7 +743,7 @@ class ResultFragment : Fragment() {
                     currentAniListId = currentData.id
                     currentMalId = currentData.idMal
                     println("GET DATA ABOUT: " + currentAniListId)
-                    if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ACCOUNT_ID, null) != null) {
+                    if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null) {
                         loadGetDataAboutId()
                     }
                 } catch (e: Exception) {

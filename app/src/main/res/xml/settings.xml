@@ -121,6 +121,11 @@
                 android:icon="@drawable/ic_anilist_icon"
         />
         <Preference
+                android:title="MAL account"
+                app:key="mal_setting_btt"
+                android:icon="@drawable/ic_anilist_icon"
+        />
+        <Preference
                 android:title="Donor ID"
                 app:key="donator_id"
                 android:icon="@drawable/ic_baseline_perm_identity_24"
