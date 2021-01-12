@@ -31,7 +31,6 @@ import android.os.SystemClock
 import android.preference.PreferenceManager
 import android.view.*
 import android.view.View.*
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.exoplayer2.*
@@ -108,11 +107,12 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
+    private val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
     private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
     private var width = Resources.getSystem().displayMetrics.heightPixels
     private var prevDiffX = 0.0
 
-    abstract class DoubleClickListener : OnTouchListener {
+    abstract class DoubleClickListener(ctx: PlayerFragment) : OnTouchListener {
 
         // The time in which the second tap should be done in order to qualify as
         // a double click
@@ -122,10 +122,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         private var clicksLeft = 0
         private var clicksRight = 0
         private var fingerLeftScreen = true
-        private val width = Resources.getSystem().displayMetrics.heightPixels
-        private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
-        private val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
-
+        private val ctx = ctx
         abstract fun onDoubleClickRight(clicks: Int)
         abstract fun onDoubleClickLeft(clicks: Int)
         abstract fun onSingleClick()
@@ -143,12 +140,12 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 if (event.action == MotionEvent.ACTION_DOWN) {
                     fingerLeftScreen = false
 
-                    if (doubleTapEnabled) {
+                    if (ctx.doubleTapEnabled && !ctx.isLocked) {
                         timestampLastClick = SystemClock.elapsedRealtime()
                         Thread.sleep(doubleClickQualificationSpanInMillis)
                         if ((SystemClock.elapsedRealtime() - timestampLastClick) < doubleClickQualificationSpanInMillis) {
-                            if (event.rawX >= width / 2) {
-                                println("${event.rawX} $width")
+                            if (event.rawX >= ctx.width / 2) {
+                                //println("${event.rawX} ${ctx.width}")
                                 clicksRight++
                                 activity?.runOnUiThread {
                                     onDoubleClickRight(clicksRight)
@@ -483,7 +480,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         })*/
 
 
-        class Listener : DoubleClickListener() {
+        class Listener : DoubleClickListener(this) {
             // Declaring a seekAnimation here will cause a bug
 
             override fun onDoubleClickRight(clicks: Int) {
