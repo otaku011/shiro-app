@@ -100,7 +100,7 @@ class ResultFragment : Fragment() {
         fun newInstance(data: FastAniApi.Card) =
             ResultFragment().apply {
                 arguments = Bundle().apply {
-                    println(data)
+                    //println(data)
                     putString("data", mapper.writeValueAsString(data))
                 }
             }
@@ -299,7 +299,7 @@ class ResultFragment : Fragment() {
                 }
 
                 val pro = MainActivity.getViewPosDur(data!!.anilistId, index, epIndex)
-                println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
+                //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
                     if (progress < 5) {

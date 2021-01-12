@@ -406,7 +406,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 currentX = motionEvent.rawX
-                println("DOWN: " + currentX)
+                //println("DOWN: " + currentX)
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {

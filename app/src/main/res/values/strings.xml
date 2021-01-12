@@ -1,18 +1,7 @@
 <resources>
-    <string name="version_code">2.0.0 Public Release</string>
+    <string name="version_code">2.0.1 Public Release</string>
     <string name="changelog">\n
-        - Added Anilist integration\n
-        - Added next airing episode countdown\n
-        - Added Compact search view\n
-        - Added playback speed\n
-        - Added double tap to seek\n
-        - Tapping on the description will now show the whole description\n
-        - Lowered APK size\n
-        - Fixed swipe to seek (hopefully)\n
-        - Fixed resume watching time not displaying correctly\n
-        - Fixed donor status not working sometimes due to ddos guard\n
-        - Possible fix to keyboard getting opened when reopening app\n
-        - Possible fix to progress not getting saved when exiting player\n
+        - Fixed crash\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>

@@ -76,7 +76,7 @@ class SearchFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                println(newText)
+                //println(newText)
                 return true
             }
         })

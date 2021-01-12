@@ -39,6 +39,11 @@
 }
 -keep class com.lagradost.fastani.ui.result.ResultFragment$loadGetDataAboutId$CardAniListInfo
 
+-keep        class android.support.v13.** { *; }
+-keep        class android.support.v7.** { *; }
+-keep        class android.support.v4.** { *; }
+-keep class androidx.mediarouter.app.MediaRouteActionProvider { public <methods>; }
+-keep public class androidx.mediarouter.app.MediaRouteActionProvider { public <methods>; }
 -keepclassmembernames class * { *;}
 # Jackson
 -keep @com.fasterxml.jackson.annotation.JsonIgnoreProperties class * { *; }

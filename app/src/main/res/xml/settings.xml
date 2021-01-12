@@ -123,6 +123,7 @@
         <Preference
                 android:title="MAL account"
                 app:key="mal_setting_btt"
+                app:isPreferenceVisible="false"
                 android:icon="@drawable/ic_anilist_icon"
         />
         <Preference
