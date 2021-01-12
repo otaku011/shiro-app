@@ -301,7 +301,12 @@ class AniListApi {
                 data = mapOf("query" to q)
             ).text
             if (data == "") return null
-            return mapper.readValue(data)
+            return try {
+                mapper.readValue(data)
+            } catch (e : Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
         fun getAllSeasons(id: Int): List<SeasonResponse?> {
@@ -314,9 +319,11 @@ class AniListApi {
                     seasons.add(season)
                     if (season.data.Media.format?.startsWith("TV") == true) {
                         season.data.Media.relations.edges.forEach {
-                            if (it.relationType == "SEQUEL" && it.node.format.startsWith("TV")) {
-                                getSeasonRecursive(it.node.id)
-                                return@forEach
+                            if(it.node.format != null) {
+                                if (it.relationType == "SEQUEL" && it.node.format.startsWith("TV")) {
+                                    getSeasonRecursive(it.node.id)
+                                    return@forEach
+                                }
                             }
                         }
                     }
@@ -385,7 +392,7 @@ class AniListApi {
 
     data class SeasonNode(
         @JsonProperty("id") val id: Int,
-        @JsonProperty("format") val format: String,
+        @JsonProperty("format") val format: String?,
         @JsonProperty("nextAiringEpisode") val nextAiringEpisode: SeasonNextAiringEpisode?,
     )
 
