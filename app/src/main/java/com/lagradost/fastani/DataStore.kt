@@ -17,8 +17,14 @@ const val VIEWSTATE_KEY: String = "viewstate" // BOOKMARK/FAVORITE BookmarkedTit
 const val DOWNLOAD_CHILD_KEY: String = "dload_child" // DownloadFileMetadata
 const val DOWNLOAD_PARENT_KEY: String = "dload_parent" // DownloadParentFileMetadata
 const val PLAYBACK_SPEED_KEY: String = "playback_speed" // Last used playback speed
+
 const val ANILIST_UNIXTIME_KEY: String = "anilist_unixtime" // When token expires
+const val MAL_UNIXTIME_KEY: String = "mal_unixtime" // When token expires
+
 const val ANILIST_TOKEN_KEY: String = "anilist_token" // anilist token for api
+const val MAL_TOKEN_KEY: String = "mal_token" // anilist token for api
+const val MAL_REFRESH_TOKEN_KEY: String = "mal_refresh_token" // refresh token
+
 const val ANILIST_USER_KEY: String = "anilist_user" // user data like profile
 const val MAL_USER_KEY: String = "mal_user" // user data like profile
 

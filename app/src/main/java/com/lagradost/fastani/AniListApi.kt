@@ -26,19 +26,12 @@ class AniListApi {
 
         // Changing names of these will show up in UI
         enum class AniListStatusType(var value: Int) {
-            @JsonProperty("Watching")
             Watching(0),
-            @JsonProperty("Completed")
             Completed(1),
-            @JsonProperty("Paused")
             Paused(2),
-            @JsonProperty("Dropped")
             Dropped(3),
-            @JsonProperty("Planning")
             Planning(4),
-            @JsonProperty("Rewatching")
             Rewatching(5),
-            @JsonProperty("None")
             None(-1)
         }
 
@@ -74,8 +67,7 @@ class AniListApi {
                 val expiresIn = sanitizer["expires_in"]!!
                 println("DATA: " + token + "|" + expiresIn)
 
-                val unixTime = System.currentTimeMillis() / 1000L
-                val endTime = unixTime + expiresIn.toLong()
+                val endTime = MainActivity.UnixTime() + expiresIn.toLong()
 
                 DataStore.setKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, endTime)
                 DataStore.setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
@@ -90,8 +82,7 @@ class AniListApi {
         }
 
         fun checkToken(): Boolean {
-            val unixTime = System.currentTimeMillis() / 1000L
-            if (unixTime > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
+            if (MainActivity.UnixTime() > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
                 val alertDialog: AlertDialog? = activity?.let {
                     val builder = AlertDialog.Builder(it)
                     builder.apply {

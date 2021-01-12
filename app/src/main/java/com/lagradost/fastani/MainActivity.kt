@@ -98,6 +98,10 @@ class MainActivity : AppCompatActivity() {
 
         var focusRequest: AudioFocusRequest? = null
 
+        fun UnixTime() : Long {
+            return  System.currentTimeMillis() / 1000L
+        }
+
         fun getViewKey(data: PlayerData): String {
             return getViewKey(
                 if (data.card != null) data.card.anilistId else data.anilistId!!,
