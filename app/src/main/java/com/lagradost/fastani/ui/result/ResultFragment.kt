@@ -544,19 +544,18 @@ class ResultFragment : Fragment() {
         //MALApi.allTitles.get(currentMalId)
 
         if (holder != null || malHolder != null) {
-
             class CardAniListInfo {
                 // Sets to watching if anything is done
                 fun typeGetter(): AniListStatusType {
-                    if (malHolder != null) {
+                    return if (malHolder?.my_list_status != null) {
                         var type = fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status.status))
                         type =
                             if (type.value == MALApi.Companion.MalStatusType.None.value) AniListStatusType.Watching else type
-                        return type
+                        type
                     } else {
                         val type =
                             if (holder!!.type == AniListStatusType.None) AniListStatusType.Watching else holder.type
-                        return fromIntToAnimeStatus(type.value)
+                        fromIntToAnimeStatus(type.value)
                     }
                 }
 
@@ -579,7 +578,7 @@ class ResultFragment : Fragment() {
                         this::type.setter.call(type)
                     }
                 var progress =
-                    if (malHolder != null) malHolder.my_list_status.num_episodes_watched else holder!!.progress
+                    if (malHolder?.my_list_status != null) malHolder.my_list_status.num_episodes_watched else holder!!.progress
                     set(value) {
                         field = maxOf(0, minOf(value, episodes))
                         requireActivity().runOnUiThread {
@@ -611,15 +610,13 @@ class ResultFragment : Fragment() {
                             this.type.value = AniListStatusType.Watching.value
                         }*/
                     }
-                var score = if (malHolder != null) malHolder.my_list_status.score else holder!!.score
+                var score = if (malHolder?.my_list_status != null) malHolder.my_list_status.score else holder!!.score
                     set(value) {
                         field = value
                         requireActivity().runOnUiThread {
                             rating_text.text = if (value == 0) "Rate" else value.toString()
                             status_text.text = type.name
                         }
-
-
                     }
                 var episodes = if (malHolder != null) malHolder.num_episodes else holder!!.episodes
 

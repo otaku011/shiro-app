@@ -105,18 +105,22 @@ class MALApi {
 
         val allTitles = hashMapOf<Int, MalTitleHolder>()
 
-        fun getDataAboutId(id: Int):  MalAnime {
-            // https://myanimelist.net/apiconfig/references/api/v2#operation/anime_anime_id_get
-            val url = "https://api.myanimelist.net/v2/anime/$id?fields=id,title,num_episodes,my_list_status"
-            val res = khttp.get(
-                url, headers = mapOf(
-                    "Authorization" to "Bearer " + DataStore.getKey<String>(
-                        MAL_TOKEN_KEY,
-                        MAL_ACCOUNT_ID
-                    )!!
-                )
-            ).text
-            return mapper.readValue(res)
+        fun getDataAboutId(id: Int): MalAnime? {
+            return try {
+                // https://myanimelist.net/apiconfig/references/api/v2#operation/anime_anime_id_get
+                val url = "https://api.myanimelist.net/v2/anime/$id?fields=id,title,num_episodes,my_list_status"
+                val res = khttp.get(
+                    url, headers = mapOf(
+                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                            MAL_TOKEN_KEY,
+                            MAL_ACCOUNT_ID
+                        )!!
+                    )
+                ).text
+                mapper.readValue<MalAnime>(res)
+            } catch (e : Exception) {
+                null
+            }
         }
 
         fun setAllMalData() {
@@ -212,7 +216,7 @@ class MALApi {
                 num_watched_episodes
             )
             if (res != "") {
-                try {
+                return try {
                     val status = mapper.readValue<MalStatus>(res)
                     if (allTitles.containsKey(id)) {
                         val currentTitle = allTitles[id]!!
@@ -220,10 +224,10 @@ class MALApi {
                     } else {
                         allTitles[id] = MalTitleHolder(status, id, "")
                     }
-                    return true
+                    true
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    return false
+                    false
                 }
             } else {
                 return false
@@ -302,7 +306,7 @@ class MALApi {
         @JsonProperty("id") val id: Int,
         @JsonProperty("title") val title: String,
         @JsonProperty("num_episodes") val num_episodes: Int,
-        @JsonProperty("my_list_status") val my_list_status: MalStatus
+        @JsonProperty("my_list_status") val my_list_status: MalStatus?
     )
 
     data class MalTitleHolder(
