@@ -14,7 +14,7 @@ android {
         versionCode 9
         versionName "2.0.1"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -60,8 +60,6 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.2'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.13.1'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation "io.karn:khttp-android:0.1.2"
     implementation "androidx.preference:preference-ktx:1.1.1"

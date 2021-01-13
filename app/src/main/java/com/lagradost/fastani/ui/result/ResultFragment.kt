@@ -44,6 +44,8 @@ import com.lagradost.fastani.AniListApi.Companion.postDataAboutId
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.DataStore.mapper
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
+import com.lagradost.fastani.MALApi.Companion.malStatusAsString
+import com.lagradost.fastani.MALApi.Companion.setAllMalData
 import com.lagradost.fastani.MALApi.Companion.setScoreRequest
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
@@ -528,12 +530,37 @@ class ResultFragment : Fragment() {
     var currentMalId: Int? = null
 
     private fun loadGetDataAboutId() {
-        val holder = AniListApi.getDataAboutId(currentAniListId)
+        val hasAniList = DataStore.getKey<String>(
+            ANILIST_TOKEN_KEY,
+            ANILIST_ACCOUNT_ID,
+            null
+        ) != null
+        val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
 
-        if (holder != null) {
+
+        val malHolder = if (hasMAL) currentMalId?.let { MALApi.getDataAboutId(it) } else null
+        val holder = if (hasAniList && !hasMAL) AniListApi.getDataAboutId(currentAniListId) else null
+        //setAllMalData()
+        //MALApi.allTitles.get(currentMalId)
+
+        if (holder != null || malHolder != null) {
+
             class CardAniListInfo {
                 // Sets to watching if anything is done
-                var type = if (holder.type == AniListStatusType.None) AniListStatusType.Watching else holder.type
+                fun typeGetter(): AniListStatusType {
+                    if (malHolder != null) {
+                        var type = fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status.status))
+                        type =
+                            if (type.value == MALApi.Companion.MalStatusType.None.value) AniListStatusType.Watching else type
+                        return type
+                    } else {
+                        val type =
+                            if (holder!!.type == AniListStatusType.None) AniListStatusType.Watching else holder.type
+                        return fromIntToAnimeStatus(type.value)
+                    }
+                }
+
+                var type = typeGetter()
                     set(value) {
                         //field = value
                         println("Changed type")
@@ -551,7 +578,8 @@ class ResultFragment : Fragment() {
                         println("Invoked setter")
                         this::type.setter.call(type)
                     }
-                var progress = holder.progress
+                var progress =
+                    if (malHolder != null) malHolder.my_list_status.num_episodes_watched else holder!!.progress
                     set(value) {
                         field = maxOf(0, minOf(value, episodes))
                         requireActivity().runOnUiThread {
@@ -583,7 +611,7 @@ class ResultFragment : Fragment() {
                             this.type.value = AniListStatusType.Watching.value
                         }*/
                     }
-                var score = holder.score
+                var score = if (malHolder != null) malHolder.my_list_status.score else holder!!.score
                     set(value) {
                         field = value
                         requireActivity().runOnUiThread {
@@ -593,15 +621,20 @@ class ResultFragment : Fragment() {
 
 
                     }
-                var episodes = holder.episodes
-                var id = holder.id
-                var idMal = currentMalId
+                var episodes = if (malHolder != null) malHolder.num_episodes else holder!!.episodes
 
                 fun syncData() {
                     thread {
-                        val anilistPost = postDataAboutId(id, type, score, progress)
+                        val anilistPost = postDataAboutId(currentAniListId, type, score, progress)
                         val malPost =
-                            idMal?.let { setScoreRequest(it, MALApi.fromIntToAnimeStatus(type.value), score, progress) }
+                            currentMalId?.let {
+                                setScoreRequest(
+                                    it,
+                                    MALApi.fromIntToAnimeStatus(type.value),
+                                    score,
+                                    progress
+                                )
+                            }
                         if (!anilistPost || malPost?.not() == true) {
                             requireActivity().runOnUiThread {
                                 Toast.makeText(
@@ -616,8 +649,10 @@ class ResultFragment : Fragment() {
             }
 
             val info = CardAniListInfo()
-            info.episodes = maxOf(info.episodes,
-                data!!.cdnData.seasons[currentSeasonIndex].episodes.size) // TO REMOVE DIVIDE BY 0 ERROR
+            info.episodes = maxOf(
+                info.episodes,
+                data!!.cdnData.seasons[currentSeasonIndex].episodes.size
+            ) // TO REMOVE DIVIDE BY 0 ERROR
             activity!!.runOnUiThread {
                 val transition: Transition = ChangeBounds()
                 transition.duration = 100 // DURATION OF ANIMATION IN MS
@@ -626,7 +661,7 @@ class ResultFragment : Fragment() {
                 aniList_progressbar.progress = info.progress * 100 / info.episodes
                 anilist_progress_txt.text = "${info.progress}/${info.episodes}"
                 anilist_btt_holder.visibility = VISIBLE
-                status_text.text = if (holder.type.value == AniListStatusType.None.value) "Status" else info.type.name
+                status_text.text = if (info.type.value == AniListStatusType.None.value) "Status" else info.type.name
                 rating_text.text = if (info.score == 0) "Rate" else info.score.toString()
                 TransitionManager.beginDelayedTransition(title_holder, transition)
 
@@ -749,8 +784,12 @@ class ResultFragment : Fragment() {
                     currentMalId = currentData.idMal
                     println("GET DATA ABOUT: " + currentAniListId)
                     println("ANI" + DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null))
-                    if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null || DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null) {
-                        println("YEET")
+                    if (DataStore.getKey<String>(
+                            ANILIST_TOKEN_KEY,
+                            ANILIST_ACCOUNT_ID,
+                            null
+                        ) != null || DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+                    ) {
                         loadGetDataAboutId()
                     }
                 } catch (e: Exception) {

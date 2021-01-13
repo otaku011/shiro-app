@@ -52,10 +52,13 @@ class MALApi {
                             //println("cc::::: " + codeVerifier)
                             res = khttp.post(
                                 "https://myanimelist.net/v1/oauth2/token",
-                                data = mapOf("client_id" to MAL_CLIENT_ID,
+                                data = mapOf(
+                                    "client_id" to MAL_CLIENT_ID,
                                     "code" to currentCode,
                                     "code_verifier" to codeVerifier,
-                                    "grant_type" to "authorization_code")).text
+                                    "grant_type" to "authorization_code"
+                                )
+                            ).text
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -88,9 +91,12 @@ class MALApi {
             try {
                 val res = khttp.post(
                     "https://myanimelist.net/v1/oauth2/token",
-                    data = mapOf("client_id" to MAL_CLIENT_ID,
+                    data = mapOf(
+                        "client_id" to MAL_CLIENT_ID,
                         "grant_type" to "refresh_token",
-                        "refresh_token" to DataStore.getKey<String>(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)!!)).text
+                        "refresh_token" to DataStore.getKey<String>(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)!!
+                    )
+                ).text
                 storeToken(res)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -98,6 +104,20 @@ class MALApi {
         }
 
         val allTitles = hashMapOf<Int, MalTitleHolder>()
+
+        fun getDataAboutId(id: Int):  MalAnime {
+            // https://myanimelist.net/apiconfig/references/api/v2#operation/anime_anime_id_get
+            val url = "https://api.myanimelist.net/v2/anime/$id?fields=id,title,num_episodes,my_list_status"
+            val res = khttp.get(
+                url, headers = mapOf(
+                    "Authorization" to "Bearer " + DataStore.getKey<String>(
+                        MAL_TOKEN_KEY,
+                        MAL_ACCOUNT_ID
+                    )!!
+                )
+            ).text
+            return mapper.readValue(res)
+        }
 
         fun setAllMalData() {
             val user: String = "@me"
@@ -108,8 +128,13 @@ class MALApi {
             while (!isDone) {
                 val res = khttp.get(
                     "https://api.myanimelist.net/v2/users/$user/animelist?fields=list_status&limit=1000&offset=${index * 1000}",
-                    headers = mapOf("Authorization" to "Bearer " + DataStore.getKey<String>(MAL_TOKEN_KEY,
-                        MAL_ACCOUNT_ID)!!)).text
+                    headers = mapOf(
+                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                            MAL_TOKEN_KEY,
+                            MAL_ACCOUNT_ID
+                        )!!
+                    )
+                ).text
                 val values = mapper.readValue<MalRoot>(res)
                 val titles = values.data.map { MalTitleHolder(it.list_status, it.node.id, it.node.title) }
                 for (t in titles) {
@@ -131,8 +156,13 @@ class MALApi {
             return try {
                 val res = khttp.get(
                     "https://api.myanimelist.net/v2/users/@me",
-                    headers = mapOf("Authorization" to "Bearer " + DataStore.getKey<String>(MAL_TOKEN_KEY,
-                        MAL_ACCOUNT_ID)!!)).text
+                    headers = mapOf(
+                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                            MAL_TOKEN_KEY,
+                            MAL_ACCOUNT_ID
+                        )!!
+                    )
+                ).text
 
                 val user = mapper.readValue<MalUser>(res)
                 if (setSettings) {
@@ -175,10 +205,12 @@ class MALApi {
             score: Int? = null,
             num_watched_episodes: Int? = null,
         ): Boolean {
-            val res = setScoreRequest(id,
+            val res = setScoreRequest(
+                id,
                 if (status == null) null else malStatusAsString[status.value],
                 score,
-                num_watched_episodes)
+                num_watched_episodes
+            )
             if (res != "") {
                 try {
                     val status = mapper.readValue<MalStatus>(res)
@@ -207,8 +239,12 @@ class MALApi {
             return try {
                 khttp.put(
                     "https://api.myanimelist.net/v2/anime/$id/my_list_status",
-                    headers = mapOf("Authorization" to "Bearer " + DataStore.getKey<String>(MAL_TOKEN_KEY,
-                        MAL_ACCOUNT_ID)!!),
+                    headers = mapOf(
+                        "Authorization" to "Bearer " + DataStore.getKey<String>(
+                            MAL_TOKEN_KEY,
+                            MAL_ACCOUNT_ID
+                        )!!
+                    ),
                     data = mapOf("status" to status, "score" to score, "num_watched_episodes" to num_watched_episodes)
                 ).text
             } catch (e: Exception) {
@@ -259,6 +295,14 @@ class MALApi {
         @JsonProperty("location") val location: String,
         @JsonProperty("joined_at") val joined_at: String,
         @JsonProperty("picture") val picture: String,
+    )
+
+    // Used for getDataAboutId()
+    data class MalAnime(
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("title") val title: String,
+        @JsonProperty("num_episodes") val num_episodes: Int,
+        @JsonProperty("my_list_status") val my_list_status: MalStatus
     )
 
     data class MalTitleHolder(

@@ -123,7 +123,7 @@
         <Preference
                 android:title="MAL account"
                 app:key="mal_setting_btt"
-                android:icon="@drawable/ic_anilist_icon"
+                android:icon="@drawable/mal_logo"
         />
         <Preference
                 android:title="Donor ID"
