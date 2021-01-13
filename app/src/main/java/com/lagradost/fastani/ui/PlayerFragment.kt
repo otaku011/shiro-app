@@ -441,6 +441,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 if (abs(skipTime) > 7000) {
                     exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
                 }
+                skipTime = 0
+
                 val fadeAnimation = AlphaAnimation(1f, 0f)
 
                 fadeAnimation.duration = 100

@@ -49,7 +49,7 @@ class MALApi {
                     thread {
                         var res = ""
                         try {
-                            println("cc::::: " + codeVerifier)
+                            //println("cc::::: " + codeVerifier)
                             res = khttp.post(
                                 "https://myanimelist.net/v1/oauth2/token",
                                 data = mapOf("client_id" to MAL_CLIENT_ID,
@@ -62,7 +62,7 @@ class MALApi {
 
                         if (res != "") {
                             storeToken(res)
-                            println("GOT MAL MASTER TOKEN:::: " + res)
+                            //println("GOT MAL MASTER TOKEN:::: " + res)
                         }
                     }
                 }
@@ -174,7 +174,7 @@ class MALApi {
             status: MalStatusType? = null,
             score: Int? = null,
             num_watched_episodes: Int? = null,
-        ) {
+        ): Boolean {
             val res = setScoreRequest(id,
                 if (status == null) null else malStatusAsString[status.value],
                 score,
@@ -188,11 +188,14 @@ class MALApi {
                     } else {
                         allTitles[id] = MalTitleHolder(status, id, "")
                     }
+                    return true
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    return false
                 }
+            } else {
+                return false
             }
-
         }
 
         private fun setScoreRequest(

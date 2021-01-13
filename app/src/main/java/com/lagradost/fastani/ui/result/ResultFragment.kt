@@ -44,6 +44,7 @@ import com.lagradost.fastani.AniListApi.Companion.postDataAboutId
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.DataStore.mapper
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
+import com.lagradost.fastani.MALApi.Companion.setScoreRequest
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.openBrowser
@@ -527,7 +528,7 @@ class ResultFragment : Fragment() {
     var currentMalId: Int? = null
 
     private fun loadGetDataAboutId() {
-        var holder = AniListApi.getDataAboutId(currentAniListId)
+        val holder = AniListApi.getDataAboutId(currentAniListId)
 
         if (holder != null) {
             class CardAniListInfo {
@@ -594,10 +595,14 @@ class ResultFragment : Fragment() {
                     }
                 var episodes = holder.episodes
                 var id = holder.id
+                var idMal = currentMalId
 
                 fun syncData() {
                     thread {
-                        if (!postDataAboutId(id, type, score, progress)) {
+                        val anilistPost = postDataAboutId(id, type, score, progress)
+                        val malPost =
+                            idMal?.let { setScoreRequest(it, MALApi.fromIntToAnimeStatus(type.value), score, progress) }
+                        if (!anilistPost || malPost?.not() == true) {
                             requireActivity().runOnUiThread {
                                 Toast.makeText(
                                     requireContext(),
@@ -743,7 +748,9 @@ class ResultFragment : Fragment() {
                     currentAniListId = currentData.id
                     currentMalId = currentData.idMal
                     println("GET DATA ABOUT: " + currentAniListId)
-                    if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null) {
+                    println("ANI" + DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null))
+                    if (DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null || DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null) {
+                        println("YEET")
                         loadGetDataAboutId()
                     }
                 } catch (e: Exception) {

@@ -90,7 +90,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         donatorId?.setOnPreferenceClickListener {
             val clipboard = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip: ClipData = ClipData.newPlainText("ID", encodedString)
-            clipboard.primaryClip = clip
+            clipboard.setPrimaryClip(clip)
             Toast.makeText(
                 context!!,
                 "Copied donor ID, give this to the devs to enable donor mode (if you have donated)",
@@ -101,7 +101,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
-        val isLoggedInAniList = getKeys(ANILIST_USER_KEY).isNotEmpty()
+        val isLoggedInAniList = DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
         anilistButton?.summary = if (isLoggedInAniList) "Logged in" else "Not logged in"
         anilistButton?.setOnPreferenceClickListener {
             AniListApi.authenticate()
@@ -109,7 +109,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         val malButton = findPreference("mal_setting_btt") as Preference?
-        val isLoggedInMAL = getKeys(MAL_USER_KEY).isNotEmpty()
+        val isLoggedInMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
         malButton?.summary = if (isLoggedInMAL) "Logged in" else "Not logged in"
         malButton?.setOnPreferenceClickListener {
             MALApi.authenticate()

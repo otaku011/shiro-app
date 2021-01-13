@@ -125,7 +125,7 @@ class FastAniApi {
                     versionRegex.findAll(response.text).sortedWith(compareBy {
                         it.groupValues[2]
                     }).toList().lastOrNull()
-                val currentVersion = activity?.packageManager?.getPackageInfo(activity?.packageName, 0)
+                val currentVersion = activity?.packageName?.let { activity?.packageManager?.getPackageInfo(it, 0) }
                 //println(found.groupValues)
                 //println(currentVersion?.versionName)
 

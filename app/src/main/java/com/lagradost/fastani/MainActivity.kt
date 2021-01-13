@@ -394,8 +394,7 @@ class MainActivity : AppCompatActivity() {
                 if (dataString.contains("fastaniapp")) {
                     if (dataString.contains("/anilistlogin")) {
                         AniListApi.authenticateLogin(dataString)
-                    }
-                    else if (dataString.contains("/mallogin")) {
+                    } else if (dataString.contains("/mallogin")) {
                         MALApi.authenticateLogin(dataString)
                     }
                 }
@@ -478,7 +477,7 @@ class MainActivity : AppCompatActivity() {
         override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
             if (mediaButtonEvent != null) {
 
-                val event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as KeyEvent
+                val event = mediaButtonEvent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT) as KeyEvent
                 println("EVENT: " + event.keyCode)
                 when (event.keyCode) {
                     KeyEvent.KEYCODE_MEDIA_PAUSE -> onPlayerEvent.invoke(PlayerEventType.Pause)
