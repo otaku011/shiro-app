@@ -99,20 +99,83 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
+        fun isLoggedIntoMal(): Boolean {
+            return DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        }
+
+        fun isLoggedIntoAniList(): Boolean {
+            return DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
+        }
+
 
         val anilistButton = findPreference("anilist_setting_btt") as Preference?
-        val isLoggedInAniList = DataStore.getKey<String>(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, null) != null
+        val isLoggedInAniList = isLoggedIntoAniList()
         anilistButton?.summary = if (isLoggedInAniList) "Logged in" else "Not logged in"
         anilistButton?.setOnPreferenceClickListener {
-            AniListApi.authenticate()
+            if (!isLoggedIntoAniList()) {
+                AniListApi.authenticate()
+            } else {
+                val alertDialog: AlertDialog? = activity?.let {
+                    val builder = AlertDialog.Builder(it)
+                    builder.apply {
+                        setPositiveButton("Logout",
+                            DialogInterface.OnClickListener { dialog, id ->
+                                DataStore.removeKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID)
+                                DataStore.removeKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID)
+                                DataStore.removeKey(ANILIST_USER_KEY, ANILIST_ACCOUNT_ID)
+                                anilistButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
+                            })
+                        setNegativeButton("Cancel",
+                            DialogInterface.OnClickListener { dialog, id ->
+                                // User cancelled the dialog
+                            })
+                    }
+                    // Set other dialog properties
+                    builder.setTitle("Logout of AniList")
+
+                    // Create the AlertDialog
+                    builder.create()
+                }
+                alertDialog?.show()
+
+            }
+            anilistButton.summary = if (isLoggedIntoAniList()) "Logged in" else "Not logged in"
+
             return@setOnPreferenceClickListener true
         }
 
         val malButton = findPreference("mal_setting_btt") as Preference?
-        val isLoggedInMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
+        val isLoggedInMAL = isLoggedIntoMal()
         malButton?.summary = if (isLoggedInMAL) "Logged in" else "Not logged in"
         malButton?.setOnPreferenceClickListener {
-            MALApi.authenticate()
+            if (!isLoggedIntoMal()) {
+                MALApi.authenticate()
+            } else {
+                val alertDialog: AlertDialog? = activity?.let {
+                    val builder = AlertDialog.Builder(it)
+                    builder.apply {
+                        setPositiveButton("Logout",
+                            DialogInterface.OnClickListener { dialog, id ->
+                                DataStore.removeKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID)
+                                DataStore.removeKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID)
+                                DataStore.removeKey(MAL_USER_KEY, MAL_ACCOUNT_ID)
+                                DataStore.removeKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)
+                                malButton.summary = if (isLoggedIntoMal()) "Logged in" else "Not logged in"
+                            })
+                        setNegativeButton("Cancel",
+                            DialogInterface.OnClickListener { dialog, id ->
+                                // User cancelled the dialog
+                            })
+                    }
+                    // Set other dialog properties
+                    builder.setTitle("Logout of MAL")
+
+                    // Create the AlertDialog
+                    builder.create()
+                }
+                alertDialog?.show()
+            }
+
             return@setOnPreferenceClickListener true
         }
 
