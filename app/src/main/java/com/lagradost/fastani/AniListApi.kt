@@ -62,7 +62,8 @@ class AniListApi {
 
         fun authenticateLogin(data: String) {
             try {
-                val sanitizer = MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?")))!! // FIX ERROR
+                val sanitizer =
+                    MainActivity.splitQuery(URL(data.replace("fastaniapp", "https").replace("/#", "?")))!! // FIX ERROR
                 val token = sanitizer["access_token"]!!
                 val expiresIn = sanitizer["expires_in"]!!
                 println("DATA: " + token + "|" + expiresIn)
@@ -83,25 +84,27 @@ class AniListApi {
 
         fun checkToken(): Boolean {
             if (MainActivity.UnixTime() > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
-                val alertDialog: AlertDialog? = activity?.let {
-                    val builder = AlertDialog.Builder(it)
-                    builder.apply {
-                        setPositiveButton("Login",
-                            DialogInterface.OnClickListener { dialog, id ->
-                                authenticate()
-                            })
-                        setNegativeButton("Cancel",
-                            DialogInterface.OnClickListener { dialog, id ->
-                                // User cancelled the dialog
-                            })
-                    }
-                    // Set other dialog properties
-                    builder.setTitle("AniList token has expired")
+                activity!!.runOnUiThread {
+                    val alertDialog: AlertDialog? = activity?.let {
+                        val builder = AlertDialog.Builder(it)
+                        builder.apply {
+                            setPositiveButton("Login",
+                                DialogInterface.OnClickListener { dialog, id ->
+                                    authenticate()
+                                })
+                            setNegativeButton("Cancel",
+                                DialogInterface.OnClickListener { dialog, id ->
+                                    // User cancelled the dialog
+                                })
+                        }
+                        // Set other dialog properties
+                        builder.setTitle("AniList token has expired")
 
-                    // Create the AlertDialog
-                    builder.create()
+                        // Create the AlertDialog
+                        builder.create()
+                    }
+                    alertDialog?.show()
                 }
-                alertDialog?.show()
                 return true
             } else {
                 return false
@@ -294,7 +297,7 @@ class AniListApi {
             if (data == "") return null
             return try {
                 mapper.readValue(data)
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
                 null
             }
@@ -310,7 +313,7 @@ class AniListApi {
                     seasons.add(season)
                     if (season.data.Media.format?.startsWith("TV") == true) {
                         season.data.Media.relations.edges.forEach {
-                            if(it.node.format != null) {
+                            if (it.node.format != null) {
                                 if (it.relationType == "SEQUEL" && it.node.format.startsWith("TV")) {
                                     getSeasonRecursive(it.node.id)
                                     return@forEach

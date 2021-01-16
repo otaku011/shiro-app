@@ -131,7 +131,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             })
                     }
                     // Set other dialog properties
-                    builder.setTitle("Logout of AniList")
+                    builder.setTitle("Logout from AniList")
 
                     // Create the AlertDialog
                     builder.create()
@@ -168,7 +168,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             })
                     }
                     // Set other dialog properties
-                    builder.setTitle("Logout of MAL")
+                    builder.setTitle("Logout from MAL")
 
                     // Create the AlertDialog
                     builder.create()

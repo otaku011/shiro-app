@@ -536,7 +536,7 @@ class ResultFragment : Fragment() {
             null
         ) != null
         val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
-
+        println("HAS MAL $hasMAL HASANI $hasAniList")
 
         val malHolder = if (hasMAL) currentMalId?.let { MALApi.getDataAboutId(it) } else null
         val holder = if (hasAniList && !hasMAL) AniListApi.getDataAboutId(currentAniListId) else null
@@ -547,8 +547,8 @@ class ResultFragment : Fragment() {
             class CardAniListInfo {
                 // Sets to watching if anything is done
                 fun typeGetter(): AniListStatusType {
-                    return if (malHolder?.my_list_status != null) {
-                        var type = fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status.status))
+                    return if (malHolder != null) {
+                        var type = fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
                         type =
                             if (type.value == MALApi.Companion.MalStatusType.None.value) AniListStatusType.Watching else type
                         type
@@ -574,7 +574,7 @@ class ResultFragment : Fragment() {
                     set(value) {
                         field = value
                         // Invoke setter
-                        println("Invoked setter")
+                        // println("Invoked setter")
                         this::type.setter.call(type)
                     }
                 var progress =
@@ -622,8 +622,10 @@ class ResultFragment : Fragment() {
 
                 fun syncData() {
                     thread {
-                        val anilistPost = postDataAboutId(currentAniListId, type, score, progress)
-                        val malPost =
+
+                        val anilistPost =
+                            if (hasAniList) postDataAboutId(currentAniListId, type, score, progress) else true
+                        val malPost = if (hasMAL)
                             currentMalId?.let {
                                 setScoreRequest(
                                     it,
@@ -631,7 +633,7 @@ class ResultFragment : Fragment() {
                                     score,
                                     progress
                                 )
-                            }
+                            } else true
                         if (!anilistPost || malPost?.not() == true) {
                             requireActivity().runOnUiThread {
                                 Toast.makeText(
