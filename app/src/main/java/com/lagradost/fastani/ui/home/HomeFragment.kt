@@ -13,6 +13,7 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.fastani.*
+import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MainActivity.Companion.loadPlayer
 import com.lagradost.fastani.ui.GlideApp
@@ -22,6 +23,9 @@ import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_schedule.view.*
 import kotlinx.android.synthetic.main.home_recently_seen.view.*
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset.UTC
 import kotlin.concurrent.thread
 
 const val MAXIMUM_FADE = 0.3f
@@ -169,9 +173,12 @@ class HomeFragment : Fragment() {
                             .load(glideUrl)
                             .into(card.imageView)
                     }
+                    
+                    val date = LocalDateTime.parse(cardInfo.timeUntilAiring.substring(0, 23))
+                    val unixTime = date.atZone(UTC).toEpochSecond()
+                    val difference = unixTime - System.currentTimeMillis()/1000
 
-                    card.scheduleText.text = "70:59:59"
-
+                    card.scheduleText.text = secondsToReadable(difference.toInt())
                     card.imageView.setOnLongClickListener {
                         Toast.makeText(context, title, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true

@@ -340,8 +340,11 @@ class AniListApi {
             val minutes = TimeUnit.SECONDS
                 .toMinutes(secondsLong)
             secondsLong -= TimeUnit.MINUTES.toSeconds(minutes)
-
-            return "${if (days != 0L) "$days" + "d " else ""}${if (hours != 0L && days != 0L) "$hours" + "h " else ""}${minutes}m"
+            if (minutes < 0){
+                return "Now"
+            }
+            println("$days $hours $minutes")
+            return "${if (days != 0L) "$days" + "d " else ""}${if (hours != 0L) "$hours" + "h " else ""}${minutes}m"
         }
     }
 
