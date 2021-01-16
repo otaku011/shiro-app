@@ -18,7 +18,9 @@ import com.lagradost.fastani.MainActivity.Companion.loadPlayer
 import com.lagradost.fastani.ui.GlideApp
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
+import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
+import kotlinx.android.synthetic.main.home_card_schedule.view.*
 import kotlinx.android.synthetic.main.home_recently_seen.view.*
 import kotlin.concurrent.thread
 
@@ -49,6 +51,7 @@ class HomeFragment : Fragment() {
             recentScrollView.removeAllViews()
             favouriteScrollView.removeAllViews()
             recentlySeenScrollView.removeAllViews()
+            scheduleScrollView.removeAllViews()
 
             val cardInfo = data?.homeSlidesData?.get(0)
             val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
@@ -134,6 +137,44 @@ class HomeFragment : Fragment() {
                         if (cardInfo != null) {
                             MainActivity.loadPage(cardInfo)
                         }
+                    }
+                    scrollView.addView(card)
+                }
+            }
+
+            fun displayCardData(data: List<FastAniApi.ScheduleItem?>?, scrollView: LinearLayout) {
+                data?.forEach { cardInfo ->
+                    val card: View = layoutInflater.inflate(R.layout.home_card_schedule, null)
+                    var title = ""
+                    title = when {
+                        cardInfo?.media?.title?.english != null -> {
+                            cardInfo.media.title.english
+                        }
+                        cardInfo?.media?.title?.romaji != null -> {
+                            cardInfo.media.title.romaji
+                        }
+                        cardInfo?.media?.title?.native != null -> {
+                            cardInfo.media.title.native
+                        }
+                        else -> {
+                            return@forEach
+                        }
+                    }
+                    card.imageText.text = title
+                    val glideUrl =
+                        GlideUrl(cardInfo.media.coverImage.large) { FastAniApi.currentHeaders }
+                    //  activity?.runOnUiThread {
+                    context?.let {
+                        GlideApp.with(it)
+                            .load(glideUrl)
+                            .into(card.imageView)
+                    }
+
+                    card.scheduleText.text = "70:59:59"
+
+                    card.imageView.setOnLongClickListener {
+                        Toast.makeText(context, title, Toast.LENGTH_SHORT).show()
+                        return@setOnLongClickListener true
                     }
                     scrollView.addView(card)
                 }
@@ -225,6 +266,14 @@ class HomeFragment : Fragment() {
                 displayCardData(data.favorites, favouriteScrollView)
             } else {
                 favouriteRoot.visibility = GONE
+            }
+
+            if (data?.schedule?.isNotEmpty() == true) {
+                scheduleRoot.visibility = VISIBLE
+                //println(data.favorites!!.map { it?.title?.english})
+                displayCardData(data.schedule, scheduleScrollView)
+            } else {
+                scheduleRoot.visibility = GONE
             }
 
             val transition: Transition = ChangeBounds()

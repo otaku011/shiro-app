@@ -16,7 +16,24 @@ import java.net.URLEncoder
 import kotlin.concurrent.thread
 
 // Makes editing donor query string in decompiled harder to find
-val url = listOf("htt","ps:/", "/ra", "w.gi", "thubu", "sercon", "tent.", "com/", "Bla", "tzar/d", "onor", "s/ma", "ster/d", "onor", "s.j", "son").joinToString("")
+val url = listOf(
+    "htt",
+    "ps:/",
+    "/ra",
+    "w.gi",
+    "thubu",
+    "sercon",
+    "tent.",
+    "com/",
+    "Bla",
+    "tzar/d",
+    "onor",
+    "s/ma",
+    "ster/d",
+    "onor",
+    "s.j",
+    "son"
+).joinToString("")
 
 class FastAniApi {
     data class HomePageResponse(
@@ -26,6 +43,7 @@ class FastAniApi {
         @JsonProperty("trendingData") val trendingData: List<Card>,
         @JsonProperty("favorites") var favorites: List<BookmarkedTitle?>?,
         @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?,
+        @JsonProperty("schedule") var schedule: List<ScheduleItem?>?,
     )
 
     data class Token(
@@ -37,6 +55,12 @@ class FastAniApi {
         @JsonProperty("romaji") val romaji: String,
         @JsonProperty("english") val english: String,
         @JsonProperty("native") val native: String
+    )
+
+    data class ScheduleTitle(
+        @JsonProperty("romaji") val romaji: String?,
+        @JsonProperty("english") val english: String?,
+        @JsonProperty("native") val native: String?
     )
 
     data class EndDate(
@@ -71,6 +95,21 @@ class FastAniApi {
         @JsonProperty("description") val description: String,
         @JsonProperty("cdnData") val cdnData: CdnData,
         @JsonProperty("genres") val genres: List<String>,
+    )
+
+    data class ScheduleItem(
+        @JsonProperty("episode") val episode: Int,
+        @JsonProperty("timeUntilAiring") val timeUntilAiring: String,
+        @JsonProperty("media") val media: ScheduleMediaItem
+    )
+
+
+
+    data class ScheduleMediaItem(
+        @JsonProperty("averageScore") val averageScore: Int?,
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("coverImage") val coverImage: CoverImage,
+        @JsonProperty("title") val title: ScheduleTitle,
     )
 
     data class AnimeData(@JsonProperty("cards") val cards: List<Card>)
@@ -238,6 +277,16 @@ class FastAniApi {
             return getHome(canBeCached)
         }
 
+        private fun getSchedule(): List<ScheduleItem>? {
+            val url = "https://fastani.net/api/schedule"
+            val res = currentHeaders?.let {
+                khttp.get(url, headers = it.toMap())
+            }
+            return if (res != null) {
+                mapper.readValue(res.text)
+            } else null
+        }
+
         fun getHome(canBeCached: Boolean): HomePageResponse? {
             var res: HomePageResponse? = null
             if (canBeCached && cachedHome != null) {
@@ -256,6 +305,7 @@ class FastAniApi {
             }
             res.favorites = getFav()
             res.recentlySeen = getLastWatch()
+            res.schedule = getSchedule()
 
             cachedHome = res
             onHomeFetched.invoke(res)
