@@ -104,7 +104,6 @@ class FastAniApi {
     )
 
 
-
     data class ScheduleMediaItem(
         @JsonProperty("averageScore") val averageScore: Int?,
         @JsonProperty("id") val id: Int,
@@ -296,7 +295,10 @@ class FastAniApi {
                 val response =
                     currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
                 res = response?.text?.let { mapper.readValue(it) }
+                res?.schedule = getSchedule()
             }
+            // Anything below here shouldn't do network requests (network on main thread)
+            // (card.removeButton.setOnClickListener {requestHome(true)})
 
             if (res == null) {
                 hasThrownError = 0
@@ -305,7 +307,6 @@ class FastAniApi {
             }
             res.favorites = getFav()
             res.recentlySeen = getLastWatch()
-            res.schedule = getSchedule()
 
             cachedHome = res
             onHomeFetched.invoke(res)

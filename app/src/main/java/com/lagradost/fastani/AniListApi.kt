@@ -343,7 +343,7 @@ class AniListApi {
             if (minutes < 0){
                 return "Now"
             }
-            println("$days $hours $minutes")
+            //println("$days $hours $minutes")
             return "${if (days != 0L) "$days" + "d " else ""}${if (hours != 0L) "$hours" + "h " else ""}${minutes}m"
         }
     }

@@ -173,10 +173,10 @@ class HomeFragment : Fragment() {
                             .load(glideUrl)
                             .into(card.imageView)
                     }
-                    
+
                     val date = LocalDateTime.parse(cardInfo.timeUntilAiring.substring(0, 23))
                     val unixTime = date.atZone(UTC).toEpochSecond()
-                    val difference = unixTime - System.currentTimeMillis()/1000
+                    val difference = unixTime - System.currentTimeMillis() / 1000
 
                     card.scheduleText.text = secondsToReadable(difference.toInt())
                     card.imageView.setOnLongClickListener {
@@ -243,7 +243,7 @@ class HomeFragment : Fragment() {
 
                         card.removeButton.setOnClickListener {
                             DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
-                            FastAniApi.requestHome(true)
+                            requestHome(true)
                         }
 
                         if (cardInfo.dur > 0 && cardInfo.pos > 0) {
