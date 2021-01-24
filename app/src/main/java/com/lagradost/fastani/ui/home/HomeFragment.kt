@@ -178,7 +178,7 @@ class HomeFragment : Fragment() {
                     val unixTime = date.atZone(UTC).toEpochSecond()
                     val difference = unixTime - System.currentTimeMillis() / 1000
 
-                    card.scheduleText.text = secondsToReadable(difference.toInt())
+                    card.scheduleText.text = secondsToReadable(difference.toInt(), "Released")
                     card.imageView.setOnLongClickListener {
                         Toast.makeText(context, title, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true

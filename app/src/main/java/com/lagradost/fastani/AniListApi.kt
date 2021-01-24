@@ -327,7 +327,7 @@ class AniListApi {
             return seasons.toList()
         }
 
-        fun secondsToReadable(seconds: Int): String {
+        fun secondsToReadable(seconds: Int, completedValue: String): String {
             var secondsLong = seconds.toLong()
             val days = TimeUnit.SECONDS
                 .toDays(secondsLong)
@@ -341,7 +341,7 @@ class AniListApi {
                 .toMinutes(secondsLong)
             secondsLong -= TimeUnit.MINUTES.toSeconds(minutes)
             if (minutes < 0){
-                return "Now"
+                return completedValue
             }
             //println("$days $hours $minutes")
             return "${if (days != 0L) "$days" + "d " else ""}${if (hours != 0L) "$hours" + "h " else ""}${minutes}m"

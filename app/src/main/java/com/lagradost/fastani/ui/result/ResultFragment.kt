@@ -815,7 +815,7 @@ class ResultFragment : Fragment() {
                     if (seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
 
                         title_duration.text =
-                            data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!)
+                            data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!, "Now")
                     } else {
                         title_duration.text =
                             data!!.duration.toString() + "min | Completed"
