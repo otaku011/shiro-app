@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
-import com.lagradost.fastani.MainActivity.Companion.isInResult
+import com.lagradost.fastani.MainActivity.Companion.isDonor
 import com.lagradost.fastani.MainActivity.Companion.md5
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -253,7 +253,7 @@ object DownloadManager {
 
     fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
         // IsInResult == isDonor
-        if (!isInResult) { // FINAL CHECK
+        if (!isDonor) { // FINAL CHECK
             Toast.makeText(activity, txt, Toast.LENGTH_SHORT).show()
             return
         }

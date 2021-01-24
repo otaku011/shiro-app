@@ -15,26 +15,6 @@ import java.lang.Exception
 import java.net.URLEncoder
 import kotlin.concurrent.thread
 
-// Makes editing donor query string in decompiled harder to find
-val url = listOf(
-    "htt",
-    "ps:/",
-    "/ra",
-    "w.gi",
-    "thubu",
-    "sercon",
-    "tent.",
-    "com/",
-    "Bla",
-    "tzar/d",
-    "onor",
-    "s/ma",
-    "ster/d",
-    "onor",
-    "s.j",
-    "son"
-).joinToString("")
-
 class FastAniApi {
     data class HomePageResponse(
         @JsonProperty("animeData") val animeData: AnimeData,
@@ -178,7 +158,9 @@ class FastAniApi {
         }
 
         @SuppressLint("HardwareIds")
-        fun gd(): String {
+        // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
+        fun getDonorStatus(): String {
+            val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
             try {
                 // Change cache with this
                 // , headers = mapOf("Cache-Control" to "max-age=60")

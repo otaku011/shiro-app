@@ -35,7 +35,7 @@ import kotlin.concurrent.thread
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.fastani.FastAniApi.Companion.getCardById
-import com.lagradost.fastani.FastAniApi.Companion.gd
+import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerEventType
 import com.lagradost.fastani.ui.PlayerFragment
@@ -91,15 +91,15 @@ class MainActivity : AppCompatActivity() {
         var statusHeight: Int = 0
         var activity: MainActivity? = null
         var canShowPipMode: Boolean = false
-        var isInResult: Boolean = false
+        var isDonor: Boolean = false
 
         var onPlayerEvent = Event<PlayerEventType>()
         var onAudioFocusEvent = Event<Boolean>()
 
         var focusRequest: AudioFocusRequest? = null
 
-        fun UnixTime() : Long {
-            return  System.currentTimeMillis() / 1000L
+        fun UnixTime(): Long {
+            return System.currentTimeMillis() / 1000L
         }
 
         fun getViewKey(data: PlayerData): String {
@@ -522,7 +522,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
         @SuppressLint("HardwareIds")
-        val i: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
+        val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
         if (settingsManager.getBoolean("rotation_enabled", false)) {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
@@ -534,7 +534,8 @@ class MainActivity : AppCompatActivity() {
             FastAniApi.init()
         }
         thread {
-            isInResult = gd() == i
+            // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
+            isDonor = getDonorStatus() == androidId
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

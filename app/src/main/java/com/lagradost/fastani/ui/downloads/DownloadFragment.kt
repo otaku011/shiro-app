@@ -13,7 +13,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.fastani.*
-import com.lagradost.fastani.MainActivity.Companion.isInResult
+import com.lagradost.fastani.MainActivity.Companion.isDonor
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.fragment_download.*
 import java.io.File
@@ -43,7 +43,7 @@ class DownloadFragment : Fragment() {
             val childKeys = DataStore.getKeys(DOWNLOAD_CHILD_KEY)
 
             downloadCenterText.text =
-                if (isInResult) getString(R.string.resultpage1) else getString(R.string.resultpage2)
+                if (isDonor) getString(R.string.resultpage1) else getString(R.string.resultpage2)
             downloadCenterRoot.visibility = if (childKeys.isEmpty()) VISIBLE else GONE
 
             for (k in childKeys) {

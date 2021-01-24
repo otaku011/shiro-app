@@ -45,7 +45,6 @@ import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.DataStore.mapper
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MALApi.Companion.malStatusAsString
-import com.lagradost.fastani.MALApi.Companion.setAllMalData
 import com.lagradost.fastani.MALApi.Companion.setScoreRequest
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
@@ -235,7 +234,7 @@ class ResultFragment : Fragment() {
 
                 val key = MainActivity.getViewKey(data!!.anilistId, index, epIndex)
 
-                if (MainActivity.isInResult) {
+                if (MainActivity.isDonor) {
                     card.cdi.setOnClickListener {
                         if (data != null) {
                             DownloadManager.downloadEpisode(
@@ -315,7 +314,7 @@ class ResultFragment : Fragment() {
                     card.video_progress.alpha = 0f
                 }
 
-                if (MainActivity.isInResult) {
+                if (MainActivity.isDonor) {
                     val internalId = (data!!.anilistId + "S${index}E${epIndex}").hashCode()
                     val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(
                         DOWNLOAD_CHILD_KEY,
