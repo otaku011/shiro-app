@@ -31,6 +31,8 @@ import android.os.SystemClock
 import android.preference.PreferenceManager
 import android.view.*
 import android.view.View.*
+import android.widget.Toast
+import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.exoplayer2.*
@@ -634,7 +636,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         super.onSaveInstanceState(outState)
     }
 
-
     private fun initPlayer() {
         // NEEDED FOR HEADERS
         var currentUrl = getCurrentUrl()
@@ -740,6 +741,32 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 updatePIPModeActions()
                 if (playWhenReady && playbackState == Player.STATE_READY) {
                     MainActivity.requestAudioFocus()
+                }
+            }
+
+            override fun onPlayerError(error: ExoPlaybackException) {
+                // Lets pray this doesn't spam Toasts :)
+                when (error.type) {
+                    ExoPlaybackException.TYPE_SOURCE -> {
+                        Toast.makeText(activity, "Source error\n" + error.sourceException.message, LENGTH_LONG).show()
+                    }
+                    ExoPlaybackException.TYPE_RENDERER -> {
+                        Toast.makeText(activity, "Renderer error\n" + error.rendererException.message, LENGTH_LONG).show()
+                    }
+                    ExoPlaybackException.TYPE_UNEXPECTED -> {
+                        Toast.makeText(
+                            activity,
+                            "Unexpected player error\n" + error.unexpectedException.message,
+                            LENGTH_LONG
+                        ).show()
+                    }
+                    ExoPlaybackException.TYPE_TIMEOUT -> {
+                        Toast.makeText(
+                            activity,
+                            "Timeout error\n" + error.unexpectedException.message,
+                            LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         })
