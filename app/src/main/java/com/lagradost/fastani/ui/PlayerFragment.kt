@@ -24,6 +24,7 @@ import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.content.pm.ActivityInfo
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
 import android.net.Uri
@@ -750,20 +751,18 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                     ExoPlaybackException.TYPE_SOURCE -> {
                         Toast.makeText(activity, "Source error\n" + error.sourceException.message, LENGTH_LONG).show()
                     }
+                    ExoPlaybackException.TYPE_REMOTE -> {
+                        Toast.makeText(activity, "Remote error", LENGTH_LONG)
+                            .show()
+                    }
                     ExoPlaybackException.TYPE_RENDERER -> {
-                        Toast.makeText(activity, "Renderer error\n" + error.rendererException.message, LENGTH_LONG).show()
+                        Toast.makeText(activity, "Renderer error\n" + error.rendererException.message, LENGTH_LONG)
+                            .show()
                     }
                     ExoPlaybackException.TYPE_UNEXPECTED -> {
                         Toast.makeText(
                             activity,
                             "Unexpected player error\n" + error.unexpectedException.message,
-                            LENGTH_LONG
-                        ).show()
-                    }
-                    ExoPlaybackException.TYPE_TIMEOUT -> {
-                        Toast.makeText(
-                            activity,
-                            "Timeout error\n" + error.unexpectedException.message,
                             LENGTH_LONG
                         ).show()
                     }
@@ -789,6 +788,9 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        // When restarting activity the rotation is ensured :)
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+
         if (Util.SDK_INT <= 23) {
             initPlayer()
             if (player_view != null) player_view.onResume()

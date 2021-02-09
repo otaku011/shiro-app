@@ -2,22 +2,18 @@ package com.lagradost.fastani.ui.downloads
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import com.google.android.gms.cast.framework.CastContext
 import com.lagradost.fastani.*
@@ -80,14 +76,18 @@ class DownloadFragmentChild() : Fragment() {
         val episodeKeys = DownloadFragment.childMetadataKeys[anilistId]
         val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, anilistId!!)
         download_header_text.text = parent?.title?.english
+        // Sorts by Seasons and Episode Index
+        val sortedEpisodeKeys =
+            episodeKeys!!.associateBy({ DataStore.getKey<DownloadManager.DownloadFileMetadata>(it) }, { it }).toList()
+                .sortedBy { (key, _) -> "${key?.seasonIndex}${key?.episodeIndex}" }.toMap()
 
-        for (k in episodeKeys!!) {
-            val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(k)
+        sortedEpisodeKeys.forEach {
+            val child = it.key
 
             if (child != null) {
                 val file = File(child.videoPath)
                 if (!file.exists()) {
-                    continue
+                    return@forEach
                 }
 
                 val card: View = layoutInflater.inflate(R.layout.episode_result_downloaded, null)
@@ -128,7 +128,7 @@ class DownloadFragmentChild() : Fragment() {
                     }
                     activity?.runOnUiThread {
                         card.visibility = GONE
-                        DataStore.removeKey(k)
+                        DataStore.removeKey(it.value)
                         Toast.makeText(
                             context,
                             "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",

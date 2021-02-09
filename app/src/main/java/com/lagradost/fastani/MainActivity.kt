@@ -432,7 +432,9 @@ class MainActivity : AppCompatActivity() {
                 enterPictureInPictureMode()
             }
         } else {
-            enterPictureInPictureMode()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                enterPictureInPictureMode()
+            }
         }
     }
 
@@ -450,6 +452,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        println("RESUMED!!!")
+        // This is needed to avoid NPE crash due to missing context
+        DataStore.init(this)
+        DownloadManager.init(this)
         if (isInPlayer) {
             hideSystemUI()
         }
@@ -521,6 +527,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
+        DataStore.init(this)
+        DownloadManager.init(this)
+
         @SuppressLint("HardwareIds")
         val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
@@ -590,7 +599,7 @@ class MainActivity : AppCompatActivity() {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
     }*/
-        mediaSession = MediaSessionCompat(activity, "fastani").apply {
+        mediaSession = MediaSessionCompat(activity!!, "fastani").apply {
 
             setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
@@ -615,8 +624,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
 
-        DataStore.init(this)
-        DownloadManager.init(this)
         navController = findNavController(R.id.nav_host_fragment)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

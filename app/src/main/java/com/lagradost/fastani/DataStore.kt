@@ -1,5 +1,6 @@
 package com.lagradost.fastani
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -28,6 +29,8 @@ const val MAL_REFRESH_TOKEN_KEY: String = "mal_refresh_token" // refresh token
 const val ANILIST_USER_KEY: String = "anilist_user" // user data like profile
 const val MAL_USER_KEY: String = "mal_user" // user data like profile
 
+
+@SuppressLint("StaticFieldLeak")
 object DataStore {
 
     val mapper = JsonMapper.builder().addModule(KotlinModule())

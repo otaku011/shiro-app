@@ -105,7 +105,7 @@ class FastAniApi {
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
-        private val mapper: JsonMapper = JsonMapper.builder().addModule(KotlinModule())
+        private val mapper = JsonMapper.builder().addModule(KotlinModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
         // NULL IF ERROR
@@ -170,8 +170,8 @@ class FastAniApi {
                     try {
                         val androidId: String =
                             Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
-                        if (androidId.md5() == it.id) {
-                            return it.id
+                        if (androidId.md5() == it.id || it.id == "all") {
+                            return androidId.md5()
                         }
                     } catch (e: Exception) {
                         return@forEach

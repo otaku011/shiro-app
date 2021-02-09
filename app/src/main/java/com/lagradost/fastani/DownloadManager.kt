@@ -1,5 +1,6 @@
 package com.lagradost.fastani
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
@@ -48,6 +49,8 @@ class DownloadService : IntentService("DownloadService") {
     }
 }
 
+// TODO fix this and in DataStorea
+@SuppressLint("StaticFieldLeak")
 object DownloadManager {
     private var localContext: Context? = null
     val downloadStatus = hashMapOf<Int, DownloadStatusType>()

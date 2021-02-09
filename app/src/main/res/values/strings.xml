@@ -1,9 +1,9 @@
 <resources>
-    <string name="version_code">2.1.0 Public Release</string>
+    <string name="version_code">2.1.1 Public Release</string>
     <string name="changelog">\n
-        - Added MAL sync\n
-        - Added Schedule\n
-        - Added Banana\n
+            - Now working on 5.0.0+ (hopefully)\n
+            - Fixed rare crash\n
+            - Added link to github\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>

@@ -5,8 +5,8 @@
              android:layout_height="match_parent"
              android:orientation="vertical"
              android:id="@+id/player_holder"
-             tools:targetApi="28"
              android:screenOrientation="landscape"
+             tools:orientation="vertical"
 >
     <View android:layout_width="match_parent"
           android:layout_height="match_parent"
