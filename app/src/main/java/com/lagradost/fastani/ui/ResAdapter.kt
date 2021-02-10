@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.activity
+import com.lagradost.fastani.ui.result.GenoResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
@@ -123,13 +124,17 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 return@setOnLongClickListener true
             }
 
-            /*cardView.setOnClickListener {
-                activity?.supportFragmentManager?.beginTransaction()
-                    ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
-                    ?.commit()
-                /*MainActivity.loadPage(card)*/
-            }*/
+            cardView.setOnClickListener {
+                thread {
+                    val data = FastAniApi.getAnimePage(card.url)
+                    println("DATATATA  $data")
+                    activity?.supportFragmentManager?.beginTransaction()
+                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        ?.add(R.id.homeRoot, GenoResultFragment.newInstance(data!!))
+                        ?.commit()
+                    /*MainActivity.loadPage(card)*/
+                }
+            }
 
             val glideUrl =
                 GlideUrl(card.posterUrl) { FastAniApi.currentHeaders }

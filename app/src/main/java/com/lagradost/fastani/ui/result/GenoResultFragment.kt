@@ -65,14 +65,13 @@ import java.io.File
 import kotlin.concurrent.thread
 
 
-const val DESCRIPTION_LENGTH = 200
+const val DESCRIPTION_LENGTH1 = 200
 
-class ResultFragment : Fragment() {
-    var data: FastAniApi.Card? = null
+class GenoResultFragment : Fragment() {
+    var data: FastAniApi.AnimePage? = null
     private lateinit var resultViewModel: ResultViewModel
     private var isMovie: Boolean = false
     var isBookmarked = false
-    private var seasons: List<AniListApi.SeasonResponse?>? = null
 
     companion object {
         var isInResults: Boolean = false
@@ -81,26 +80,17 @@ class ResultFragment : Fragment() {
         fun fixEpTitle(
             _title: String?,
             epNum: Int,
-            seNum: Int,
-            isMovie: Boolean,
             formatBefore: Boolean = false,
         ): String {
             var title = _title
             if (title == null || title.replace(" ", "") == "") {
                 title = "Episode $epNum"
             }
-            if (!isMovie) {
-                if (formatBefore) {
-                    title = "S$seNum:E$epNum $title" //•
-                } else {
-                    title = "$epNum. $title"
-                }
-            }
             return title
         }
 
-        fun newInstance(data: FastAniApi.Card) =
-            ResultFragment().apply {
+        fun newInstance(data: FastAniApi.AnimePage) =
+            GenoResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
                     putString("data", mapper.writeValueAsString(data))
@@ -116,16 +106,17 @@ class ResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
-        return inflater.inflate(R.layout.fragment_results, container, false)
+        return inflater.inflate(R.layout.fragment_results_geno, container, false)
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("data")?.let {
-            data = mapper.readValue(it, FastAniApi.Card::class.java)
+            data = mapper.readValue(it, FastAniApi.AnimePage::class.java)
+            println("DATAATATAT $data")
         }
-        isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
-        isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.anilistId)
+        //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
+        //isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.anilistId)
     }
     /*
     private fun ToggleViewState(_isViewState: Boolean) {
@@ -146,39 +137,35 @@ class ResultFragment : Fragment() {
     }
 
     private fun toggleHeart(_isBookmarked: Boolean) {
-        this.isBookmarked = _isBookmarked
+        /*this.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
         if (_isBookmarked) {
             DataStore.setKey<BookmarkedTitle>(
                 BOOKMARK_KEY,
-                data!!.anilistId,
+                data!!.url,
                 BookmarkedTitle(data!!.id, data!!.anilistId, data!!.description, data!!.title, data!!.coverImage)
             )
         } else {
-            DataStore.removeKey(BOOKMARK_KEY, data!!.anilistId)
+            DataStore.removeKey(BOOKMARK_KEY, data!!.url)
         }
         thread {
             requestHome(true)
-        }
+        }*/
     }
 
-    private fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
+    private fun castEpsiode(episodeIndex: Int) {
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
         castContext.castOptions
-        val ep = data!!.cdnData.seasons[seasonIndex].episodes[episodeIndex]
-        val poster = ep.thumb
-        val url = ep.file
-        val key = MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
+        val url = data!!.episodes[episodeIndex]
+        val key = data!!.url + episodeIndex//MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
 
         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
         movieMetadata.putString(
             MediaMetadata.KEY_TITLE,
-            fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, isMovie, true)
+            fixEpTitle(data!!.title, episodeIndex + 1, true)
         )
-        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.title.english)
-        if (poster != null) {
-            movieMetadata.addImage(WebImage(Uri.parse(poster)))
-        }
+        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.title)
+        movieMetadata.addImage(WebImage(Uri.parse(data!!.posterUrl)))
         val mediaInfo = MediaInfo.Builder(url)
             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
             .setContentType(MimeTypes.VIDEO_UNKNOWN)
@@ -205,39 +192,26 @@ class ResultFragment : Fragment() {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun loadSeason(index: Int) {
-        currentSeasonIndex = index
-        seasonChange()
+    private fun loadSeason() {
+
         title_season_cards.removeAllViews()
         var epNum = 0
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
         val save = settingsManager.getBoolean("save_history", true)
 
         // When fastani is down it doesn't report any seasons and this is needed.
-        if (data!!.cdnData.seasons.isNotEmpty()) {
-            data!!.cdnData.seasons[index].episodes.forEach { fullEpisode ->
+        if (data!!.episodes.isNotEmpty()) {
+            data!!.episodes.forEach { fullEpisode ->
                 val epIndex = epNum
                 epNum++
 
                 val card: View = layoutInflater.inflate(R.layout.episode_result, null)
-                if (fullEpisode.thumb != null) {
-                    // Can be "N/A"
-                    if (fullEpisode.thumb.startsWith("http")) {
-                        val glideUrl = GlideUrl(fullEpisode.thumb)
-                        context?.let {
-                            Glide.with(it)
-                                .load(glideUrl)
-                                .into(card.imageView)
-                        }
-                    }
-                }
+                val key = data!!.url + epIndex//MainActivity.getViewKey(data!!.url, index, epIndex)
 
-                val key = MainActivity.getViewKey(data!!.anilistId, index, epIndex)
-
-                if (MainActivity.isDonor) {
+                if (false) {
                     card.cdi.setOnClickListener {
                         if (data != null) {
-                            DownloadManager.downloadEpisode(
+                            /*DownloadManager.downloadEpisode(
                                 DownloadManager.DownloadInfo(
                                     index,
                                     epIndex,
@@ -248,7 +222,7 @@ class ResultFragment : Fragment() {
                                     data!!.cdnData.seasons[index].episodes[epIndex],
                                     data!!.coverImage.large
                                 )
-                            )
+                            )*/
                         }
                     }
                 } else {
@@ -269,11 +243,12 @@ class ResultFragment : Fragment() {
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
+
                     if (castContext.castState == CastState.CONNECTED) {
-                        castEpsiode(index, epIndex)
-                        loadSeason(index)
+                        castEpsiode(epIndex)
+                        loadSeason()
                     } else {
-                        MainActivity.loadPlayer(epIndex, index, data!!)
+                        //MainActivity.loadPlayer(epIndex, 0, data!!)
                     }
                 }
 
@@ -284,12 +259,12 @@ class ResultFragment : Fragment() {
                         } else {
                             DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                         }
-                        loadSeason(index)
+                        loadSeason()
                     }
                     return@setOnLongClickListener true
                 }
 
-                val title = fixEpTitle(fullEpisode.title, epNum, index + 1, isMovie)
+                val title = fixEpTitle(data!!.title, epNum + 1, true)
 
                 card.cardTitle.text = title
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
@@ -300,7 +275,7 @@ class ResultFragment : Fragment() {
                     )
                 }
 
-                val pro = MainActivity.getViewPosDur(data!!.anilistId, index, epIndex)
+                val pro = MainActivity.getViewPosDur(data!!.url, 0, epIndex)
                 //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
@@ -315,7 +290,7 @@ class ResultFragment : Fragment() {
                 }
 
                 if (MainActivity.isDonor) {
-                    val internalId = (data!!.anilistId + "S${index}E${epIndex}").hashCode()
+                    val internalId = (data!!.url + "E${epIndex}").hashCode()
                     val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(
                         DOWNLOAD_CHILD_KEY,
                         internalId.toString()
@@ -396,7 +371,7 @@ class ResultFragment : Fragment() {
                                 return DownloadManager.DownloadInfo(
                                     child.seasonIndex,
                                     child.episodeIndex,
-                                    data!!.title,
+                                    FastAniApi.Title(data!!.title, data!!.title, data!!.title),
                                     isMovie,
                                     child.anilistId,
                                     child.fastAniId,
@@ -513,319 +488,23 @@ class ResultFragment : Fragment() {
     }
 
     fun onLeftVideoPlayer(event: Boolean) {
-        loadSeason(currentSeasonIndex)
+        //loadSeason(currentSeasonIndex)
     }
 
     fun onDownloadStarted(anilistId: String) {
-        if (anilistId == data!!.anilistId) {
+        /*if (anilistId == data!!.anilistId) {
             activity?.runOnUiThread {
                 loadSeason(currentSeasonIndex)
             }
-        }
-    }
-
-    var currentSeasonIndex: Int = 0
-    var currentAniListId: Int = 0
-    var currentMalId: Int? = null
-
-    private fun loadGetDataAboutId() {
-        val hasAniList = DataStore.getKey<String>(
-            ANILIST_TOKEN_KEY,
-            ANILIST_ACCOUNT_ID,
-            null
-        ) != null
-        val hasMAL = DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
-        println("HAS MAL $hasMAL HASANI $hasAniList")
-
-        val malHolder = if (hasMAL) currentMalId?.let { MALApi.getDataAboutId(it) } else null
-        val holder = if (hasAniList && !hasMAL) AniListApi.getDataAboutId(currentAniListId) else null
-        //setAllMalData()
-        //MALApi.allTitles.get(currentMalId)
-
-        if (holder != null || malHolder != null) {
-            class CardAniListInfo {
-                // Sets to watching if anything is done
-                fun typeGetter(): AniListStatusType {
-                    return if (malHolder != null) {
-                        var type = fromIntToAnimeStatus(malStatusAsString.indexOf(malHolder.my_list_status?.status))
-                        type =
-                            if (type.value == MALApi.Companion.MalStatusType.None.value) AniListStatusType.Watching else type
-                        type
-                    } else {
-                        val type =
-                            if (holder!!.type == AniListStatusType.None) AniListStatusType.Watching else holder.type
-                        fromIntToAnimeStatus(type.value)
-                    }
-                }
-
-                var type = typeGetter()
-                    set(value) {
-                        //field = value
-                        println("Changed type")
-                        field = fromIntToAnimeStatus(this.typeValue)
-                        requireActivity().runOnUiThread {
-                            status_text.text = field.name
-                        }
-                    }
-
-                // This is helper class to type.value because setter on type.value isn't working.
-                var typeValue = type.value
-                    set(value) {
-                        field = value
-                        // Invoke setter
-                        // println("Invoked setter")
-                        this::type.setter.call(type)
-                    }
-                var progress =
-                    if (malHolder?.my_list_status != null) malHolder.my_list_status.num_episodes_watched else holder!!.progress
-                    set(value) {
-                        field = maxOf(0, minOf(value, episodes))
-                        requireActivity().runOnUiThread {
-                            aniList_progressbar.progress = field * 100 / episodes
-                            anilist_progress_txt.text = "${field}/${episodes}"
-                            status_text.text = type.name
-                        }
-                        requireActivity().runOnUiThread {
-                            if (progress == episodes && typeValue != AniListStatusType.Completed.value) {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "All episodes seen, marking as Completed",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                typeValue = AniListStatusType.Completed.value
-                            }
-                            if (progress != episodes && typeValue == AniListStatusType.Completed.value) {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Marking as Watching",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                typeValue = AniListStatusType.Watching.value
-                            }
-                        }
-                        /*if (field == holder.episodes) {
-                            this.type.value = AniListStatusType.Completed.value
-                        } else if (field != holder.episodes && this.type.value == AniListStatusType.Completed.value) {
-                            this.type.value = AniListStatusType.Watching.value
-                        }*/
-                    }
-                var score = if (malHolder?.my_list_status != null) malHolder.my_list_status.score else holder!!.score
-                    set(value) {
-                        field = value
-                        requireActivity().runOnUiThread {
-                            rating_text.text = if (value == 0) "Rate" else value.toString()
-                            status_text.text = type.name
-                        }
-                    }
-                var episodes = if (malHolder != null) malHolder.num_episodes else holder!!.episodes
-
-                fun syncData() {
-                    thread {
-
-                        val anilistPost =
-                            if (hasAniList) postDataAboutId(currentAniListId, type, score, progress) else true
-                        val malPost = if (hasMAL)
-                            currentMalId?.let {
-                                setScoreRequest(
-                                    it,
-                                    MALApi.fromIntToAnimeStatus(type.value),
-                                    score,
-                                    progress
-                                )
-                            } else true
-                        if (!anilistPost || malPost?.not() == true) {
-                            requireActivity().runOnUiThread {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Error updating episode progress",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                    }
-                }
-            }
-
-            val info = CardAniListInfo()
-            info.episodes = maxOf(
-                info.episodes,
-                data!!.cdnData.seasons[currentSeasonIndex].episodes.size
-            ) // TO REMOVE DIVIDE BY 0 ERROR
-            activity!!.runOnUiThread {
-                val transition: Transition = ChangeBounds()
-                transition.duration = 100 // DURATION OF ANIMATION IN MS
-
-                anilist_holder.visibility = VISIBLE
-                aniList_progressbar.progress = info.progress * 100 / info.episodes
-                anilist_progress_txt.text = "${info.progress}/${info.episodes}"
-                anilist_btt_holder.visibility = VISIBLE
-                status_text.text = if (info.type.value == AniListStatusType.None.value) "Status" else info.type.name
-                rating_text.text = if (info.score == 0) "Rate" else info.score.toString()
-                TransitionManager.beginDelayedTransition(title_holder, transition)
-
-                edit_episodes_btt.setOnClickListener {
-                    val dialog = Dialog(requireContext())
-                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    dialog.setTitle("Select episodes seen")
-                    dialog.setContentView(R.layout.number_picker_dialog)
-
-                    dialog.number_picker_episode_text.setText(info.progress.toString())
-
-                    dialog.number_picker_episode_up.setOnClickListener {
-                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                        ) 1 else minOf(dialog.number_picker_episode_text.text.toString().toInt() + 1, info.episodes)
-                        dialog.number_picker_episode_text.setText(number.toString())
-                    }
-                    dialog.number_picker_episode_down.setOnClickListener {
-                        val number = if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                        ) 0 else maxOf(dialog.number_picker_episode_text.text.toString().toInt() - 1, 0)
-                        dialog.number_picker_episode_text.setText(number.toString())
-                    }
-                    dialog.episode_progress_btt.setOnClickListener {
-                        thread {
-                            val progress =
-                                if (dialog.number_picker_episode_text.text.toString().toIntOrNull() == null
-                                ) 0 else minOf(
-                                    dialog.number_picker_episode_text.text.toString().toInt(),
-                                    info.episodes
-                                )
-                            // Applying progress after is needed
-                            info.progress = progress
-                            info.syncData()
-                            dialog.dismiss()
-                        }
-                    }
-                    dialog.show()
-                }
-
-
-                rating_btt.setOnClickListener {
-                    val dialog = Dialog(requireContext())
-                    // Lmao this needs something better
-                    val ids = listOf(
-                        R.id.rating_text_no_rating,
-                        R.id.rating_text_1,
-                        R.id.rating_text_2,
-                        R.id.rating_text_3,
-                        R.id.rating_text_4,
-                        R.id.rating_text_5,
-                        R.id.rating_text_6,
-                        R.id.rating_text_7,
-                        R.id.rating_text_8,
-                        R.id.rating_text_9,
-                        R.id.rating_text_10,
-                    )
-
-                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    dialog.setTitle("Rate")
-                    dialog.setContentView(R.layout.rating_pick_dialog)
-
-                    for (i in 0..10) {
-                        val button = dialog.findViewById<Button>(ids[i])
-                        if (i == info.score) {
-                            button.typeface = Typeface.DEFAULT_BOLD
-                        }
-                        button.setOnClickListener {
-                            info.score = i
-                            info.syncData()
-                            dialog.dismiss()
-                        }
-                    }
-                    dialog.show()
-                }
-
-                status_btt.setOnClickListener {
-                    val dialog = Dialog(requireContext())
-                    val ids = listOf(
-                        R.id.status_currently_watching,
-                        R.id.status_completed,
-                        R.id.status_paused,
-                        R.id.status_dropped,
-                        R.id.status_plan_to_watch,
-                        R.id.status_rewatching,
-                    )
-                    //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    dialog.setTitle("Pick status")
-                    dialog.setContentView(R.layout.status_picker_dialog)
-                    for (i in 0..5) {
-                        val button = dialog.findViewById<Button>(ids[i])
-                        if (i == info.typeValue) {
-                            button.typeface = Typeface.DEFAULT_BOLD
-                        }
-                        button.setOnClickListener {
-                            info.typeValue = i
-
-                            if (i == AniListStatusType.Completed.value) {
-                                info.progress = info.episodes
-                            }
-
-                            info.syncData()
-                            dialog.dismiss()
-                        }
-                    }
-                    dialog.show()
-                }
-
-                title_anilist.setOnClickListener {
-                    openBrowser("https://anilist.co/anime/${currentAniListId}")
-                }
-            }
-        }
-    }
-
-    private fun seasonChange() {
-        if (seasons != null) {
-            thread {
-                try {
-                    val currentData = seasons!![currentSeasonIndex]!!.data.Media
-                    currentAniListId = currentData.id
-                    currentMalId = currentData.idMal
-                    println("GET DATA ABOUT: " + currentAniListId)
-                    println("ANI" + DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null))
-                    if (DataStore.getKey<String>(
-                            ANILIST_TOKEN_KEY,
-                            ANILIST_ACCOUNT_ID,
-                            null
-                        ) != null || DataStore.getKey<String>(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, null) != null
-                    ) {
-                        loadGetDataAboutId()
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
+        }*/
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        currentAniListId = data!!.anilistId.toInt()
 
         hideKeyboard()
-        if (!FastAniApi.lastCards.containsKey(data!!.id)) {
-            FastAniApi.lastCards[data!!.id] = data!!
-        }
-        title_duration.text = data!!.duration.toString() + "min"
-        thread {
-            seasons = getAllSeasons(data!!.anilistId.toInt())
-            if (seasons != null) {
-                activity?.runOnUiThread {
-                    if (seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
-
-                        title_duration.text =
-                            data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(
-                                seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!,
-                                "Now"
-                            )
-                    } else {
-                        title_duration.text =
-                            data!!.duration.toString() + "min | Completed"
-                    }
-                }
-            }
-            seasonChange()
-        }
+        //title_duration.text = data!!.duration.toString() + "min"
 
         val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
@@ -872,9 +551,9 @@ class ResultFragment : Fragment() {
         )
 
         val glideUrl =
-            GlideUrl("https://fastani.net/" + data!!.bannerImage) { FastAniApi.currentHeaders }
+            GlideUrl(data!!.posterUrl)
 
-        if (data!!.trailer != null) {
+        /*if (data!!.trailer != null) {
             title_background.setOnLongClickListener {
                 Toast.makeText(context, data!!.title.english + " - Trailer", Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
@@ -888,27 +567,11 @@ class ResultFragment : Fragment() {
                 )
             }
         } else {
-            title_trailer_btt.alpha = 0f
         }
-
+*/
+        title_trailer_btt.alpha = 0f
         // SEASON SELECTOR
-        val seasonsTxt = data!!.cdnData.seasons.mapIndexed { i: Int, _: FastAniApi.Seasons -> "Season ${i + 1}" }
-        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, seasonsTxt)
-        spinner.adapter = arrayAdapter
-        class SpinnerClickListener : AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
-            override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {}
-            override fun onNothingSelected(p0: AdapterView<*>?) {}
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                loadSeason(p2)
-            }
-        }
-        if (data!!.cdnData.seasons.size <= 1) {
-            spinner.background = null
-            spinner.isEnabled = false
-            spinnerRoot.backgroundTintList = ColorStateList.valueOf(getColor(requireContext(), R.color.background));
-        }
-        spinner.onItemSelectedListener = SpinnerClickListener()
-        // loadSeason(0)
+        loadSeason()
 
         context?.let {
             GlideApp.with(it)
@@ -916,7 +579,7 @@ class ResultFragment : Fragment() {
                 .into(title_background)
         }
 
-        title_name.text = data!!.title.english
+        title_name.text = data!!.title
         val descript = data!!.description
             .replace("<br>", "")
             .replace("<i>", "")
@@ -935,10 +598,10 @@ class ResultFragment : Fragment() {
             TransitionManager.beginDelayedTransition(title_holder, transition)
         }
 
-        var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
+        /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
         if (!ratTxt.contains('.')) ratTxt += ".0"
         title_rating.text = "Rated: $ratTxt"
         title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
-
+        */
     }
 }
