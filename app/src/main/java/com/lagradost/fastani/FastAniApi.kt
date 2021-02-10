@@ -27,7 +27,8 @@ class FastAniApi {
         val title: String,
         val description: String,
         val episodes: List<String>,
-        val posterUrl: String
+        val posterUrl: String,
+        val genres: String
     )
 
 
@@ -300,13 +301,26 @@ class FastAniApi {
             val res = khttp.get(url).text
             val document = Jsoup.parse(res)
             val title = document.select("div.anime__details__title > h3").firstOrNull()?.text()
-            val episodes = document.select("div.menu1 > a.episode").map { it.attr("href") }
+            val info = document.select("div.anime__details__widget > div.row").firstOrNull()?.text()
+            val (genres) = Regex("""Genre:(.*?)Episodes""").find(info.toString())!!.destructured
+            val episodes = document.select("a.episode").map { it.attr("href") }
             val description = document.select("div.anime__details__text > p").firstOrNull()?.text()
             val poster = addFullUrl(
                 document.select("div.anime__details__pic.set-bg").firstOrNull()?.attr("data-setbg")
             )
             return if (title != null && description != null) {
-                AnimePage(url, title, description, episodes, poster)
+                AnimePage(url, title, description, episodes, poster, genres)
+            } else null
+        }
+
+        fun getVideoLink(url: String): String? {
+            val res = khttp.get(addFullUrl(url)).text
+            val document = Jsoup.parse(res)
+            val iframe = document.select("iframe").firstOrNull()?.attr("src")
+            return if (iframe != null) {
+                val videoRes = khttp.get(iframe).text
+                val videoDocument = Jsoup.parse(videoRes)
+                videoDocument.select("source").firstOrNull()?.attr("src")
             } else null
         }
 

@@ -43,6 +43,7 @@ import com.lagradost.fastani.AniListApi.Companion.getAllSeasons
 import com.lagradost.fastani.AniListApi.Companion.postDataAboutId
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.DataStore.mapper
+import com.lagradost.fastani.FastAniApi.Companion.getVideoLink
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MALApi.Companion.malStatusAsString
 import com.lagradost.fastani.MALApi.Companion.setScoreRequest
@@ -76,18 +77,6 @@ class GenoResultFragment : Fragment() {
     companion object {
         var isInResults: Boolean = false
         var isViewState: Boolean = true
-
-        fun fixEpTitle(
-            _title: String?,
-            epNum: Int,
-            formatBefore: Boolean = false,
-        ): String {
-            var title = _title
-            if (title == null || title.replace(" ", "") == "") {
-                title = "Episode $epNum"
-            }
-            return title
-        }
 
         fun newInstance(data: FastAniApi.AnimePage) =
             GenoResultFragment().apply {
@@ -162,7 +151,7 @@ class GenoResultFragment : Fragment() {
         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
         movieMetadata.putString(
             MediaMetadata.KEY_TITLE,
-            fixEpTitle(data!!.title, episodeIndex + 1, true)
+            "Episode ${episodeIndex + 1}"
         )
         movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.title)
         movieMetadata.addImage(WebImage(Uri.parse(data!!.posterUrl)))
@@ -193,13 +182,12 @@ class GenoResultFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun loadSeason() {
-
+        println("LOAD SEASON! ${data?.episodes}")
         title_season_cards.removeAllViews()
         var epNum = 0
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
         val save = settingsManager.getBoolean("save_history", true)
 
-        // When fastani is down it doesn't report any seasons and this is needed.
         if (data!!.episodes.isNotEmpty()) {
             data!!.episodes.forEach { fullEpisode ->
                 val epIndex = epNum
@@ -248,7 +236,16 @@ class GenoResultFragment : Fragment() {
                         castEpsiode(epIndex)
                         loadSeason()
                     } else {
-                        //MainActivity.loadPlayer(epIndex, 0, data!!)
+                        thread {
+                            val videoUrl = getVideoLink(data!!.episodes[epIndex])
+                            if (videoUrl != null) {
+                                MainActivity.loadPlayer("${data!!.title} - Episode ${epIndex + 1}", videoUrl, 0L)
+                            } else {
+                                requireActivity().runOnUiThread {
+                                    Toast.makeText(activity, "Failed to get video link :(", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -264,7 +261,7 @@ class GenoResultFragment : Fragment() {
                     return@setOnLongClickListener true
                 }
 
-                val title = fixEpTitle(data!!.title, epNum + 1, true)
+                val title = "Episode ${epIndex + 1}"
 
                 card.cardTitle.text = title
                 if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
@@ -601,7 +598,7 @@ class GenoResultFragment : Fragment() {
         /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
         if (!ratTxt.contains('.')) ratTxt += ".0"
         title_rating.text = "Rated: $ratTxt"
-        title_genres.text = data!!.genres.joinToString(prefix = "", postfix = "", separator = "  ") //  •
         */
+        title_genres.text = data!!.genres
     }
 }
