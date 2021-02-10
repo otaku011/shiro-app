@@ -11,11 +11,26 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.md5
 import khttp.structures.cookie.CookieJar
+import org.jsoup.Jsoup
 import java.lang.Exception
-import java.net.URLEncoder
 import kotlin.concurrent.thread
 
 class FastAniApi {
+    data class SearchResult(
+        val url: String,
+        val title: String,
+        val posterUrl: String
+    )
+
+    data class AnimePage(
+        val url: String,
+        val title: String,
+        val description: String,
+        val episodes: List<String>,
+        val posterUrl: String
+    )
+
+
     data class HomePageResponse(
         @JsonProperty("animeData") val animeData: AnimeData,
         @JsonProperty("homeSlidesData") val homeSlidesData: List<Card>,
@@ -185,18 +200,31 @@ class FastAniApi {
 
         //search via http get request, NOT INSTANT
         // ONLY PAGE 1
-        fun search(query: String, page: Int = 1): SearchResponse? {
+
+        private fun addFullUrl(url: String?): String {
+            if (url == null) return ""
+            return if (url.startsWith(".")) {
+                url.replaceFirst(".", "https://genoanime.com")
+            } else url
+
+        }
+
+        fun search(query: String, page: Int = 1): List<SearchResult> {
             // Tags and years can be added
-            val url = "https://fastani.net/api/data?page=${page}&animes=1&search=${
-                URLEncoder.encode(
-                    query,
-                    "UTF-8"
-                )
-            }&tags=&years="
+            val url = "https://genoanime.com/data/searchdata.php"
             // Security headers
-            val headers = currentToken?.headers
-            val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
-            return response?.text?.let { mapper.readValue(it) }
+            val res = khttp.post(url, data = mapOf("anime" to query)).text
+            val document = Jsoup.parse(res)
+            val searchResults = mutableListOf<SearchResult>()
+            document.select("div.product__item").forEach {
+                val animeUrl = it.select("a").getOrNull(0)?.let { it1 -> it1.attr("href") }
+                val animeTitle = it.select("a").getOrNull(0)?.let { it1 -> it1.text() }
+                val posterUrl = it.select("div.product__item__pic.set-bg").getOrNull(0)?.attr("data-setbg")
+                if (animeUrl != null && animeTitle != null && posterUrl != null) {
+                    searchResults.add(SearchResult(addFullUrl(animeUrl), animeTitle, addFullUrl(posterUrl)))
+                }
+            }
+            return searchResults
         }
 
         val lastCards = hashMapOf<String, Card>()
@@ -267,6 +295,21 @@ class FastAniApi {
                 mapper.readValue(res.text)
             } else null
         }
+
+        fun getAnimePage(url: String): AnimePage? {
+            val res = khttp.get(url).text
+            val document = Jsoup.parse(res)
+            val title = document.select("div.anime__details__title > h3").firstOrNull()?.text()
+            val episodes = document.select("div.menu1 > a.episode").map { it.attr("href") }
+            val description = document.select("div.anime__details__text > p").firstOrNull()?.text()
+            val poster = addFullUrl(
+                document.select("div.anime__details__pic.set-bg").firstOrNull()?.attr("data-setbg")
+            )
+            return if (title != null && description != null) {
+                AnimePage(url, title, description, episodes, poster)
+            } else null
+        }
+
 
         fun getHome(canBeCached: Boolean): HomePageResponse? {
             var res: HomePageResponse? = null

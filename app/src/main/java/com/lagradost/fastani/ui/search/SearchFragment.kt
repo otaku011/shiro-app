@@ -8,7 +8,6 @@ import android.transition.Transition
 import android.transition.TransitionManager
 import android.view.*
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.setMargins
@@ -52,7 +51,7 @@ class SearchFragment : Fragment() {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             ResAdapter(
                 it,
-                ArrayList<FastAniApi.Card>(),
+                ArrayList<FastAniApi.SearchResult>(),
                 cardSpace,
             )
         }
@@ -64,11 +63,12 @@ class SearchFragment : Fragment() {
                 (cardSpace.adapter as ResAdapter).cardList.clear()
 
                 thread {
-                    val data = FastAniApi.search(query)
+                    val data =
+                        FastAniApi.search(query)
                     activity?.runOnUiThread {
                         progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                         (cardSpace.adapter as ResAdapter).cardList =
-                            data?.animeData?.cards!! as ArrayList<FastAniApi.Card>
+                            data as ArrayList<FastAniApi.SearchResult>
                         (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                     }
                 }
