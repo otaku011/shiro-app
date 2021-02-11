@@ -126,20 +126,20 @@ class GenoResultFragment : Fragment() {
     }
 
     private fun toggleHeart(_isBookmarked: Boolean) {
-        /*this.isBookmarked = _isBookmarked
+        this.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
         if (_isBookmarked) {
-            DataStore.setKey<BookmarkedTitle>(
+            /*DataStore.setKey<BookmarkedTitle>(
                 BOOKMARK_KEY,
                 data!!.url,
-                BookmarkedTitle(data!!.id, data!!.anilistId, data!!.description, data!!.title, data!!.coverImage)
-            )
+                BookmarkedTitle(data!!.url, data!!.title, data!!.posterUrl)
+            )*/
         } else {
             DataStore.removeKey(BOOKMARK_KEY, data!!.url)
         }
         thread {
             requestHome(true)
-        }*/
+        }
     }
 
     private fun castEpsiode(episodeIndex: Int) {
@@ -225,7 +225,7 @@ class GenoResultFragment : Fragment() {
                     card.cardTitle.layoutParams = param
                 }
 
-                card.imageView.setOnClickListener {
+                card.cardBg.setOnClickListener {
                     val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
                     println("SSTATE: " + castContext.castState + "<<")
                     if (save) {

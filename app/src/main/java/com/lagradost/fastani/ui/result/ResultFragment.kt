@@ -145,7 +145,7 @@ class ResultFragment : Fragment() {
         }
     }
 
-    private fun toggleHeart(_isBookmarked: Boolean) {
+   /* private fun toggleHeart(_isBookmarked: Boolean) {
         this.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
         if (_isBookmarked) {
@@ -160,7 +160,7 @@ class ResultFragment : Fragment() {
         thread {
             requestHome(true)
         }
-    }
+    }*/
 
     private fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
@@ -854,7 +854,7 @@ class ResultFragment : Fragment() {
         }
 
         bookmark_holder.setOnClickListener {
-            toggleHeart(!isBookmarked)
+            //toggleHeart(!isBookmarked)
         }
 
         /*

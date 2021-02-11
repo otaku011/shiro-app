@@ -51,7 +51,7 @@ class SearchFragment : Fragment() {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             ResAdapter(
                 it,
-                ArrayList<FastAniApi.SearchResult>(),
+                ArrayList<FastAniApi.AnimeTitle>(),
                 cardSpace,
             )
         }
@@ -68,7 +68,7 @@ class SearchFragment : Fragment() {
                     activity?.runOnUiThread {
                         progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                         (cardSpace.adapter as ResAdapter).cardList =
-                            data as ArrayList<FastAniApi.SearchResult>
+                            data as ArrayList<FastAniApi.AnimeTitle>
                         (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                     }
                 }

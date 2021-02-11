@@ -15,30 +15,12 @@
 
             app:cardBackgroundColor="@color/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
-        <ImageView
-                android:id="@+id/imageView"
-                android:scaleType="centerCrop"
-                android:layout_width="142dp"
-                android:layout_height="80dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
-        >
-        </ImageView>
-        <ImageView
-                android:scaleType="centerInside"
-                android:layout_width="142dp"
-                android:layout_height="80dp"
-                android:scaleX="0.5"
-                android:scaleY="0.5"
-                android:src="@drawable/nexflix_play_btt"
-        >
-        </ImageView>
+
 
         <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
         <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/video_progress"
-                android:layout_width="142dp"
+                android:layout_width="match_parent"
                 android:indeterminate="false"
                 android:layout_gravity="start|bottom"
 
@@ -52,10 +34,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:textSize="15sp"
+                android:textSize="20sp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="160dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginEnd="50dp"
+                android:padding="20dp"
         >
         </TextView>
 

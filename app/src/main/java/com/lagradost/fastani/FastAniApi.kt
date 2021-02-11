@@ -16,7 +16,7 @@ import java.lang.Exception
 import kotlin.concurrent.thread
 
 class FastAniApi {
-    data class SearchResult(
+    data class AnimeTitle(
         val url: String,
         val title: String,
         val posterUrl: String
@@ -210,19 +210,19 @@ class FastAniApi {
 
         }
 
-        fun search(query: String, page: Int = 1): List<SearchResult> {
+        fun search(query: String, page: Int = 1): List<AnimeTitle> {
             // Tags and years can be added
             val url = "https://genoanime.com/data/searchdata.php"
             // Security headers
             val res = khttp.post(url, data = mapOf("anime" to query)).text
             val document = Jsoup.parse(res)
-            val searchResults = mutableListOf<SearchResult>()
+            val searchResults = mutableListOf<AnimeTitle>()
             document.select("div.product__item").forEach {
                 val animeUrl = it.select("a").getOrNull(0)?.let { it1 -> it1.attr("href") }
                 val animeTitle = it.select("a").getOrNull(0)?.let { it1 -> it1.text() }
                 val posterUrl = it.select("div.product__item__pic.set-bg").getOrNull(0)?.attr("data-setbg")
                 if (animeUrl != null && animeTitle != null && posterUrl != null) {
-                    searchResults.add(SearchResult(addFullUrl(animeUrl), animeTitle, addFullUrl(posterUrl)))
+                    searchResults.add(AnimeTitle(addFullUrl(animeUrl), animeTitle, addFullUrl(posterUrl)))
                 }
             }
             return searchResults
@@ -322,6 +322,21 @@ class FastAniApi {
                 val videoDocument = Jsoup.parse(videoRes)
                 videoDocument.select("source").firstOrNull()?.attr("src")
             } else null
+        }
+
+        fun getLatest(): List<AnimeTitle> {
+            val url = "https://genoanime.com/browse?sort=latest"
+            val res = khttp.get(addFullUrl(url)).text
+            val document = Jsoup.parse(res)
+            val anime = document.select("div.row > div.col-lg-3.col-6 > div.product__item")
+            return anime.map {
+                val animeTitleElement = it.select("div.product__item__text > h5")
+                val animeTitle = animeTitleElement.text()
+                val animeUrl = addFullUrl(animeTitleElement.select("a").firstOrNull()?.attr("href"))
+                val animePosterUrl =
+                    addFullUrl(it.select("div.product__item__pic set-bg").firstOrNull()?.attr("data-setbg"))
+                AnimeTitle(animeUrl, animeTitle, animePosterUrl)
+            }
         }
 
 

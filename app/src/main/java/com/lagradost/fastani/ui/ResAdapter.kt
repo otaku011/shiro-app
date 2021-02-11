@@ -14,7 +14,6 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.ui.result.GenoResultFragment
-import com.lagradost.fastani.ui.result.ResultFragment
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
 import kotlinx.android.synthetic.main.search_result.view.imageView
@@ -25,11 +24,15 @@ import kotlin.math.roundToInt
 val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
 
 class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    var cardList = ArrayList<FastAniApi.SearchResult>()
+    var cardList = ArrayList<FastAniApi.AnimeTitle>()
     var context: Context? = null
     var resView: AutofitRecyclerView? = null
 
-    constructor(context: Context, cardList: ArrayList<FastAniApi.SearchResult>, resView: AutofitRecyclerView) : super() {
+    constructor(
+        context: Context,
+        cardList: ArrayList<FastAniApi.AnimeTitle>,
+        resView: AutofitRecyclerView
+    ) : super() {
         this.context = context
         this.cardList = cardList
         this.resView = resView
@@ -64,7 +67,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
         val context = _context
         val cardView = itemView.imageView
         val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()
-        fun bind(card: FastAniApi.SearchResult) {
+        fun bind(card: FastAniApi.AnimeTitle) {
             if (compactView) {
                 // COPIED -----------------------------------------
                 var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, card.url)
@@ -103,12 +106,15 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     toggleHeart(!isBookmarked)
                 }
                 // ------------------------------------------------
-                /*itemView.backgroundCard.setOnClickListener {
-                    activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
-                        ?.commit()
-                }*/
+                itemView.backgroundCard.setOnClickListener {
+                    thread {
+                        val data = FastAniApi.getAnimePage(card.url)
+                        activity?.supportFragmentManager?.beginTransaction()
+                            ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                            ?.add(R.id.homeRoot, GenoResultFragment.newInstance(data!!))
+                            ?.commit()
+                    }
+                }
             }
 
 
@@ -127,7 +133,6 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
             cardView.setOnClickListener {
                 thread {
                     val data = FastAniApi.getAnimePage(card.url)
-                    println("DATATATA  $data")
                     activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                         ?.add(R.id.homeRoot, GenoResultFragment.newInstance(data!!))
