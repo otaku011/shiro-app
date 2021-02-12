@@ -6,6 +6,7 @@
         android:layout_height="match_parent"
         android:orientation="horizontal"
         android:keepScreenOn="true"
+        app:backgroundTint="@android:color/black"
         android:background="@android:color/black"
         android:screenOrientation="landscape"
         app:surface_type="texture_view"

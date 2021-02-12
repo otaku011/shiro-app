@@ -12,7 +12,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 10
-        versionName "2.1.1"
+        versionName "2.1.2"
 
         testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
     }
@@ -73,7 +73,12 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.11.0'
     implementation "com.squareup.moshi:moshi:1.11.0"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
-    implementation 'com.google.android.exoplayer:exoplayer:2.13.0'
-    implementation 'com.google.android.exoplayer:extension-cast:2.12.1'
 
+    // Exoplayer
+    implementation 'com.google.android.exoplayer:exoplayer:2.13.0'
+    implementation 'com.google.android.exoplayer:extension-cast:2.13.0'
+
+    // Bug reports
+    implementation "ch.acra:acra-core:5.7.0"
+    implementation "ch.acra:acra-toast:5.7.0"
 }
