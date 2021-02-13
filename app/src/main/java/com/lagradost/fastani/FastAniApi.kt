@@ -92,7 +92,8 @@ class FastAniApi {
     )
 
     data class AnimeData(@JsonProperty("cards") val cards: List<Card>)
-    data class SearchResponse(@JsonProperty("animeData") val animeData: AnimeData)
+    data class SearchResponse(@JsonProperty("animeData") val animeData: AnimeData?,
+                              @JsonProperty("success") val success: Boolean)
     data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("native") val nextEpisode: Int)
 
     data class Update(
@@ -196,7 +197,12 @@ class FastAniApi {
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
-            return response?.text?.let { mapper.readValue(it) }
+            val mapped = response?.let { mapper.readValue<SearchResponse>(it.text) }
+            return if (mapped?.success == true)
+                mapped
+            else null
+
+            //return response?.text?.let { mapper.readValue(it) }
         }
 
         val lastCards = hashMapOf<String, Card>()

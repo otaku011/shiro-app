@@ -79,7 +79,7 @@ class DownloadFragmentChild() : Fragment() {
         // Sorts by Seasons and Episode Index
         val sortedEpisodeKeys =
             episodeKeys!!.associateBy({ DataStore.getKey<DownloadManager.DownloadFileMetadata>(it) }, { it }).toList()
-                .sortedBy { (key, _) -> "${key?.seasonIndex}${key?.episodeIndex}" }.toMap()
+                .sortedBy { (key, _) -> key?.seasonIndex!! * 100000 + key.episodeIndex }.toMap()
 
         sortedEpisodeKeys.forEach {
             val child = it.key

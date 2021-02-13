@@ -1,9 +1,9 @@
 <resources>
-    <string name="version_code">2.1.2 Public Release</string>
+    <string name="version_code">2.1.3 Public Release</string>
     <string name="changelog">\n
-            - Added automatic bug reporting\n
-            - Fixed chromecast\n
-            - Fixed player crash on android 7\n
+        - Added a switch for automatic bug reporting\n
+        - Fixed a crash in search\n
+        - Fixed episode ordering when downloading\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>
@@ -26,5 +26,8 @@
     <string name="resultpage1">Download something to make it show up here</string>
     <string name="resultpage2">Donate to download shows</string>
     <string name="error_connecting_reload">Error Connecting, Reload</string>
-    <string name="acra_report_toast">Sorry, the application crashed. An anonymous bug report will be sent to the developers :)</string>
+    <string name="acra_report_toast">Sorry, the application crashed. An anonymous bug report will be sent to the
+        developers :)
+    </string>
+    <string name="pref_disable_acra">Disable automatic bug reporting</string>
 </resources>

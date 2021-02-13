@@ -28,8 +28,8 @@ class SearchFragment : Fragment() {
     private lateinit var searchViewModel: SearchViewModel
     val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
-    val spanCountLandscape = if (compactView) 2 else 6
-    val spanCountPortrait = if (compactView) 1 else 3
+    private val spanCountLandscape = if (compactView) 2 else 6
+    private val spanCountPortrait = if (compactView) 1 else 3
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,10 +66,15 @@ class SearchFragment : Fragment() {
                 thread {
                     val data = FastAniApi.search(query)
                     activity?.runOnUiThread {
-                        progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
-                        (cardSpace.adapter as ResAdapter).cardList =
-                            data?.animeData?.cards!! as ArrayList<FastAniApi.Card>
-                        (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
+                        if (data == null) {
+                            Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
+                            progress_bar.visibility = View.GONE
+                        } else {
+                            progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
+                            (cardSpace.adapter as ResAdapter).cardList =
+                                data.animeData?.cards as ArrayList<FastAniApi.Card>
+                            (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
+                        }
                     }
                 }
                 return true
