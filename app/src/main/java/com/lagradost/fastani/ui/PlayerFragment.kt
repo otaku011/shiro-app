@@ -36,6 +36,9 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.lagradost.fastani.MainActivity.Companion.activity
@@ -87,10 +90,26 @@ enum class PlayerEventType(val value: Int) {
     PlayPauseToggle(6)
 }
 
-class PlayerFragment(private var data: PlayerData) : Fragment() {
+class PlayerFragment() : Fragment() {
+    var data: PlayerData? = null
+    private val mapper = JsonMapper.builder().addModule(KotlinModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
     companion object {
         var isInPlayer: Boolean = false
         var onLeftPlayer = Event<Boolean>()
+        fun newInstance(data: PlayerData) =
+            PlayerFragment().apply {
+                arguments = Bundle().apply {
+                    //println(data)
+                    putString("data", mapper.writeValueAsString(data))
+                }
+            }
+    }
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        arguments?.getString("data")?.let {
+            data = mapper.readValue(it, PlayerData::class.java)
+        }
     }
 
     private var isLocked = false
@@ -116,7 +135,6 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var prevDiffX = 0.0
 
     abstract class DoubleClickListener(ctx: PlayerFragment) : OnTouchListener {
-
         // The time in which the second tap should be done in order to qualify as
         // a double click
 
@@ -184,46 +202,46 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     }
 
     private fun canPlayNextEpisode(): Boolean {
-        if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
+        if (data?.card == null || data?.seasonIndex == null || data?.episodeIndex == null) {
             return false
         }
         return try {
-            MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!).isFound
+            MainActivity.canPlayNextEpisode(data?.card!!, data?.seasonIndex!!, data?.episodeIndex!!).isFound
         } catch (e: Exception) {
             false
         }
     }
 
     private fun getCurrentEpisode(): FastAniApi.FullEpisode {
-        return data.card!!.cdnData.seasons[data.seasonIndex!!].episodes[data.episodeIndex!!]
+        return data?.card!!.cdnData.seasons[data?.seasonIndex!!].episodes[data?.episodeIndex!!]
     }
 
     private fun getCurrentTitle(): String {
-        if (data.title != null) return data.title!!
+        if (data?.title != null) return data?.title!!
 
-        val isMovie: Boolean = data.card!!.episodes == 1 && data.card!!.status == "FINISHED"
-        // data.card!!.cdnData.seasons.size == 1 && data.card!!.cdnData.seasons[0].episodes.size == 1
+        val isMovie: Boolean = data?.card!!.episodes == 1 && data?.card!!.status == "FINISHED"
+        // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
-            preTitle = "S${data.seasonIndex!! + 1}:E${data.episodeIndex!! + 1} · "
+            preTitle = "S${data?.seasonIndex!! + 1}:E${data?.episodeIndex!! + 1} · "
         }
         // Replaces with "" if it's null
         return preTitle + (getCurrentEpisode().title ?: "")
     }
 
     private fun getCurrentUrl(): String {
-        println("MAN::: " + data.url)
-        if (data.url != null) return data.url!!
+        println("MAN::: " + data?.url)
+        if (data?.url != null) return data?.url!!
         return getCurrentEpisode().file
     }
 
     fun savePos() {
-        if (((data.anilistId != null
-                    && data.seasonIndex != null
-                    && data.episodeIndex != null) || data.card != null)
+        if (((data?.anilistId != null
+                    && data?.seasonIndex != null
+                    && data?.episodeIndex != null) || data?.card != null)
             && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
         ) {
-            MainActivity.setViewPosDur(data, exoPlayer.currentPosition, exoPlayer.duration)
+            MainActivity.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
         }
     }
 
@@ -655,36 +673,36 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 }
             }
         }
-        if (data.card != null || (data.anilistId != null && data.episodeIndex != null && data.seasonIndex != null)) {
+        if (data?.card != null || (data?.anilistId != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
             val pro = getViewPosDur(
-                if (data.card != null) data.card!!.anilistId else data.anilistId!!,
-                data.seasonIndex!!,
-                data.episodeIndex!!
+                if (data?.card != null) data?.card!!.anilistId else data?.anilistId!!,
+                data?.seasonIndex!!,
+                data?.episodeIndex!!
             )
             playbackPosition = if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 pro.pos
             } else {
                 0L
             }
-        } else if (data.startAt != null) {
-            playbackPosition = data.startAt!!
+        } else if (data?.startAt != null) {
+            playbackPosition = data?.startAt!!
         }
         video_title.text = getCurrentTitle()
         if (canPlayNextEpisode()) {
             next_episode_btt.visibility = VISIBLE
             next_episode_btt.setOnClickListener {
                 savePos()
-                val next = MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!)
+                val next = MainActivity.canPlayNextEpisode(data?.card!!, data?.seasonIndex!!, data?.episodeIndex!!)
                 val key = MainActivity.getViewKey(
-                    data.card!!.anilistId,
+                    data?.card!!.anilistId,
                     next.seasonIndex,
                     next.episodeIndex
                 )
                 DataStore.removeKey(VIEW_POS_KEY, key)
                 DataStore.removeKey(VIEW_DUR_KEY, key)
 
-                data.seasonIndex = next.seasonIndex
-                data.episodeIndex = next.episodeIndex
+                data?.seasonIndex = next.seasonIndex
+                data?.episodeIndex = next.episodeIndex
                 releasePlayer()
                 initPlayer()
             }
@@ -774,8 +792,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     override fun onStart() {
         super.onStart()
         hideSystemUI()
-        if (data.card != null) {
-            val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
+        if (data?.card != null) {
+            val pro = getViewPosDur(data?.card!!.anilistId, data?.seasonIndex!!, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }

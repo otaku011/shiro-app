@@ -349,7 +349,7 @@ class MainActivity : AppCompatActivity() {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 ?.add(
-                    R.id.videoRoot, PlayerFragment(
+                    R.id.videoRoot, PlayerFragment.newInstance(
                         data
                     )
                 )

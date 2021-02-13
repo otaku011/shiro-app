@@ -11,7 +11,8 @@ android {
         applicationId "com.lagradost.fastani"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 10
+        // Don't forget to update versionCode too :)
+        versionCode 11
         versionName "2.1.3"
 
         testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
