@@ -90,4 +90,7 @@
         <item name="castClosedCaptionsButtonDrawable">@drawable/cast_ic_mini_controller_closed_caption</item>
     </style>
 
+    <style name="Button.White" parent="ThemeOverlay.AppCompat">
+        <item name="colorPrimary">@android:color/white</item>
+    </style>
 </resources>

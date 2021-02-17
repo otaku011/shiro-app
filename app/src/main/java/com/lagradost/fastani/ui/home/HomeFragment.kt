@@ -16,6 +16,7 @@ import com.lagradost.fastani.*
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MainActivity.Companion.loadPlayer
+import com.lagradost.fastani.MainActivity.Companion.getNextEpisode
 import com.lagradost.fastani.ui.GlideApp
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
@@ -24,7 +25,6 @@ import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_schedule.view.*
 import kotlinx.android.synthetic.main.home_recently_seen.view.*
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset.UTC
 import kotlin.concurrent.thread
 
@@ -57,13 +57,13 @@ class HomeFragment : Fragment() {
             recentlySeenScrollView.removeAllViews()
             scheduleScrollView.removeAllViews()
 
-            val cardInfo = data?.homeSlidesData?.get(0)
-            val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
+            val cardInfo = data?.homeSlidesData?.shuffled()?.take(1)?.get(0)
+            /*val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
                 GlideApp.with(it)
                     .load(glideUrl)
                     .into(main_backgroundImage)
-            }
+            }*/
 
             val glideUrlMain =
                 GlideUrl("https://fastani.net/" + cardInfo?.coverImage?.large) { FastAniApi.currentHeaders }
@@ -78,14 +78,22 @@ class HomeFragment : Fragment() {
             main_genres.text = cardInfo?.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
 
             main_watch_button.setOnClickListener {
-                MainActivity.loadPage(cardInfo!!)
+                //MainActivity.loadPage(cardInfo!!)
+                if (cardInfo != null) {
+                    val nextEpisode = getNextEpisode(cardInfo)
+                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, cardInfo)
+                }
             }
 
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            main_poster.setOnClickListener {
+            main_info_button.setOnClickListener {
+                MainActivity.loadPage(cardInfo!!)
+            }
+
+            /*main_poster.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
-            }
+            }*/
             fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: LinearLayout) {
                 data?.forEach { cardInfo ->
                     val card: View = layoutInflater.inflate(R.layout.home_card, null)

@@ -6,6 +6,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
 >
+
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -391,11 +392,25 @@ Flash forward to the present and the city has not seen a titan in over 100 years
         </androidx.cardview.widget.CardView>
     </ScrollView>
     <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:orientation="vertical"
     >
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:backgroundTint="@color/colorPrimary"
+                android:background="@color/colorPrimary"
+                app:borderWidth="0dp"
+                android:src="@drawable/netflix_play"
+                android:layout_margin="16dp"
+                android:id="@+id/fab_play_button"
+                app:tint="@color/white"
+        >
 
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
         <fragment
                 app:castControlButtons="@array/cast_mini_controller_control_buttons"
                 android:id="@+id/cast_mini_controller"

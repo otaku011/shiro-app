@@ -37,7 +37,7 @@
                      android:paddingBottom="20dp"
         >
             <ImageView
-                    android:id="@+id/main_backgroundImage"
+                    android:id="@+id/main_poster"
                     android:layout_width="match_parent"
                     android:layout_height="520dp"
                     android:scaleType="centerCrop"
@@ -51,9 +51,13 @@
                     android:id="@+id/main_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="350dp"
                     android:orientation="vertical">
 
+
+                <!--
                 <androidx.cardview.widget.CardView
+                        android:visibility="gone"
                         android:layout_marginTop="10dp"
                         android:layout_width="200dp"
                         android:layout_height="294dp"
@@ -67,7 +71,7 @@
                             android:foreground="?android:attr/selectableItemBackgroundBorderless"
                             android:clickable="true"
                             android:focusable="true"
-                            android:id="@+id/main_poster"
+                            android:id="@+id/main_backgroundImage"
                             android:scaleType="centerCrop"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
@@ -75,16 +79,17 @@
                     </ImageView>
 
                 </androidx.cardview.widget.CardView>
-
+                -->
                 <TextView
                         android:id="@+id/main_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="NAME PLACEHOLDER"
-                        android:gravity="center_horizontal"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
                         android:textStyle="bold"
                         android:paddingTop="5dp"
-                        android:textSize="20sp"
+                        android:textSize="30sp"
                         android:textColor="@color/textColor"
                 >
                 </TextView>
@@ -105,31 +110,66 @@
 
                 <TextView
                         android:id="@+id/main_genres"
-                        android:gravity="center"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_width="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/textColor"
-                        android:layout_margin="10dp"
+
                         android:text="">
 
                 </TextView>
-
-                <Button
+                <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_marginTop="20dp"
                         android:layout_marginBottom="20dp"
-                        android:layout_width="150dp"
-                        android:elevation="10dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center_horizontal"
-                        android:background="@drawable/button_ripple"
-                        android:backgroundTint="@color/colorPrimary"
-                        android:textColor="@color/textColor"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:id="@+id/main_watch_button"
-                        android:text="@string/main_watch_button_text">
-                </Button>
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                >
+                    <com.google.android.material.button.MaterialButton
+                            app:icon="@drawable/netflix_play"
+                            app:iconTint="@color/white"
+                            app:iconSize="24dp"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginEnd="20dp"
+                            android:layout_width="0dp"
+                            android:elevation="10dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="@drawable/button_ripple"
+                            android:textColor="@color/textColor"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:id="@+id/main_watch_button"
+                            android:text="@string/main_watch_button_text"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/main_info_button"
+                    >
+                    </com.google.android.material.button.MaterialButton>
+
+                    <com.google.android.material.button.MaterialButton
+                            app:icon="@drawable/ic_baseline_info_24"
+                            app:iconTint="@android:color/black"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginEnd="20dp"
+                            android:layout_width="0dp"
+                            android:elevation="10dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="@drawable/button_ripple"
+                            android:textColor="@android:color/primary_text_light"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:theme="@style/Button.White"
+                            android:id="@+id/main_info_button"
+                            android:text="@string/main_info_button_text"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@+id/main_watch_button">
+                    </com.google.android.material.button.MaterialButton>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
                 <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"

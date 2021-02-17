@@ -49,6 +49,8 @@ import com.lagradost.fastani.MALApi.Companion.setScoreRequest
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.openBrowser
+import com.lagradost.fastani.MainActivity.Companion.getNextEpisode
+import com.lagradost.fastani.MainActivity.Companion.loadPlayer
 import com.lagradost.fastani.ui.GlideApp
 import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.activity_main.*
@@ -814,7 +816,10 @@ class ResultFragment : Fragment() {
                     if (seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
 
                         title_duration.text =
-                            data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!, "Now")
+                            data!!.duration.toString() + "min | Next episode airing in " + secondsToReadable(
+                                seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring!!,
+                                "Now"
+                            )
                     } else {
                         title_duration.text =
                             data!!.duration.toString() + "min | Completed"
@@ -853,7 +858,18 @@ class ResultFragment : Fragment() {
         bookmark_holder.setOnClickListener {
             toggleHeart(!isBookmarked)
         }
+        fab_play_button.setOnClickListener {
+            if (data != null) {
+                val nextEpisode = getNextEpisode(data!!)
+                if (castContext.castState == CastState.CONNECTED) {
+                    castEpsiode(nextEpisode.seasonIndex, nextEpisode.episodeIndex)
+                    loadSeason(nextEpisode.seasonIndex)
+                } else {
 
+                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
+                }
+            }
+        }
         /*
         title_viewstate.setOnClickListener {
             ToggleViewState(!isViewState)

@@ -143,15 +143,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun changeStatusBarState(hide: Boolean) {
-            if (hide) {
+            statusHeight = if (hide) {
                 activity!!.window.setFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN
                 )
-                statusHeight = 0
+                0
             } else {
                 activity!!.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                statusHeight = activity!!.getStatusBarHeight()
+                activity!!.getStatusBarHeight()
             }
         }
 
@@ -183,6 +183,34 @@ class MainActivity : AppCompatActivity() {
                 NextEpisode(true, episodeIndex + 1, seasonIndex)
             }
         }
+
+        fun getNextEpisode(data: FastAniApi.Card): NextEpisode {
+            // HANDLES THE LOGIC FOR NEXT EPISODE
+            var episodeIndex = 0
+            var seasonIndex = 0
+            val maxValue = 90
+            val firstPos = getViewPosDur(data.anilistId, 0, 0)
+
+            // Hacky but works :)
+            if ((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) {
+                return NextEpisode(true, episodeIndex, seasonIndex)
+            }
+
+            while (true) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
+                val next = canPlayNextEpisode(data, seasonIndex, episodeIndex)
+                if (next.isFound) {
+                    val nextPro = getViewPosDur(data.anilistId, next.seasonIndex, next.episodeIndex)
+                    seasonIndex = next.seasonIndex
+                    episodeIndex = next.episodeIndex
+                    if ((nextPro.pos * 100) / nextPro.dur <= maxValue || nextPro.pos == -1L) {
+                        return NextEpisode(true, episodeIndex, seasonIndex)
+                    }
+                } else {
+                    return NextEpisode(true, episodeIndex, seasonIndex)
+                }
+            }
+        }
+
 
         fun setViewPosDur(data: PlayerData, pos: Long, dur: Long) {
             val key = getViewKey(data)

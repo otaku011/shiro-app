@@ -15,7 +15,8 @@
     <string name="fastani_name">FASTANI</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="main_watch_button_text">WATCH</string>
+    <string name="main_watch_button_text">Play</string>
+    <string name="main_info_button_text">Info</string>
     <string name="bookmark_btt">Bookmark</string>
     <string name="bookmark_btt_hint">Toggle Bookmark</string>
     <string name="viewstate_btt">Mark episodes seen</string>
