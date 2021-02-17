@@ -53,6 +53,7 @@ val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).
 data class EpisodePosDurInfo(
     @JsonProperty("pos") val pos: Long,
     @JsonProperty("dur") val dur: Long,
+    @JsonProperty("viewstate") val viewstate: Boolean,
 )
 
 data class LastEpisodeInfo(
@@ -166,7 +167,8 @@ class MainActivity : AppCompatActivity() {
 
             return EpisodePosDurInfo(
                 DataStore.getKey<Long>(VIEW_POS_KEY, key, -1L)!!,
-                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!
+                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!,
+                DataStore.containsKey(VIEWSTATE_KEY, key)
             )
         }
 
@@ -190,9 +192,8 @@ class MainActivity : AppCompatActivity() {
             var seasonIndex = 0
             val maxValue = 90
             val firstPos = getViewPosDur(data.anilistId, 0, 0)
-
             // Hacky but works :)
-            if ((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) {
+            if (((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) && !firstPos.viewstate) {
                 return NextEpisode(true, episodeIndex, seasonIndex)
             }
 
@@ -202,7 +203,7 @@ class MainActivity : AppCompatActivity() {
                     val nextPro = getViewPosDur(data.anilistId, next.seasonIndex, next.episodeIndex)
                     seasonIndex = next.seasonIndex
                     episodeIndex = next.episodeIndex
-                    if ((nextPro.pos * 100) / nextPro.dur <= maxValue || nextPro.pos == -1L) {
+                    if (((nextPro.pos * 100) / nextPro.dur <= maxValue || nextPro.pos == -1L) && !nextPro.viewstate) {
                         return NextEpisode(true, episodeIndex, seasonIndex)
                     }
                 } else {
