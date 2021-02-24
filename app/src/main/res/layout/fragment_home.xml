@@ -24,34 +24,46 @@
             android:gravity="center"
             android:layout_gravity="center"
             android:id="@+id/main_reload_data_btt"
-            android:layout_width="wrap_content" android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
     >
     </Button>
 
 
-    <ScrollView android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/main_scroll">
+    <com.nirhart.parallaxscroll.views.ParallaxScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/main_scroll">
         <FrameLayout android:layout_width="match_parent"
                      android:layout_height="wrap_content"
                      android:paddingBottom="20dp"
         >
-            <ImageView
-                    android:id="@+id/main_poster"
-                    android:layout_width="match_parent"
-                    android:layout_height="520dp"
-                    android:scaleType="centerCrop"
-                    android:alpha="1"
-                    android:src="@drawable/faded_bg"
-                    android:foreground="@drawable/gradient"
-                    android:contentDescription="@string/home_background_content_description"/>
+            <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
 
+                <ImageView
+                        android:id="@+id/main_poster"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:scaleType="centerCrop"
+                        android:alpha="1"
+                        android:src="@drawable/faded_bg"
+                        android:contentDescription="@string/home_background_content_description"/>
+                    <!--
+                    305 dp here (+ a new view) is needed to hide a
+                    parallax scrolling bug making the gradient not cover the image
+                     -->
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="305dp"
+                        android:background="@drawable/gradient"
+                />
+            </FrameLayout>
 
             <LinearLayout
                     android:id="@+id/main_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="350dp"
+                    android:layout_marginTop="250dp"
                     android:orientation="vertical">
 
 
@@ -325,5 +337,5 @@
 
             </LinearLayout>
         </FrameLayout>
-    </ScrollView>
+    </com.nirhart.parallaxscroll.views.ParallaxScrollView>
 </FrameLayout>

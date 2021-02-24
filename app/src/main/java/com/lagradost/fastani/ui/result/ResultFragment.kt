@@ -809,9 +809,10 @@ class ResultFragment : Fragment() {
             FastAniApi.lastCards[data!!.id] = data!!
         }
         title_duration.text = data!!.duration.toString() + "min"
+
         thread {
             seasons = getAllSeasons(data!!.anilistId.toInt())
-            if (seasons != null) {
+            if (seasons != null && seasons?.size != 0) {
                 activity?.runOnUiThread {
                     if (seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
 
@@ -869,6 +870,18 @@ class ResultFragment : Fragment() {
                     loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
                 }
             }
+        }
+        fab_play_button.setOnLongClickListener {
+            //MainActivity.loadPage(cardInfo!!)
+            if (data != null) {
+                 val nextEpisode = getNextEpisode(data!!)
+                Toast.makeText(
+                    activity,
+                    "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            return@setOnLongClickListener true
         }
         /*
         title_viewstate.setOnClickListener {

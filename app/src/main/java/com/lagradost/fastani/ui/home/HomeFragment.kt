@@ -66,7 +66,7 @@ class HomeFragment : Fragment() {
             }*/
 
             val glideUrlMain =
-                GlideUrl("https://fastani.net/" + cardInfo?.coverImage?.large) { FastAniApi.currentHeaders }
+                GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
                 GlideApp.with(it)
                     .load(glideUrlMain)
@@ -84,7 +84,14 @@ class HomeFragment : Fragment() {
                     loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, cardInfo)
                 }
             }
-
+            main_watch_button.setOnLongClickListener {
+                //MainActivity.loadPage(cardInfo!!)
+                if (cardInfo != null) {
+                    val nextEpisode = getNextEpisode(cardInfo)
+                    Toast.makeText(activity, "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}", Toast.LENGTH_LONG).show()
+                }
+                return@setOnLongClickListener true
+            }
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
             main_info_button.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)

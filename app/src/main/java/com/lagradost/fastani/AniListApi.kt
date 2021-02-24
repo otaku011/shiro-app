@@ -154,7 +154,16 @@ class AniListApi {
                 println("ID::::: " + id)
                 val data = postApi("https://graphql.anilist.co", q)
                 println(data)
-                val d = mapper.readValue<GetDataRoot>(data)
+                var d: GetDataRoot? = null
+                try {
+                    d = mapper.readValue<GetDataRoot>(data)
+                } catch (e: Exception) {
+                    println("Anilist json failed")
+                }
+                if (d == null) {
+                    return null
+                }
+
                 val main = d.data.media
                 if (main.mediaListEntry != null) {
                     println(main.mediaListEntry.status)
@@ -308,7 +317,6 @@ class AniListApi {
             fun getSeasonRecursive(id: Int) {
                 println(id)
                 val season = getSeason(id)
-                println(season)
                 if (season != null) {
                     seasons.add(season)
                     if (season.data.Media.format?.startsWith("TV") == true) {
@@ -340,7 +348,7 @@ class AniListApi {
             val minutes = TimeUnit.SECONDS
                 .toMinutes(secondsLong)
             secondsLong -= TimeUnit.MINUTES.toSeconds(minutes)
-            if (minutes < 0){
+            if (minutes < 0) {
                 return completedValue
             }
             //println("$days $hours $minutes")

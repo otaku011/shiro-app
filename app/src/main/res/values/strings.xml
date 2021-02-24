@@ -1,10 +1,7 @@
 <resources>
-    <string name="version_code">2.1.3 Public Release</string>
+    <string name="version_code">2.2.1 Public Release</string>
     <string name="changelog">\n
-        - Added a switch for automatic bug reporting\n
-        - Fixed crash in search\n
-        - Fixed crash in video player\n
-        - Fixed episode ordering when downloading\n
+        - Fixed anilist causing crashes
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>
