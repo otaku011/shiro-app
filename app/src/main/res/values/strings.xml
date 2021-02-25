@@ -1,7 +1,7 @@
 <resources>
-    <string name="version_code">2.2.1 Public Release</string>
+    <string name="version_code">2.2.3 Public Release</string>
     <string name="changelog">\n
-        - Fixed anilist causing crashes
+        - Fixed crash caused by FAB play button\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>

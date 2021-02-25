@@ -859,6 +859,12 @@ class ResultFragment : Fragment() {
         bookmark_holder.setOnClickListener {
             toggleHeart(!isBookmarked)
         }
+        if (data != null) {
+            val nextEpisode = getNextEpisode(data!!)
+            if (nextEpisode.isFound){
+                fab_play_button.visibility = VISIBLE
+            }
+        }
         fab_play_button.setOnClickListener {
             if (data != null) {
                 val nextEpisode = getNextEpisode(data!!)
@@ -866,7 +872,6 @@ class ResultFragment : Fragment() {
                     castEpsiode(nextEpisode.seasonIndex, nextEpisode.episodeIndex)
                     loadSeason(nextEpisode.seasonIndex)
                 } else {
-
                     loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
                 }
             }
@@ -874,7 +879,7 @@ class ResultFragment : Fragment() {
         fab_play_button.setOnLongClickListener {
             //MainActivity.loadPage(cardInfo!!)
             if (data != null) {
-                 val nextEpisode = getNextEpisode(data!!)
+                val nextEpisode = getNextEpisode(data!!)
                 Toast.makeText(
                     activity,
                     "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}",

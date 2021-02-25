@@ -408,9 +408,8 @@ Flash forward to the present and the city has not seen a titan in over 100 years
                 android:layout_margin="16dp"
                 android:id="@+id/fab_play_button"
                 app:tint="@color/white"
-        >
-
-        </com.google.android.material.floatingactionbutton.FloatingActionButton>
+                android:visibility="gone"
+        />
         <fragment
                 app:castControlButtons="@array/cast_mini_controller_control_buttons"
                 android:id="@+id/cast_mini_controller"

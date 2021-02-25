@@ -93,7 +93,8 @@ enum class PlayerEventType(val value: Int) {
 class PlayerFragment() : Fragment() {
     var data: PlayerData? = null
     private val mapper = JsonMapper.builder().addModule(KotlinModule())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+
     companion object {
         var isInPlayer: Boolean = false
         var onLeftPlayer = Event<Boolean>()
@@ -105,6 +106,7 @@ class PlayerFragment() : Fragment() {
                 }
             }
     }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("data")?.let {
@@ -212,8 +214,8 @@ class PlayerFragment() : Fragment() {
         }
     }
 
-    private fun getCurrentEpisode(): FastAniApi.FullEpisode {
-        return data?.card!!.cdnData.seasons[data?.seasonIndex!!].episodes[data?.episodeIndex!!]
+    private fun getCurrentEpisode(): FastAniApi.FullEpisode? {
+        return data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
     private fun getCurrentTitle(): String {
@@ -226,13 +228,13 @@ class PlayerFragment() : Fragment() {
             preTitle = "S${data?.seasonIndex!! + 1}:E${data?.episodeIndex!! + 1} · "
         }
         // Replaces with "" if it's null
-        return preTitle + (getCurrentEpisode().title ?: "")
+        return preTitle + (getCurrentEpisode()?.title ?: "")
     }
 
-    private fun getCurrentUrl(): String {
+    private fun getCurrentUrl(): String? {
         println("MAN::: " + data?.url)
         if (data?.url != null) return data?.url!!
-        return getCurrentEpisode().file
+        return getCurrentEpisode()?.file
     }
 
     fun savePos() {
@@ -658,18 +660,25 @@ class PlayerFragment() : Fragment() {
     private fun initPlayer() {
         // NEEDED FOR HEADERS
         var currentUrl = getCurrentUrl()
+        if (currentUrl == null) {
+            requireActivity().runOnUiThread {
+                Toast.makeText(activity, "Error getting link", Toast.LENGTH_LONG).show()
+                //MainActivity.popCurrentPage()
+            }
+            currentUrl = ""
+        }
         val isOnline = currentUrl.startsWith("https://") || currentUrl.startsWith("http://")
 
         class CustomFactory : DataSource.Factory {
             override fun createDataSource(): DataSource {
-                if (isOnline) {
+                return if (isOnline) {
                     val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
                     FastAniApi.currentHeaders?.forEach {
                         dataSource.setRequestProperty(it.key, it.value)
                     }
-                    return dataSource
+                    dataSource
                 } else {
-                    return DefaultDataSourceFactory(requireContext(), "ua").createDataSource()
+                    DefaultDataSourceFactory(requireContext(), "ua").createDataSource()
                 }
             }
         }
@@ -767,7 +776,10 @@ class PlayerFragment() : Fragment() {
                 // Lets pray this doesn't spam Toasts :)
                 when (error.type) {
                     ExoPlaybackException.TYPE_SOURCE -> {
-                        Toast.makeText(activity, "Source error\n" + error.sourceException.message, LENGTH_LONG).show()
+                        if (currentUrl != "") {
+                            Toast.makeText(activity, "Source error\n" + error.sourceException.message, LENGTH_LONG)
+                                .show()
+                        }
                     }
                     ExoPlaybackException.TYPE_REMOTE -> {
                         Toast.makeText(activity, "Remote error", LENGTH_LONG)

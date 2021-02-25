@@ -194,7 +194,8 @@ class MainActivity : AppCompatActivity() {
             val firstPos = getViewPosDur(data.anilistId, 0, 0)
             // Hacky but works :)
             if (((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) && !firstPos.viewstate) {
-                return NextEpisode(true, episodeIndex, seasonIndex)
+                val found = data.cdnData.seasons.getOrNull(seasonIndex)?.episodes?.getOrNull(episodeIndex) != null
+                return NextEpisode(found, episodeIndex, seasonIndex)
             }
 
             while (true) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
@@ -207,7 +208,8 @@ class MainActivity : AppCompatActivity() {
                         return NextEpisode(true, episodeIndex, seasonIndex)
                     }
                 } else {
-                    return NextEpisode(true, episodeIndex, seasonIndex)
+                    val found = data.cdnData.seasons.getOrNull(seasonIndex)?.episodes?.getOrNull(episodeIndex) != null
+                    return NextEpisode(found, episodeIndex, seasonIndex)
                 }
             }
         }
