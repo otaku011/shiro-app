@@ -63,18 +63,27 @@ class SearchFragment : Fragment() {
                 progress_bar.visibility = View.VISIBLE
                 (cardSpace.adapter as ResAdapter).cardList.clear()
 
-                thread {
-                    val data = FastAniApi.search(query)
-                    activity?.runOnUiThread {
-                        if (data == null) {
-                            Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
-                            progress_bar.visibility = View.GONE
-                        } else {
-                            progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
-                            (cardSpace.adapter as ResAdapter).cardList =
-                                data.animeData?.cards as ArrayList<FastAniApi.Card>
-                            (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
+                // FastaniApi.search can crash with timeout error hence this try catch
+                try {
+                    thread {
+                        val data = FastAniApi.search(query)
+                        activity?.runOnUiThread {
+                            if (data == null) {
+                                Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
+                                progress_bar.visibility = View.GONE
+                            } else {
+                                progress_bar.visibility =
+                                    View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
+                                (cardSpace.adapter as ResAdapter).cardList =
+                                    data.animeData?.cards as ArrayList<FastAniApi.Card>
+                                (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
+                            }
                         }
+                    }
+                } catch (e: Exception) {
+                    activity?.runOnUiThread {
+                        Toast.makeText(activity, "Search error", Toast.LENGTH_LONG).show()
+                        progress_bar.visibility = View.GONE
                     }
                 }
                 return true
