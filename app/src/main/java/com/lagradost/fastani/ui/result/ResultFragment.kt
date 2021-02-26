@@ -837,19 +837,40 @@ class ResultFragment : Fragment() {
             seasonChange()
         }
 
-        val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
-        CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
-        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+        if (MainActivity.isCastApiAvailable()) {
+            val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
-        if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
-        castContext.addCastStateListener(CastStateListener { state ->
-            if (media_route_button != null) {
-                if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
-                    if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+            CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
+            val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+
+            if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
+            castContext.addCastStateListener(CastStateListener { state ->
+                if (media_route_button != null) {
+                    if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
+                        if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+                    }
+                }
+            })
+            fab_play_button.setOnClickListener {
+                if (data != null) {
+                    val nextEpisode = getNextEpisode(data!!)
+                    if (castContext.castState == CastState.CONNECTED) {
+                        castEpsiode(nextEpisode.seasonIndex, nextEpisode.episodeIndex)
+                        loadSeason(nextEpisode.seasonIndex)
+                    } else {
+                        loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
+                    }
                 }
             }
-        })
+        } else {
+            fab_play_button.setOnClickListener {
+                if (data != null) {
+                    val nextEpisode = getNextEpisode(data!!)
+                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
+                }
+            }
+        }
         isInResults = true
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
@@ -870,17 +891,6 @@ class ResultFragment : Fragment() {
             val nextEpisode = getNextEpisode(data!!)
             if (nextEpisode.isFound) {
                 fab_play_button.visibility = VISIBLE
-            }
-        }
-        fab_play_button.setOnClickListener {
-            if (data != null) {
-                val nextEpisode = getNextEpisode(data!!)
-                if (castContext.castState == CastState.CONNECTED) {
-                    castEpsiode(nextEpisode.seasonIndex, nextEpisode.episodeIndex)
-                    loadSeason(nextEpisode.seasonIndex)
-                } else {
-                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
-                }
             }
         }
         fab_play_button.setOnLongClickListener {

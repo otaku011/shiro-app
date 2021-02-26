@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.lagradost.fastani">
+          package="com.lagradost.fastani"
 
+>
+    <uses-feature android:name="android.software.leanback"
+                  android:required="false"/>
+    <uses-feature android:name="android.hardware.touchscreen"
+                  android:required="false"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -14,7 +19,9 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             android:name=".AcraApplication"
+            android:banner="@drawable/splash_background"
     >
+            <!-- //TODO FIX BANNER! -->
 
         <activity android:name=".ControllerActivity">
         </activity>
@@ -25,13 +32,15 @@
 
         <activity
                 android:name=".MainActivity"
-                android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
+                android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
                 android:label="@string/app_name"
+
                 android:resizeableActivity="true"
                 android:supportsPictureInPicture="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
