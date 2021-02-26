@@ -34,6 +34,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.concurrent.thread
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.lagradost.fastani.FastAniApi.Companion.getCardById
 import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
@@ -102,6 +105,20 @@ class MainActivity : AppCompatActivity() {
         fun UnixTime(): Long {
             return System.currentTimeMillis() / 1000L
         }
+
+        fun isCastApiAvailable(): Boolean {
+            val isCastApiAvailable =
+                GoogleApiAvailability.getInstance()
+                    .isGooglePlayServicesAvailable(activity?.applicationContext) == ConnectionResult.SUCCESS
+            try {
+                activity?.applicationContext?.let { CastContext.getSharedInstance(it) }
+            } catch (e: Exception) {
+                // track non-fatal
+                return false
+            }
+            return isCastApiAvailable
+        }
+
 
         fun getViewKey(data: PlayerData): String {
             return getViewKey(

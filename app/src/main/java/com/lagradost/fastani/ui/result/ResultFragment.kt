@@ -266,14 +266,21 @@ class ResultFragment : Fragment() {
                 }
 
                 card.imageView.setOnClickListener {
-                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-                    println("SSTATE: " + castContext.castState + "<<")
+
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
-                    if (castContext.castState == CastState.CONNECTED) {
-                        castEpsiode(index, epIndex)
-                        loadSeason(index)
+
+                    if (MainActivity.isCastApiAvailable()) {
+                        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+                        println("SSTATE: " + castContext.castState + "<<")
+                        if (castContext.castState == CastState.CONNECTED) {
+                            castEpsiode(index, epIndex)
+                            loadSeason(index)
+                            return@setOnClickListener
+                        } else {
+                            MainActivity.loadPlayer(epIndex, index, data!!)
+                        }
                     } else {
                         MainActivity.loadPlayer(epIndex, index, data!!)
                     }
@@ -861,7 +868,7 @@ class ResultFragment : Fragment() {
         }
         if (data != null) {
             val nextEpisode = getNextEpisode(data!!)
-            if (nextEpisode.isFound){
+            if (nextEpisode.isFound) {
                 fab_play_button.visibility = VISIBLE
             }
         }

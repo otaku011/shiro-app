@@ -98,8 +98,6 @@ class DownloadFragmentChild() : Fragment() {
                 val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
 
                 card.imageView.setOnClickListener {
-                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-                    println("SSTATE: " + castContext.castState + "<<")
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }

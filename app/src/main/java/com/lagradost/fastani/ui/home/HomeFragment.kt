@@ -310,25 +310,31 @@ class HomeFragment : Fragment() {
 
             main_load.alpha = 0f
             main_scroll.alpha = 1f
-            main_reload_data_btt.alpha = 0f
-            main_reload_data_btt.isClickable = false
+            // This somehow crashes, hope this null check helps ¯\_(ツ)_/¯
+            if (main_reload_data_btt != null) {
+                main_reload_data_btt.alpha = 0f
+                main_reload_data_btt.isClickable = false
+            }
             main_layout.setPadding(0, MainActivity.statusHeight, 0, 0)
         }
     }
 
     private fun onHomeErrorCatch(fullRe: Boolean) {
-        main_reload_data_btt.alpha = 1f
-        main_load.alpha = 0f
-        main_reload_data_btt.isClickable = true
-        main_reload_data_btt.setOnClickListener {
-            main_reload_data_btt.alpha = 0f
-            main_load.alpha = 1f
-            main_reload_data_btt.isClickable = false
-            thread {
-                if (fullRe) {
-                    FastAniApi.init()
-                } else {
-                    FastAniApi.requestHome(false)
+        // Null check because somehow this can crash
+        if (main_reload_data_btt != null) {
+            main_reload_data_btt.alpha = 1f
+            main_load.alpha = 0f
+            main_reload_data_btt.isClickable = true
+            main_reload_data_btt.setOnClickListener {
+                main_reload_data_btt.alpha = 0f
+                main_load.alpha = 1f
+                main_reload_data_btt.isClickable = false
+                thread {
+                    if (fullRe) {
+                        FastAniApi.init()
+                    } else {
+                        FastAniApi.requestHome(false)
+                    }
                 }
             }
         }
