@@ -12,8 +12,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
-        versionCode 14
-        versionName "2.2.3"
+        versionCode 15
+        versionName "2.2.4"
 
         testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
     }
@@ -83,7 +83,6 @@ dependencies {
     implementation "ch.acra:acra-core:5.7.0"
     implementation "ch.acra:acra-toast:5.7.0"
 
-
-    implementation 'com.github.nirhart:parallaxscroll:1.0'
+    implementation 'com.github.nirhart:ParallaxScroll:dd53d1f9d1'
 
 }

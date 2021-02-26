@@ -318,8 +318,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
-            if (settingsManager.getBoolean("rotation_enabled", false)) {
-                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+            if (settingsManager.getBoolean("force_landscape", false)) {
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
             } else {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
@@ -581,8 +581,8 @@ class MainActivity : AppCompatActivity() {
         @SuppressLint("HardwareIds")
         val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
-        if (settingsManager.getBoolean("rotation_enabled", false)) {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+        if (settingsManager.getBoolean("force_landscape", false)) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }

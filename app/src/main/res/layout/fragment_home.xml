@@ -48,10 +48,10 @@
                         android:alpha="1"
                         android:src="@drawable/faded_bg"
                         android:contentDescription="@string/home_background_content_description"/>
-                    <!--
-                    305 dp here (+ a new view) is needed to hide a
-                    parallax scrolling bug making the gradient not cover the image
-                     -->
+                <!--
+                305 dp here (+ a new view) is needed to hide a
+                parallax scrolling bug making the gradient not cover the image
+                 -->
                 <View
                         android:layout_width="match_parent"
                         android:layout_height="305dp"
@@ -189,6 +189,7 @@
                         android:id="@+id/recentlySeenRoot"
                         android:visibility="visible"
                 >
+
                     <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -200,6 +201,7 @@
                             android:padding="10dp"
                     >
                     </TextView>
+
                     <HorizontalScrollView
                             android:layout_width="wrap_content"
                             android:layout_height="135dp"

@@ -1,7 +1,8 @@
 <resources>
-    <string name="version_code">2.2.3 Public Release</string>
+    <string name="version_code">2.2.5 Public Release</string>
     <string name="changelog">\n
-        - Fixed crash caused by FAB play button\n
+        - Changed allow rotation to force rotation\n
+        - Made anime info poster bigger\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>

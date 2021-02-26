@@ -233,10 +233,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             activity?.recreate()
             return@setOnPreferenceChangeListener true
         }
-        val allowRotation = findPreference("rotation_enabled") as SwitchPreference?
-        allowRotation?.setOnPreferenceChangeListener { preference, newValue ->
+        val forceLandscape
+        = findPreference("force_landscape") as SwitchPreference?
+        forceLandscape?.setOnPreferenceChangeListener { preference, newValue ->
             if (newValue == true) {
-                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
             } else {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }

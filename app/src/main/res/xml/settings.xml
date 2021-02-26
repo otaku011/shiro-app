@@ -17,9 +17,9 @@
                 app:defaultValue="true"
         />
         <SwitchPreference
-                android:icon="@drawable/ic_baseline_screen_rotation_24"
-                app:key="rotation_enabled"
-                android:title="Allow screen rotation"
+                android:icon="@drawable/ic_baseline_screen_lock_landscape_24"
+                app:key="force_landscape"
+                android:title="Force landscape"
                 android:summary="Useful for tablets"
                 app:defaultValue="false"
         />
@@ -79,24 +79,6 @@
         />
     </PreferenceCategory>
 
-
-    <PreferenceCategory
-            android:key="theme"
-            android:title="Theme"
-            app:isPreferenceVisible="false"
-    >
-        <SwitchPreferenceCompat
-                android:enabled="false"
-                app:defaultValue="false"
-                android:key="auto_dark_mode"
-                app:title="Automatic dark mode"
-                android:summary="Based on phone theme"/>
-        <SwitchPreferenceCompat
-                app:defaultValue="true"
-                android:enabled="false"
-                android:key="dark_mode"
-                app:title="Dark mode"/>
-    </PreferenceCategory>
     <PreferenceCategory
             android:key="history"
             android:title="History"
