@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:background="@drawable/outline_background"
         android:orientation="vertical">
     <!-- HEIGHT MUST MATCH fragment_home -->
 
@@ -20,13 +21,13 @@
             app:cardBackgroundColor="@color/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView
+                android:clickable="true"
+                android:focusable="true"
                 android:id="@+id/imageView"
                 android:scaleType="centerCrop"
                 android:layout_width="177dp"
                 android:layout_height="100dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
         >
         </ImageView>
         <ImageView
@@ -80,6 +81,7 @@
                 android:src="@drawable/ic_baseline_clear_24"
                 android:layout_gravity="end|top"
                 android:layout_margin="5dp"
+
                 android:contentDescription="Remove"
         />
 

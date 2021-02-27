@@ -148,6 +148,7 @@
                             android:layout_height="40dp"
                             android:layout_gravity="center_horizontal"
                             android:background="@drawable/button_ripple"
+                            android:foreground="@drawable/button_outline"
                             android:textColor="@color/textColor"
                             android:clickable="true"
                             android:focusable="true"
@@ -173,6 +174,7 @@
                             android:textColor="@android:color/primary_text_light"
                             android:clickable="true"
                             android:focusable="true"
+                            android:foreground="@drawable/button_outline"
                             android:theme="@style/Button.White"
                             android:id="@+id/main_info_button"
                             android:text="@string/main_info_button_text"
@@ -207,7 +209,6 @@
                     <HorizontalScrollView
                             android:layout_width="wrap_content"
                             android:layout_height="135dp"
-                            android:layout_marginTop="20dp"
                             android:layout_marginBottom="20dp"
                     >
                         <LinearLayout

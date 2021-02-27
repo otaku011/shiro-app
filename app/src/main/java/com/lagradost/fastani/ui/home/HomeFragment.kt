@@ -115,11 +115,11 @@ class HomeFragment : Fragment() {
 
                     card.imageText.text = cardInfo?.title?.english
 
-                    card.imageView.setOnLongClickListener {
+                    card.home_card_root.setOnLongClickListener {
                         Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
                     }
-                    card.imageView.setOnClickListener {
+                    card.home_card_root.setOnClickListener {
                         val _id = cardInfo?.id
                         if (FastAniApi.lastCards.containsKey(_id)) {
                             if (cardInfo != null) {
@@ -148,11 +148,11 @@ class HomeFragment : Fragment() {
 
                     card.imageText.text = cardInfo?.title?.english
 
-                    card.imageView.setOnLongClickListener {
+                    card.home_card_root.setOnLongClickListener {
                         Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
                     }
-                    card.imageView.setOnClickListener {
+                    card.home_card_root.setOnClickListener {
                         if (cardInfo != null) {
                             MainActivity.loadPage(cardInfo)
                         }
@@ -194,7 +194,7 @@ class HomeFragment : Fragment() {
                     val difference = unixTime - System.currentTimeMillis() / 1000
 
                     card.scheduleText.text = secondsToReadable(difference.toInt(), "Released")
-                    card.imageView.setOnLongClickListener {
+                    card.home_card_schedule_root.setOnLongClickListener {
                         Toast.makeText(context, title, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
                     }
