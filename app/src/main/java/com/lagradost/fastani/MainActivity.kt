@@ -22,6 +22,7 @@ import android.util.TypedValue
 import android.view.*
 import android.view.KeyEvent
 import android.view.KeyEvent.ACTION_DOWN
+import android.view.View.FOCUS_UP
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -48,6 +49,7 @@ import com.lagradost.fastani.ui.PlayerFragment
 import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
+import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
 import java.net.URL
 import java.net.URLDecoder
@@ -689,31 +691,43 @@ class MainActivity : AppCompatActivity() {
         navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
 
-        navView.setOnKeyListener { v, keyCode, event ->
+        /*navView.setOnKeyListener { v, keyCode, event ->
             println("$keyCode $event")
-            when (event.keyCode) {
-                KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    if (event.action == ACTION_DOWN) {
-                        val newItem = navView.menu.findItem(layout[(layout.indexOf(navView.selectedItemId) + 1) % 4])
-                        newItem.isChecked = true
-                    }
-                }
-                KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    if (event.action == ACTION_DOWN) {
+            if (event.action == ACTION_DOWN) {
+
+                when (event.keyCode) {
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+
                         val newItem =
-                            navView.menu.findItem(layout[Math.floorMod(layout.indexOf(navView.selectedItemId) - 1, 4)])
+                            navView.menu.findItem(layout[(layout.indexOf(navView.selectedItemId) + 1) % 4])
                         newItem.isChecked = true
+
                     }
-                }
-                // TODO FIX
-                KeyEvent.KEYCODE_ENTER -> {
-                    if (event.action == ACTION_DOWN) {
-                        //(navView.menu.findItem(navView.selectedItemId))
+                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+
+                        val newItem =
+                            navView.menu.findItem(
+                                layout[Math.floorMod(
+                                    layout.indexOf(navView.selectedItemId) - 1,
+                                    4
+                                )]
+                            )
+                        newItem.isChecked = true
+
+                    }
+                    // TODO FIX
+                    KeyEvent.KEYCODE_ENTER -> {
+                        navController!!.navigate(navView.selectedItemId)
+                    }
+                    KeyEvent.KEYCODE_DPAD_UP -> {
+                        navView.isFocusable = false
+                        navView.clearFocus()
+                        navView.requestFocus(FOCUS_UP)
                     }
                 }
             }
             return@setOnKeyListener true
-        }
+        }*/
 
         window.setBackgroundDrawableResource(R.color.background);
         //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
