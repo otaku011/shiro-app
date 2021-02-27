@@ -46,8 +46,16 @@
                         android:layout_height="300dp"
                         android:scaleType="centerCrop"
                         android:alpha="1"
+                        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                        android:focusable="true"
                         android:src="@drawable/faded_bg"
-                        android:contentDescription="@string/home_background_content_description"/>
+                        android:contentDescription="@string/home_background_content_description"
+                        android:nextFocusUp="@+id/nav_view"
+                        android:nextFocusRight="@+id/main_info_button"
+                        android:nextFocusLeft="@+id/main_watch_button"
+                >
+                    <requestFocus/>
+                </ImageView>
                 <!--
                 305 dp here (+ a new view) is needed to hide a
                 parallax scrolling bug making the gradient not cover the image

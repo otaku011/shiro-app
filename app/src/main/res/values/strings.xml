@@ -30,4 +30,5 @@
         developers :)
     </string>
     <string name="pref_disable_acra">Disable automatic bug reporting</string>
+    <string name="downloads">Downloads</string>
 </resources>

@@ -147,6 +147,8 @@
                                     android:layout_gravity="center"
                                     android:contentDescription="@string/bookmark_btt_hint"/>
                             <ImageView
+                                    android:nextFocusUp="@+id/title_go_back"
+                                    android:nextFocusLeft="@+id/title_go_back"
                                     android:layout_width="50dp"
                                     android:layout_height="50dp"
                                     android:layout_gravity="center"

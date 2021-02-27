@@ -20,6 +20,8 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
 import android.view.*
+import android.view.KeyEvent
+import android.view.KeyEvent.ACTION_DOWN
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -37,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.lagradost.fastani.FastAniApi.Companion.getCardById
 import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
@@ -671,17 +674,46 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-        val navView: BottomNavigationView = findViewById(R.id.nav_view)
-        navController = findNavController(R.id.nav_host_fragment)
+
+        val layout = listOf(
+            R.id.navigation_home, R.id.navigation_search, R.id.navigation_downloads, R.id.navigation_settings
+        )
+        val appBarConfiguration = AppBarConfiguration(
+            layout.toSet()
+        )
+
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_home, R.id.navigation_search, R.id.navigation_downloads, R.id.navigation_settings
-            )
-        )
         //setupActionBarWithNavController(navController, appBarConfiguration)
+        val navView: BottomNavigationView = findViewById(R.id.nav_view)
+        navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
+
+        navView.setOnKeyListener { v, keyCode, event ->
+            println("$keyCode $event")
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (event.action == ACTION_DOWN) {
+                        val newItem = navView.menu.findItem(layout[(layout.indexOf(navView.selectedItemId) + 1) % 4])
+                        newItem.isChecked = true
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (event.action == ACTION_DOWN) {
+                        val newItem =
+                            navView.menu.findItem(layout[Math.floorMod(layout.indexOf(navView.selectedItemId) - 1, 4)])
+                        newItem.isChecked = true
+                    }
+                }
+                // TODO FIX
+                KeyEvent.KEYCODE_ENTER -> {
+                    if (event.action == ACTION_DOWN) {
+                        //(navView.menu.findItem(navView.selectedItemId))
+                    }
+                }
+            }
+            return@setOnKeyListener true
+        }
 
         window.setBackgroundDrawableResource(R.color.background);
         //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
