@@ -1,8 +1,11 @@
 <resources>
-    <string name="version_code">2.2.5 Public Release</string>
+    <string name="version_code">2.3.0 Public Release</string>
     <string name="changelog">\n
-        - Changed allow rotation to force rotation\n
-        - Made anime info poster bigger\n
+        - Added skip time sliders\n
+        - Added cursed resize mode\n
+        - Replaced allow rotation with force rotation\n
+        - Made app semi working on android TV (good luck using it though), more to come\n
+        - Fixed chromecast crashing\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>

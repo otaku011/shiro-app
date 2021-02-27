@@ -30,6 +30,7 @@
                 android:title="Compact search results"
                 app:defaultValue="true"
         />
+
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"
@@ -38,6 +39,7 @@
                           android:defaultValue="false"/>
 
     </PreferenceCategory>
+
     <PreferenceCategory
             android:key="player"
             android:title="Player"
@@ -77,6 +79,31 @@
                 android:summary="Your preferred playback speed will still be used with this disabled"
                 app:defaultValue="false"
         />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_aspect_ratio_24"
+                app:key="player_resize_enabled"
+                android:title="Player resize button"
+                android:summary="Cursed"
+                app:defaultValue="false"
+        />
+        <SeekBarPreference
+                android:icon="@drawable/ic_baseline_access_time_24"
+                android:title="Fast forward skip time"
+                android:defaultValue="10"
+                android:key="fast_forward_button_time"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+        >
+        </SeekBarPreference>
+        <SeekBarPreference
+                android:icon="@drawable/ic_baseline_access_time_24"
+                android:title="Double tap skip time"
+                android:defaultValue="10"
+                android:key="dobule_tap_time"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+        >
+        </SeekBarPreference>
     </PreferenceCategory>
 
     <PreferenceCategory

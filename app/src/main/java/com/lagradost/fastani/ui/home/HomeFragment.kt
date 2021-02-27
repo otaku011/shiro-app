@@ -321,19 +321,21 @@ class HomeFragment : Fragment() {
 
     private fun onHomeErrorCatch(fullRe: Boolean) {
         // Null check because somehow this can crash
-        if (main_reload_data_btt != null) {
-            main_reload_data_btt.alpha = 1f
-            main_load.alpha = 0f
-            main_reload_data_btt.isClickable = true
-            main_reload_data_btt.setOnClickListener {
-                main_reload_data_btt.alpha = 0f
-                main_load.alpha = 1f
-                main_reload_data_btt.isClickable = false
-                thread {
-                    if (fullRe) {
-                        FastAniApi.init()
-                    } else {
-                        FastAniApi.requestHome(false)
+        requireActivity().runOnUiThread {
+            if (main_reload_data_btt != null) {
+                main_reload_data_btt.alpha = 1f
+                main_load.alpha = 0f
+                main_reload_data_btt.isClickable = true
+                main_reload_data_btt.setOnClickListener {
+                    main_reload_data_btt.alpha = 0f
+                    main_load.alpha = 1f
+                    main_reload_data_btt.isClickable = false
+                    thread {
+                        if (fullRe) {
+                            FastAniApi.init()
+                        } else {
+                            FastAniApi.requestHome(false)
+                        }
                     }
                 }
             }

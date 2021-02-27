@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
@@ -59,12 +60,6 @@ const val STATE_PLAYER_PLAYING = "playerOnPlay"
 const val ACTION_MEDIA_CONTROL = "media_control"
 const val EXTRA_CONTROL_TYPE = "control_type"
 const val PLAYBACK_SPEED = "playback_speed"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [PlayerFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 
 // TITLE AND URL OR CARD MUST BE PROVIDED
 // EPISODE AND SEASON SHOULD START AT 0
@@ -133,6 +128,17 @@ class PlayerFragment() : Fragment() {
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
     private val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
     private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
+    private val playerResizeEnabled = settingsManager.getBoolean("player_resize_enabled", false)
+    private val doubleTapTime = settingsManager.getInt("dobule_tap_time", 10)
+    private val fastForwardTime = settingsManager.getInt("fast_forward_button_time", 10)
+    private val resizeModes = listOf(
+        AspectRatioFrameLayout.RESIZE_MODE_FIT,
+        AspectRatioFrameLayout.RESIZE_MODE_FILL,
+        AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
+    )
+    private var resizeMode = DataStore.getKey<Int>(RESIZE_MODE_KEY, 0)
+
+    // width as it's rotated
     private var width = Resources.getSystem().displayMetrics.heightPixels
     private var prevDiffX = 0.0
 
@@ -503,7 +509,20 @@ class PlayerFragment() : Fragment() {
         player_holder.setOnTouchListener(OnTouchListener { v, event -> // ignore all touch events
             !isShowing
         })*/
-
+        //println("RESIZE $resizeMode")
+        player_view.resizeMode = resizeModes[resizeMode!!]
+        if (playerResizeEnabled) {
+            resize_player_holder.visibility = VISIBLE
+            resize_player.setOnClickListener {
+                resizeMode = Math.floorMod(resizeMode!! + 1, resizeModes.size)
+                //println("RESIZE $resizeMode")
+                DataStore.setKey(RESIZE_MODE_KEY, resizeMode)
+                player_view.resizeMode = resizeModes[resizeMode!!]
+                //exoPlayer.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+            }
+        } else {
+            resize_player_holder.visibility = GONE
+        }
 
         class Listener : DoubleClickListener(this) {
             // Declaring a seekAnimation here will cause a bug
@@ -513,8 +532,8 @@ class PlayerFragment() : Fragment() {
                     val seekAnimation = AlphaAnimation(1f, 0f)
                     seekAnimation.duration = 1200
                     seekAnimation.fillAfter = true
-                    seekTime(10000L)
-                    timeTextRight.text = "+ ${convertTimeToString((clicks * 10).toDouble())}"
+                    seekTime(doubleTapTime * 1000L)
+                    timeTextRight.text = "+ ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
                     timeTextRight.alpha = 1f
                     timeTextRight.startAnimation(seekAnimation)
                 }
@@ -525,8 +544,8 @@ class PlayerFragment() : Fragment() {
                     val seekAnimation = AlphaAnimation(1f, 0f)
                     seekAnimation.duration = 1200
                     seekAnimation.fillAfter = true
-                    seekTime(-10000L)
-                    timeTextLeft.text = "- ${convertTimeToString((clicks * 10).toDouble())}"
+                    seekTime(doubleTapTime * -1000L)
+                    timeTextLeft.text = "- ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
                     timeTextLeft.alpha = 1f
                     timeTextLeft.startAnimation(seekAnimation)
                 }
@@ -584,15 +603,17 @@ class PlayerFragment() : Fragment() {
             MainActivity.popCurrentPage()
         }
 
+        exo_rew_text.text = fastForwardTime.toString()
+        exo_ffwd_text.text = fastForwardTime.toString()
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
             exo_rew.startAnimation(rotateLeft)
-            seekTime(-10000L)
+            seekTime(fastForwardTime * -1000L)
         }
         exo_ffwd.setOnClickListener {
             val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
             exo_ffwd.startAnimation(rotateRight)
-            seekTime(10000L)
+            seekTime(fastForwardTime * 1000L)
         }
 
         playback_speed_holder.visibility = if (playBackSpeedEnabled) VISIBLE else GONE
@@ -632,6 +653,7 @@ class PlayerFragment() : Fragment() {
             playbackPosition = savedInstanceState.getLong(STATE_RESUME_POSITION)
             isFullscreen = savedInstanceState.getBoolean(STATE_PLAYER_FULLSCREEN)
             isPlayerPlaying = savedInstanceState.getBoolean(STATE_PLAYER_PLAYING)
+            resizeMode = savedInstanceState.getInt(RESIZE_MODE_KEY)
             playbackSpeed = savedInstanceState.getFloat(PLAYBACK_SPEED)
         }
     }
@@ -652,6 +674,7 @@ class PlayerFragment() : Fragment() {
         outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, isFullscreen)
         outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
+        outState.putInt(RESIZE_MODE_KEY, resizeMode!!)
         outState.putFloat(PLAYBACK_SPEED, playbackSpeed!!)
         savePos()
         super.onSaveInstanceState(outState)
@@ -799,6 +822,7 @@ class PlayerFragment() : Fragment() {
                 }
             }
         })
+
     }
 
     override fun onStart() {
