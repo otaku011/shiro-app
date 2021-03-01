@@ -92,8 +92,11 @@ class FastAniApi {
     )
 
     data class AnimeData(@JsonProperty("cards") val cards: List<Card>)
-    data class SearchResponse(@JsonProperty("animeData") val animeData: AnimeData?,
-                              @JsonProperty("success") val success: Boolean)
+    data class SearchResponse(
+        @JsonProperty("animeData") val animeData: AnimeData?,
+        @JsonProperty("success") val success: Boolean
+    )
+
     data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("native") val nextEpisode: Int)
 
     data class Update(
@@ -270,7 +273,11 @@ class FastAniApi {
                 khttp.get(url, headers = it.toMap())
             }
             return if (res != null) {
-                mapper.readValue(res.text)
+                try {
+                    mapper.readValue(res.text)
+                } catch (e: Exception) {
+                    null
+                }
             } else null
         }
 
@@ -281,8 +288,20 @@ class FastAniApi {
             } else {
                 val url = "https://fastani.net/api/data"
                 val response =
-                    currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
-                res = response?.text?.let { mapper.readValue(it) }
+                    currentToken?.let {
+                        try {
+                            khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                res = response?.text?.let {
+                    try {
+                        mapper.readValue(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
                 res?.schedule = getSchedule()
             }
             // Anything below here shouldn't do network requests (network on main thread)

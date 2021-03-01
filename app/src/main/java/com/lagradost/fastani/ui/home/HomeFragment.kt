@@ -321,7 +321,7 @@ class HomeFragment : Fragment() {
 
     private fun onHomeErrorCatch(fullRe: Boolean) {
         // Null check because somehow this can crash
-        requireActivity().runOnUiThread {
+        activity?.runOnUiThread {
             if (main_reload_data_btt != null) {
                 main_reload_data_btt.alpha = 1f
                 main_load.alpha = 0f

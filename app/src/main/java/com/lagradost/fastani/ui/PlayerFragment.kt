@@ -23,10 +23,12 @@ import android.content.Intent
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.content.BroadcastReceiver
+import android.content.Context.AUDIO_SERVICE
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
+import android.media.AudioManager
 import android.net.Uri
 import android.os.SystemClock
 import android.preference.PreferenceManager
@@ -47,7 +49,6 @@ import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
 import com.lagradost.fastani.R
 import java.io.File
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 import kotlin.math.*
@@ -119,9 +120,13 @@ class PlayerFragment() : Fragment() {
     private var isFullscreen = false
     private var isPlayerPlaying = true
     private var currentX = 0F
+    private var currentY = 0F
     private var isMovingStartTime = 0L
     private var skipTime = 0L
     private var hasPassedSkipLimit = false
+    private var preventHorizontalSwipe = false
+    private var hasPassedVerticalSwipeThreshold = false
+
     private var playbackSpeed = DataStore.getKey<Float>(PLAYBACK_SPEED_KEY, 1f)
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
@@ -140,6 +145,7 @@ class PlayerFragment() : Fragment() {
 
     // width as it's rotated
     private var width = Resources.getSystem().displayMetrics.heightPixels
+    private var height = Resources.getSystem().displayMetrics.widthPixels
     private var prevDiffX = 0.0
 
     abstract class DoubleClickListener(ctx: PlayerFragment) : OnTouchListener {
@@ -427,32 +433,61 @@ class PlayerFragment() : Fragment() {
         // TIME_UNSET   ==   -9223372036854775807L
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
+        val audioManager = requireActivity().getSystemService(AUDIO_SERVICE) as AudioManager
         if (isLocked || exoPlayer.duration == -9223372036854775807L || !swipeEnabled) return
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 currentX = motionEvent.rawX
+                currentY = motionEvent.rawY
                 //println("DOWN: " + currentX)
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {
-                val distanceMultiplier = 2F
-                val distance = (motionEvent.rawX - currentX) * distanceMultiplier
+                val distanceMultiplierX = 2F
+                val distanceMultiplierY = 2F
 
-                val diffX = distance * 2.0 / width
+                val distanceX = (motionEvent.rawX - currentX) * distanceMultiplierX
+                val distanceY = (motionEvent.rawY - currentY) * distanceMultiplierY
+                val diffX = distanceX * 2.0 / width
+                val diffY = distanceY * 2.0 / height
+
                 // Forces 'smooth' moving preventing a bug where you
                 // can make it think it moved half a screen in a frame
                 if (abs(diffX - prevDiffX) > 0.5) {
                     return
                 }
+
+                if (abs(diffY) >= 0.2 && !hasPassedSkipLimit) {
+                    hasPassedVerticalSwipeThreshold = true
+                    preventHorizontalSwipe = true
+                }
+                if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
+                    if (currentX > width * 0.5) {
+                        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                        val newVolume = minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
+
+                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, AudioManager.FLAG_SHOW_UI)
+                        progressBarRight.progress = newVolume * 100 / maxVolume
+                        currentY = motionEvent.rawY
+                    } else {
+                        requireActivity().runOnUiThread {
+                            brightness_overlay.alpha =
+                                minOf(0.9f, brightness_overlay.alpha + 0.1f * if (diffY > 0) 1 else -1)
+                        }
+                        currentY = motionEvent.rawY
+                    }
+                }
                 prevDiffX = diffX
+
                 skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
                 if (isMovingStartTime + skipTime < 0) {
                     skipTime = -isMovingStartTime
                 } else if (isMovingStartTime + skipTime > exoPlayer.duration) {
                     skipTime = exoPlayer.duration - isMovingStartTime
                 }
-                if (abs(skipTime) > 3000 || hasPassedSkipLimit) {
+                if ((abs(skipTime) > 3000 || hasPassedSkipLimit) && !preventHorizontalSwipe) {
                     hasPassedSkipLimit = true
                     val timeString =
                         "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
@@ -465,11 +500,13 @@ class PlayerFragment() : Fragment() {
                 }
             }
             MotionEvent.ACTION_UP -> {
-                hasPassedSkipLimit = false
-                prevDiffX = 0.0
-                if (abs(skipTime) > 7000) {
+                if (abs(skipTime) > 7000 && !preventHorizontalSwipe) {
                     exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
                 }
+                hasPassedSkipLimit = false
+                hasPassedVerticalSwipeThreshold = false
+                preventHorizontalSwipe = false
+                prevDiffX = 0.0
                 skipTime = 0
 
                 val fadeAnimation = AlphaAnimation(1f, 0f)

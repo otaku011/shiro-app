@@ -13,6 +13,7 @@
           android:id="@+id/shadow_overlay"
           android:background="@color/black_overlay"
     />
+
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:gravity="end"
@@ -199,6 +200,38 @@
                 android:layout_gravity="center"
                 android:id="@+id/centerMenu"
         >
+            <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                <ImageView
+                        android:layout_marginBottom="250dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_baseline_brightness_7_24"
+                >
+
+                </ImageView>
+
+                <ProgressBar
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_width="4dp"
+                        android:layout_height="200dp"
+                        android:id="@+id/progressBarLeft"
+                        android:indeterminate="false"
+                        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                        android:max="100"
+                        android:layout_marginEnd="50dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:progress="100"
+                        android:progressDrawable="@drawable/progress_drawable_vertical"
+                >
+
+
+                </ProgressBar>
+            </RelativeLayout>
             <FrameLayout android:layout_width="wrap_content"
                          android:layout_marginEnd="140dp"
                          android:layout_gravity="center_vertical"
@@ -268,6 +301,7 @@
                         android:layout_height="40dp">
                 </TextView>
                 <ImageButton
+                        android:layout_gravity="center"
                         android:id="@id/exo_ffwd"
                         android:layout_height="50dp"
                         android:layout_width="50dp"
@@ -278,11 +312,42 @@
                         android:tintMode="src_in"
 
                 />
-
             </FrameLayout>
+            <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
 
+                <ImageView
+                        android:layout_marginBottom="250dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_baseline_volume_up_24"
+                >
+
+                </ImageView>
+
+                <ProgressBar
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_width="4dp"
+                        android:layout_height="200dp"
+                        android:id="@+id/progressBarRight"
+                        android:indeterminate="false"
+                        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                        android:max="100"
+                        android:layout_marginEnd="50dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:progress="100"
+                        android:progressDrawable="@drawable/progress_drawable_vertical"
+                >
+
+
+                </ProgressBar>
+            </RelativeLayout>
 
         </LinearLayout>
+
 
         <LinearLayout
                 android:layout_marginBottom="20dp"
@@ -452,8 +517,15 @@
                 </ImageView>
             </RelativeLayout>
         </RelativeLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <View android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/brightness_overlay"
+          android:background="@android:color/black"
+          android:alpha="0"
+    />
     <View android:layout_width="match_parent"
           android:layout_height="match_parent"
           android:id="@+id/click_overlay"
