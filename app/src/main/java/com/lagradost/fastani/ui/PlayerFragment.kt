@@ -28,15 +28,23 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
+import android.database.ContentObserver
 import android.media.AudioManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.preference.PreferenceManager
+import androidx.transition.Fade
+import androidx.transition.Transition
 import android.view.*
 import android.view.View.*
+import android.view.animation.AccelerateInterpolator
+import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.transition.TransitionManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -91,6 +99,22 @@ class PlayerFragment() : Fragment() {
     private val mapper = JsonMapper.builder().addModule(KotlinModule())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
+    private class SettingsContentObserver(handler: Handler?) : ContentObserver(handler) {
+        private val audioManager = activity?.getSystemService(AUDIO_SERVICE) as AudioManager
+        override fun onChange(selfChange: Boolean) {
+            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val progressBarRight = activity?.findViewById<ProgressBar>(R.id.progressBarRight)
+            progressBarRight?.progress = currentVolume * 100 / maxVolume
+        }
+    }
+
+    private val volumeObserver = SettingsContentObserver(
+        Handler(
+            Looper.getMainLooper()
+        )
+    )
+
     companion object {
         var isInPlayer: Boolean = false
         var onLeftPlayer = Event<Boolean>()
@@ -130,6 +154,7 @@ class PlayerFragment() : Fragment() {
     private var playbackSpeed = DataStore.getKey<Float>(PLAYBACK_SPEED_KEY, 1f)
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
+    private val swipeVerticalEnabled = settingsManager.getBoolean("swipe_vertical_enabled", true)
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
     private val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
     private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
@@ -268,7 +293,7 @@ class PlayerFragment() : Fragment() {
         MainActivity.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
-
+        requireActivity().contentResolver.unregisterContentObserver(volumeObserver);
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -433,8 +458,8 @@ class PlayerFragment() : Fragment() {
         // TIME_UNSET   ==   -9223372036854775807L
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
+        if (isLocked || exoPlayer.duration == -9223372036854775807L || (!swipeEnabled && !swipeVerticalEnabled)) return
         val audioManager = requireActivity().getSystemService(AUDIO_SERVICE) as AudioManager
-        if (isLocked || exoPlayer.duration == -9223372036854775807L || !swipeEnabled) return
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -444,63 +469,76 @@ class PlayerFragment() : Fragment() {
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {
-                val distanceMultiplierX = 2F
-                val distanceMultiplierY = 2F
+                if (swipeVerticalEnabled) {
+                    val distanceMultiplierY = 2F
+                    val distanceY = (motionEvent.rawY - currentY) * distanceMultiplierY
+                    val diffY = distanceY * 2.0 / height
 
-                val distanceX = (motionEvent.rawX - currentX) * distanceMultiplierX
-                val distanceY = (motionEvent.rawY - currentY) * distanceMultiplierY
-                val diffX = distanceX * 2.0 / width
-                val diffY = distanceY * 2.0 / height
+                    // Forces 'smooth' moving preventing a bug where you
+                    // can make it think it moved half a screen in a frame
 
-                // Forces 'smooth' moving preventing a bug where you
-                // can make it think it moved half a screen in a frame
-                if (abs(diffX - prevDiffX) > 0.5) {
-                    return
-                }
+                    if (abs(diffY) >= 0.2 && !hasPassedSkipLimit) {
+                        hasPassedVerticalSwipeThreshold = true
+                        preventHorizontalSwipe = true
 
-                if (abs(diffY) >= 0.2 && !hasPassedSkipLimit) {
-                    hasPassedVerticalSwipeThreshold = true
-                    preventHorizontalSwipe = true
-                }
-                if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
-                    if (currentX > width * 0.5) {
-                        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-                        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                        val newVolume = minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
+                    }
+                    if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
+                        if (currentX > width * 0.5) {
+                            progressBarRightHolder.alpha = 1f
+                            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                            val newVolume =
+                                minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
 
-                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, AudioManager.FLAG_SHOW_UI)
-                        progressBarRight.progress = newVolume * 100 / maxVolume
-                        currentY = motionEvent.rawY
-                    } else {
-                        requireActivity().runOnUiThread {
-                            brightness_overlay.alpha =
-                                minOf(0.9f, brightness_overlay.alpha + 0.1f * if (diffY > 0) 1 else -1)
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+                            progressBarRight.progress = newVolume * 100 / maxVolume
+                            currentY = motionEvent.rawY
+                        } else {
+                            progressBarLeftHolder.alpha = 1f
+                            val alpha = minOf(0.95f, brightness_overlay.alpha + 0.05f * if (diffY > 0) 1 else -1)
+                            brightness_overlay.alpha = alpha
+                            progressBarLeft.progress = ((1f - alpha) * 100).toInt()
+
+                            currentY = motionEvent.rawY
                         }
-                        currentY = motionEvent.rawY
                     }
                 }
-                prevDiffX = diffX
 
-                skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
-                if (isMovingStartTime + skipTime < 0) {
-                    skipTime = -isMovingStartTime
-                } else if (isMovingStartTime + skipTime > exoPlayer.duration) {
-                    skipTime = exoPlayer.duration - isMovingStartTime
-                }
-                if ((abs(skipTime) > 3000 || hasPassedSkipLimit) && !preventHorizontalSwipe) {
-                    hasPassedSkipLimit = true
-                    val timeString =
-                        "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
-                            convertTimeToString(abs(skipTime / 1000.0))
-                        }]"
-                    timeText.alpha = 1f
-                    timeText.text = timeString
-                } else {
-                    timeText.alpha = 0f
+                if (swipeEnabled) {
+                    val distanceMultiplierX = 2F
+                    val distanceX = (motionEvent.rawX - currentX) * distanceMultiplierX
+                    val diffX = distanceX * 2.0 / width
+                    if (abs(diffX - prevDiffX) > 0.5) {
+                        return
+                    }
+                    prevDiffX = diffX
+
+                    skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
+                    if (isMovingStartTime + skipTime < 0) {
+                        skipTime = -isMovingStartTime
+                    } else if (isMovingStartTime + skipTime > exoPlayer.duration) {
+                        skipTime = exoPlayer.duration - isMovingStartTime
+                    }
+                    if ((abs(skipTime) > 3000 || hasPassedSkipLimit) && !preventHorizontalSwipe) {
+                        hasPassedSkipLimit = true
+                        val timeString =
+                            "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
+                                convertTimeToString(abs(skipTime / 1000.0))
+                            }]"
+                        timeText.alpha = 1f
+                        timeText.text = timeString
+                    } else {
+                        timeText.alpha = 0f
+                    }
                 }
             }
             MotionEvent.ACTION_UP -> {
-                if (abs(skipTime) > 7000 && !preventHorizontalSwipe) {
+                val transition: Transition = Fade()
+                transition.duration = 1000
+
+                TransitionManager.beginDelayedTransition(player_holder, transition)
+
+                if (abs(skipTime) > 7000 && !preventHorizontalSwipe && swipeEnabled) {
                     exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
                 }
                 hasPassedSkipLimit = false
@@ -509,12 +547,18 @@ class PlayerFragment() : Fragment() {
                 prevDiffX = 0.0
                 skipTime = 0
 
-                val fadeAnimation = AlphaAnimation(1f, 0f)
-
-                fadeAnimation.duration = 100
-                fadeAnimation.fillAfter = true
-
-                timeText.startAnimation(fadeAnimation)
+                timeText.animate().alpha(0f).setDuration(200)
+                    .setInterpolator(AccelerateInterpolator()).start()
+                progressBarRightHolder.animate().alpha(0f).setDuration(200)
+                    .setInterpolator(AccelerateInterpolator()).start()
+                progressBarLeftHolder.animate().alpha(0f).setDuration(200)
+                    .setInterpolator(AccelerateInterpolator()).start()
+                //val fadeAnimation = AlphaAnimation(1f, 0f)
+                //fadeAnimation.duration = 100
+                //fadeAnimation.fillAfter = true
+                //progressBarLeftHolder.startAnimation(fadeAnimation)
+                //progressBarRightHolder.startAnimation(fadeAnimation)
+                //timeText.startAnimation(fadeAnimation)
 
             }
         }
@@ -523,6 +567,12 @@ class PlayerFragment() : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+        requireActivity().contentResolver
+            .registerContentObserver(
+                android.provider.Settings.System.CONTENT_URI, true, volumeObserver
+            )
 
         MainActivity.onPlayerEvent += ::handlePlayerEvent
         MainActivity.onAudioFocusEvent += ::handleAudioFocusEvent
@@ -598,6 +648,7 @@ class PlayerFragment() : Fragment() {
             }
 
         }
+
 
         click_overlay.setOnTouchListener(
             Listener()

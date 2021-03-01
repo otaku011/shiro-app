@@ -1,11 +1,9 @@
 <resources>
-    <string name="version_code">2.3.0 Public Release</string>
+    <string name="version_code">2.4.0 Public Release</string>
     <string name="changelog">\n
-        - Added skip time sliders\n
-        - Added cursed resize mode\n
-        - Replaced allow rotation with force rotation\n
-        - Made app semi working on android TV (good luck using it though), more to come\n
-        - Fixed chromecast crashing\n
+        - Added swipe to change volume and brightness\n
+        - Fixed crashing bugs\n
+        - Added some bugs\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>
