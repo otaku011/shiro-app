@@ -1,0 +1,40 @@
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+
+>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/DialogButton"
+            android:id="@+id/update_dialog_header"
+    >
+
+    </TextView>
+    <Button
+            android:id="@+id/update_now"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update now"
+            style="@style/DialogButton"
+    />
+    <Button
+            android:id="@+id/update_later"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update later"
+            style="@style/DialogButton"
+    />
+    <Button
+            android:id="@+id/update_never"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Don't ask again"
+            style="@style/DialogButton"
+    />
+</LinearLayout>

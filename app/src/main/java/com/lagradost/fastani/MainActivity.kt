@@ -3,6 +3,7 @@ package com.lagradost.fastani
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
+import android.app.Dialog
 import android.app.PictureInPictureParams
 import android.content.Context
 import android.content.Intent
@@ -24,9 +25,11 @@ import android.view.KeyEvent
 import android.view.KeyEvent.ACTION_DOWN
 import android.view.View.FOCUS_UP
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -41,15 +44,18 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.material.bottomappbar.BottomAppBar
+import com.lagradost.fastani.FastAniApi.Companion.getAppUpdate
 import com.lagradost.fastani.FastAniApi.Companion.getCardById
 import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerEventType
 import com.lagradost.fastani.ui.PlayerFragment
 import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.fastani.ui.downloads.DownloadFragment
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.update_dialog.*
 import java.lang.Exception
 import java.net.URL
 import java.net.URLDecoder
@@ -598,6 +604,37 @@ class MainActivity : AppCompatActivity() {
         thread {
             // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
             isDonor = getDonorStatus() == androidId
+        }
+        if (settingsManager.getBoolean("auto_update", true)) {
+            thread {
+                val update = getAppUpdate()
+                if (update.shouldUpdate && update.updateURL != null) {
+
+                    activity!!.runOnUiThread {
+                        val dialog = Dialog(activity!!)
+                        //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                        dialog.setTitle("New update found")
+
+                        dialog.setContentView(R.layout.update_dialog)
+                        dialog.update_dialog_header.text = "New update found!\n${update.updateVersion}\n"
+
+                        dialog.update_later.setOnClickListener {
+                            dialog.dismiss()
+                        }
+
+                        dialog.update_never.setOnClickListener {
+                            settingsManager.edit().putBoolean("auto_update", false).apply()
+                            dialog.dismiss()
+                        }
+                        dialog.update_now.setOnClickListener {
+                            Toast.makeText(activity!!, "Download started", Toast.LENGTH_LONG).show()
+                            DownloadManager.downloadUpdate(update.updateURL)
+                            dialog.dismiss()
+                        }
+                        dialog.show()
+                    }
+                }
+            }
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

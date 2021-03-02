@@ -446,7 +446,7 @@ class ResultFragment : Fragment() {
                                             R.id.res_stopdload -> {
                                                 DownloadManager.invokeDownloadAction(
                                                     child.internalId,
-                                                    DownloadManager.DownloadStatusType.IsStoped
+                                                    DownloadManager.DownloadStatusType.IsStopped
                                                 )
                                                 deleteFile()
                                             }
@@ -466,7 +466,7 @@ class ResultFragment : Fragment() {
                                             R.id.stop_stopdload -> {
                                                 DownloadManager.invokeDownloadAction(
                                                     child.internalId,
-                                                    DownloadManager.DownloadStatusType.IsStoped
+                                                    DownloadManager.DownloadStatusType.IsStopped
                                                 )
                                                 deleteFile()
                                             }

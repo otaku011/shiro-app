@@ -484,20 +484,20 @@ class PlayerFragment() : Fragment() {
                     }
                     if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
                         if (currentX > width * 0.5) {
-                            progressBarRightHolder.alpha = 1f
+                            progressBarLeftHolder.alpha = 1f
                             val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                             val newVolume =
                                 minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
 
                             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
-                            progressBarRight.progress = newVolume * 100 / maxVolume
+                            progressBarLeft.progress = newVolume * 100 / maxVolume
                             currentY = motionEvent.rawY
                         } else {
-                            progressBarLeftHolder.alpha = 1f
+                            progressBarRightHolder.alpha = 1f
                             val alpha = minOf(0.95f, brightness_overlay.alpha + 0.05f * if (diffY > 0) 1 else -1)
                             brightness_overlay.alpha = alpha
-                            progressBarLeft.progress = ((1f - alpha) * 100).toInt()
+                            progressBarRight.progress = ((1f - alpha) * 100).toInt()
 
                             currentY = motionEvent.rawY
                         }

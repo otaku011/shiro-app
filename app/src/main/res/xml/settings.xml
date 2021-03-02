@@ -171,6 +171,12 @@
                 app:isPreferenceVisible="false"
                 android:icon="@drawable/ic_baseline_warning_24"
         />
+        <SwitchPreference
+                app:key="auto_update"
+                android:title="Automatically check for updates"
+                app:defaultValue="true"
+                android:icon="@drawable/ic_baseline_system_update_24"
+        />
         <Preference
                 android:title="Check for updates"
                 android:icon="@drawable/rdload"

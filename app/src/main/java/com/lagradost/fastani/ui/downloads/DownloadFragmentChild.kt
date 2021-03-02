@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.preference.PreferenceManager
-import com.google.android.gms.cast.framework.CastContext
 import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.ui.PlayerData
@@ -231,7 +230,7 @@ class DownloadFragmentChild() : Fragment() {
                                 R.id.res_stopdload -> {
                                     DownloadManager.invokeDownloadAction(
                                         child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStoped
+                                        DownloadManager.DownloadStatusType.IsStopped
                                     )
                                     deleteFile()
                                 }
@@ -251,7 +250,7 @@ class DownloadFragmentChild() : Fragment() {
                                 R.id.stop_stopdload -> {
                                     DownloadManager.invokeDownloadAction(
                                         child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStoped
+                                        DownloadManager.DownloadStatusType.IsStopped
                                     )
                                     deleteFile()
                                 }
