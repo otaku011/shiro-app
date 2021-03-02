@@ -1,8 +1,8 @@
 <resources>
-    <string name="version_code">2.5.0 Public Release</string>
+    <string name="version_code">2.5.1 Public Release</string>
     <string name="changelog">\n
-        - Automatic updates\n
-        - Swapped swipe vertical\n
+        - Fixed volume\n
+        - Fixed crash\n
     </string>
     <string name="app_name">FastAni</string>
     <string name="title_home">Home</string>

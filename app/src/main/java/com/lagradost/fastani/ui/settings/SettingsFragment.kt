@@ -11,6 +11,7 @@ import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
+import com.google.android.exoplayer2.offline.Download
 import com.lagradost.fastani.*
 import com.lagradost.fastani.DataStore.getKeys
 import com.lagradost.fastani.DataStore.removeKeys
@@ -200,7 +201,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val update = FastAniApi.getAppUpdate()
                 activity?.runOnUiThread {
                     if (update.shouldUpdate && update.updateVersion != null && update.updateURL != null) {
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))
+                        //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))
+                        DownloadManager.downloadUpdate(update.updateURL)
                         Toast.makeText(context, "New version (${update.updateVersion}) found", Toast.LENGTH_LONG).show()
                     } else {
                         Toast.makeText(context, "No updates found :(", Toast.LENGTH_LONG).show()
@@ -233,8 +235,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             activity?.recreate()
             return@setOnPreferenceChangeListener true
         }
-        val forceLandscape
-        = findPreference("force_landscape") as SwitchPreference?
+        val forceLandscape = findPreference("force_landscape") as SwitchPreference?
         forceLandscape?.setOnPreferenceChangeListener { preference, newValue ->
             if (newValue == true) {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE

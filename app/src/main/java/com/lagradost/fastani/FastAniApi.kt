@@ -11,8 +11,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.md5
 import khttp.structures.cookie.CookieJar
-import java.lang.Exception
 import java.net.URLEncoder
+import kotlin.Exception
 import kotlin.concurrent.thread
 
 class FastAniApi {
@@ -200,7 +200,13 @@ class FastAniApi {
             // Security headers
             val headers = currentToken?.headers
             val response = headers?.let { khttp.get(url, headers = it, cookies = currentToken?.cookies) }
-            val mapped = response?.let { mapper.readValue<SearchResponse>(it.text) }
+            val mapped = response?.let {
+                try {
+                    mapper.readValue<SearchResponse>(it.text)
+                } catch (e: Exception) {
+                    null
+                }
+            }
             return if (mapped?.success == true)
                 mapped
             else null

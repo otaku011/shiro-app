@@ -489,8 +489,15 @@ class PlayerFragment() : Fragment() {
                             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                             val newVolume =
                                 minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
-
-                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+                            val newVolumeAdjusted = if (diffY > 0) AudioManager.ADJUST_LOWER else AudioManager.ADJUST_RAISE
+                            //println(newVolume.toFloat() / maxVolume)
+                            if (audioManager.isVolumeFixed) {
+                                // Lmao might earrape, we'll see in bug reports
+                                exoPlayer.volume = minOf(1f, maxOf(newVolume.toFloat() / maxVolume, 0f))
+                            } else {
+                                //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+                                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, newVolumeAdjusted, 0)
+                            }
                             progressBarLeft.progress = newVolume * 100 / maxVolume
                             currentY = motionEvent.rawY
                         } else {
