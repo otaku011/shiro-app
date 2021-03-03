@@ -4,15 +4,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/outline_background"
+        android:nextFocusRight="@+id/cdi"
+        android:nextFocusLeft="@+id/cdi"
+        android:id="@+id/episode_result_root"
+>
     <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
+            android:layout_margin="2dp"
             android:elevation="10dp"
             app:cardCornerRadius="4dp"
             android:id="@+id/cardBg"
-
             app:cardBackgroundColor="@color/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
         <ImageView
@@ -20,8 +26,6 @@
                 android:scaleType="centerCrop"
                 android:layout_width="142dp"
                 android:layout_height="80dp"
-                android:clickable="true"
-                android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"
         >
         </ImageView>
@@ -69,9 +73,13 @@
                    android:visibility="gone"
         />
 
-        <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
+        <ImageView android:layout_width="40dp"
+                   android:layout_height="40dp"
+                   android:layout_margin="10dp"
                    android:src="@drawable/netflix_download"
                    android:id="@+id/cdi"
+                   android:nextFocusRight="@+id/episode_result_root"
+                   android:nextFocusLeft="@+id/episode_result_root"
                    android:layout_gravity="end|center_vertical"
                    android:background="?android:attr/selectableItemBackgroundBorderless"
         />

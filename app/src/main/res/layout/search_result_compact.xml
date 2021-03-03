@@ -18,6 +18,8 @@
             app:cardBackgroundColor="@color/grayItem"
             android:clickable="true"
             android:focusable="true"
+            android:nextFocusRight="@+id/bookmark_holder"
+            android:nextFocusLeft="@+id/bookmark_holder"
     >
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
 
@@ -27,8 +29,7 @@
                 android:layout_width="54dp"
                 android:layout_height="match_parent"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"/>
+        />
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -59,7 +60,10 @@
                 android:clickable="true"
 
                 android:id="@+id/bookmark_holder"
-                android:background="@drawable/video_tap_button">
+                android:background="@drawable/video_tap_button"
+                android:nextFocusLeft="@+id/backgroundCard"
+                android:nextFocusRight="@+id/backgroundCard"
+        >
         </ImageView>
 
 

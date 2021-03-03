@@ -265,7 +265,7 @@ class ResultFragment : Fragment() {
                     card.cardTitle.layoutParams = param
                 }
 
-                card.imageView.setOnClickListener {
+                card.episode_result_root.setOnClickListener {
 
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
@@ -880,7 +880,7 @@ class ResultFragment : Fragment() {
         title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
-        title_go_back.setOnClickListener {
+        title_go_back_holder.setOnClickListener {
             MainActivity.popCurrentPage()
         }
 

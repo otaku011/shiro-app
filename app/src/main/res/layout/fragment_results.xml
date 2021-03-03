@@ -36,7 +36,9 @@
                         android:clickable="true"
                         android:background="@color/background"
                         android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Background"/>
+                        android:contentDescription="Background">
+                    <requestFocus/>
+                </ImageButton>
 
                 <View
                         android:layout_width="match_parent"
@@ -69,22 +71,28 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/title_go_back_holder"
+                    android:focusable="true"
+                    android:clickable="true"
             >
-                <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/arrow_back">
-                </ImageView>
                 <ImageView
                         android:id="@+id/title_go_back"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
                         android:layout_gravity="center"
-                        android:focusable="true"
-                        android:clickable="true"
                         android:background="@drawable/video_tap_button">
                 </ImageView>
+
+                <ImageView
+                        android:duplicateParentState="true"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        app:tint="@color/focused_primary_color"
+                        android:src="@drawable/arrow_back"
+
+                >
+                </ImageView>
+
             </FrameLayout>
             <FrameLayout
                     android:layout_margin="20dp"
@@ -135,7 +143,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                     >
-                        <FrameLayout android:layout_width="wrap_content" android:layout_gravity="end"
+                        <FrameLayout android:layout_width="wrap_content"
+                                     android:layout_gravity="end"
                                      android:layout_height="wrap_content">
                             <ImageView
                                     android:id="@+id/title_bookmark"
@@ -147,8 +156,8 @@
                                     android:layout_gravity="center"
                                     android:contentDescription="@string/bookmark_btt_hint"/>
                             <ImageView
-                                    android:nextFocusUp="@+id/title_go_back"
-                                    android:nextFocusLeft="@+id/title_go_back"
+                                    android:nextFocusUp="@+id/title_go_back_holder"
+                                    android:nextFocusLeft="@+id/title_go_back_holder"
                                     android:layout_width="50dp"
                                     android:layout_height="50dp"
                                     android:layout_gravity="center"
@@ -206,6 +215,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/textColor"
+                        android:focusable="true"
+                        android:clickable="true"
+                        android:nextFocusUp="@+id/bookmark_holder"
                         android:text="Several hundred years ago, humans were nearly exterminated by titans. Titans are typically several stories tall, seem to have no intelligence, devour human beings and, worst of all, seem to do it for the pleasure rather than as a food source. A small percentage of humanity survived by walling themselves in a city protected by extremely high walls, even taller than the biggest of titans.
 Flash forward to the present and the city has not seen a titan in over 100 years. Teenage boy Eren and his foster sister Mikasa witness something horrific as the city walls are destroyed by a colossal titan that appears out of thin air. As the smaller titans flood the city, the two kids watch in horror as their mother is eaten alive. Eren vows that he will murder every single titan and take revenge for all of mankind.
 (Source: MangaHelpers) ">
