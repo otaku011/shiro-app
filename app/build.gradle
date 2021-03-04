@@ -8,12 +8,12 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.lagradost.fastani"
+        applicationId "com.lagradost.fouranime"
         minSdkVersion 21
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
-        versionCode 19
-        versionName "2.5.1"
+        versionCode 1
+        versionName "1.0.0"
 
         testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
     }
@@ -84,7 +84,10 @@ dependencies {
     implementation "ch.acra:acra-toast:5.7.0"
 
     implementation 'com.github.nirhart:ParallaxScroll:dd53d1f9d1'
-    implementation 'com.google.android.exoplayer:extension-cast:2.12.1'
     implementation 'org.jsoup:jsoup:1.13.1'
+
+
+    // https://mvnrepository.com/artifact/org.mozilla/rhino
+    implementation group: 'org.mozilla', name: 'rhino', version: '1.7.6'
 
 }

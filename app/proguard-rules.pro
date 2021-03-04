@@ -22,12 +22,12 @@
 
 # Proguard configuration for Jackson 2.x
 # Jackson
--keep public class com.lagradost.fastani.AniListApi.**
--keep public enum com.lagradost.fastani.AniListApi$AniListStatusType** {
+-keep public class com.lagradost.fouranime.AniListApi.**
+-keep public enum com.lagradost.fouranime.AniListApi$AniListStatusType** {
     **[] $VALUES;
     public *;
 }
--keep class com.lagradost.fastani.ui.result.ResultFragment.** { *; }
+-keep class com.lagradost.fouranime.ui.result.ResultFragment.** { *; }
 
 -keepattributes *Annotation*
 
@@ -37,7 +37,7 @@
 -keep class * {
     enum **;
 }
--keep class com.lagradost.fastani.ui.result.ResultFragment$loadGetDataAboutId$CardAniListInfo
+-keep class com.lagradost.fouranime.ui.result.ResultFragment$loadGetDataAboutId$CardAniListInfo
 
 -keep        class android.support.v13.** { *; }
 -keep        class android.support.v7.** { *; }
