@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+        android:background="@drawable/outline_background"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:orientation="vertical">
+        android:focusable="true"
+        android:clickable="true"
+        android:id="@+id/home_card_root"
+        android:orientation="vertical"
+>
     <androidx.cardview.widget.CardView
             android:layout_margin="2dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
             android:elevation="10dp"
-            app:cardCornerRadius="2dp"
+            app:cardCornerRadius="6dp"
             app:cardBackgroundColor="@color/darkBar"
+
     >
         <ImageView
+                android:duplicateParentState="true"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
                 android:layout_width="127dp"
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"

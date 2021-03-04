@@ -15,7 +15,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.preference.PreferenceManager
-import com.google.android.gms.cast.framework.CastContext
 import com.lagradost.fastani.*
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.ui.PlayerData
@@ -79,7 +78,7 @@ class DownloadFragmentChild() : Fragment() {
         // Sorts by Seasons and Episode Index
         val sortedEpisodeKeys =
             episodeKeys!!.associateBy({ DataStore.getKey<DownloadManager.DownloadFileMetadata>(it) }, { it }).toList()
-                .sortedBy { (key, _) -> "${key?.seasonIndex}${key?.episodeIndex}" }.toMap()
+                .sortedBy { (key, _) -> key?.seasonIndex!! * 100000 + key.episodeIndex }.toMap()
 
         sortedEpisodeKeys.forEach {
             val child = it.key
@@ -98,8 +97,6 @@ class DownloadFragmentChild() : Fragment() {
                 val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
 
                 card.imageView.setOnClickListener {
-                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-                    println("SSTATE: " + castContext.castState + "<<")
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
@@ -233,7 +230,7 @@ class DownloadFragmentChild() : Fragment() {
                                 R.id.res_stopdload -> {
                                     DownloadManager.invokeDownloadAction(
                                         child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStoped
+                                        DownloadManager.DownloadStatusType.IsStopped
                                     )
                                     deleteFile()
                                 }
@@ -253,7 +250,7 @@ class DownloadFragmentChild() : Fragment() {
                                 R.id.stop_stopdload -> {
                                     DownloadManager.invokeDownloadAction(
                                         child.internalId,
-                                        DownloadManager.DownloadStatusType.IsStoped
+                                        DownloadManager.DownloadStatusType.IsStopped
                                     )
                                     deleteFile()
                                 }

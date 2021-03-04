@@ -49,6 +49,8 @@ import com.lagradost.fastani.MALApi.Companion.setScoreRequest
 import com.lagradost.fastani.MainActivity.Companion.getColorFromAttr
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.openBrowser
+import com.lagradost.fastani.MainActivity.Companion.getNextEpisode
+import com.lagradost.fastani.MainActivity.Companion.loadPlayer
 import com.lagradost.fastani.ui.GlideApp
 import com.lagradost.fastani.ui.PlayerFragment
 import kotlinx.android.synthetic.main.activity_main.*
@@ -263,15 +265,22 @@ class ResultFragment : Fragment() {
                     card.cardTitle.layoutParams = param
                 }
 
-                card.imageView.setOnClickListener {
-                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-                    println("SSTATE: " + castContext.castState + "<<")
+                card.episode_result_root.setOnClickListener {
+
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
-                    if (castContext.castState == CastState.CONNECTED) {
-                        castEpsiode(index, epIndex)
-                        loadSeason(index)
+
+                    if (MainActivity.isCastApiAvailable()) {
+                        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+                        println("SSTATE: " + castContext.castState + "<<")
+                        if (castContext.castState == CastState.CONNECTED) {
+                            castEpsiode(index, epIndex)
+                            loadSeason(index)
+                            return@setOnClickListener
+                        } else {
+                            MainActivity.loadPlayer(epIndex, index, data!!)
+                        }
                     } else {
                         MainActivity.loadPlayer(epIndex, index, data!!)
                     }
@@ -437,7 +446,7 @@ class ResultFragment : Fragment() {
                                             R.id.res_stopdload -> {
                                                 DownloadManager.invokeDownloadAction(
                                                     child.internalId,
-                                                    DownloadManager.DownloadStatusType.IsStoped
+                                                    DownloadManager.DownloadStatusType.IsStopped
                                                 )
                                                 deleteFile()
                                             }
@@ -457,7 +466,7 @@ class ResultFragment : Fragment() {
                                             R.id.stop_stopdload -> {
                                                 DownloadManager.invokeDownloadAction(
                                                     child.internalId,
-                                                    DownloadManager.DownloadStatusType.IsStoped
+                                                    DownloadManager.DownloadStatusType.IsStopped
                                                 )
                                                 deleteFile()
                                             }
@@ -807,9 +816,10 @@ class ResultFragment : Fragment() {
             FastAniApi.lastCards[data!!.id] = data!!
         }
         title_duration.text = data!!.duration.toString() + "min"
+
         thread {
             seasons = getAllSeasons(data!!.anilistId.toInt())
-            if (seasons != null) {
+            if (seasons != null && seasons?.size != 0) {
                 activity?.runOnUiThread {
                     if (seasons!!.last()?.data?.Media?.nextAiringEpisode?.timeUntilAiring != null) {
 
@@ -827,19 +837,40 @@ class ResultFragment : Fragment() {
             seasonChange()
         }
 
-        val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
-        CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
-        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+        if (MainActivity.isCastApiAvailable()) {
+            val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
-        if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
-        castContext.addCastStateListener(CastStateListener { state ->
-            if (media_route_button != null) {
-                if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
-                    if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+            CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
+            val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+
+            if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
+            castContext.addCastStateListener(CastStateListener { state ->
+                if (media_route_button != null) {
+                    if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
+                        if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+                    }
+                }
+            })
+            fab_play_button.setOnClickListener {
+                if (data != null) {
+                    val nextEpisode = getNextEpisode(data!!)
+                    if (castContext.castState == CastState.CONNECTED) {
+                        castEpsiode(nextEpisode.seasonIndex, nextEpisode.episodeIndex)
+                        loadSeason(nextEpisode.seasonIndex)
+                    } else {
+                        loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
+                    }
                 }
             }
-        })
+        } else {
+            fab_play_button.setOnClickListener {
+                if (data != null) {
+                    val nextEpisode = getNextEpisode(data!!)
+                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
+                }
+            }
+        }
         isInResults = true
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
@@ -849,14 +880,31 @@ class ResultFragment : Fragment() {
         title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
-        title_go_back.setOnClickListener {
+        title_go_back_holder.setOnClickListener {
             MainActivity.popCurrentPage()
         }
 
         bookmark_holder.setOnClickListener {
             //toggleHeart(!isBookmarked)
         }
-
+        if (data != null) {
+            val nextEpisode = getNextEpisode(data!!)
+            if (nextEpisode.isFound) {
+                fab_play_button.visibility = VISIBLE
+            }
+        }
+        fab_play_button.setOnLongClickListener {
+            //MainActivity.loadPage(cardInfo!!)
+            if (data != null) {
+                val nextEpisode = getNextEpisode(data!!)
+                Toast.makeText(
+                    activity,
+                    "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            return@setOnLongClickListener true
+        }
         /*
         title_viewstate.setOnClickListener {
             ToggleViewState(!isViewState)

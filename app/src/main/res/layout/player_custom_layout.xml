@@ -13,6 +13,7 @@
           android:id="@+id/shadow_overlay"
           android:background="@color/black_overlay"
     />
+
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:gravity="end"
@@ -21,21 +22,22 @@
 
         <FrameLayout
                 android:layout_margin="5dp"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
         >
             <ImageView
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_gravity="center"
+                    android:layout_margin="15dp"
                     android:id="@+id/video_locked_img"
+                    android:layout_gravity="end|center_vertical"
                     android:src="@drawable/video_locked">
             </ImageView>
             <ImageView
                     android:id="@+id/video_lock"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:layout_gravity="center"
+                    android:layout_gravity="end|center_vertical"
                     android:focusable="true"
                     android:clickable="true"
                     android:background="@drawable/video_tap_button">
@@ -161,7 +163,6 @@
                 </ImageView>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
-
         <FrameLayout
                 android:layout_margin="5dp"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -187,8 +188,6 @@
 
         </FrameLayout>
         <LinearLayout
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -199,11 +198,13 @@
                 android:layout_gravity="center"
                 android:id="@+id/centerMenu"
         >
+
             <FrameLayout android:layout_width="wrap_content"
                          android:layout_marginEnd="140dp"
                          android:layout_gravity="center_vertical"
                          android:layout_height="wrap_content">
                 <TextView
+                        android:id="@+id/exo_rew_text"
                         android:textColor="@color/white"
                         android:text="10"
                         android:textSize="15sp"
@@ -235,7 +236,6 @@
                     android:layout_height="70dp"
                     android:layout_width="70dp"
                     android:layout_gravity="center"
-
                     android:background="@drawable/video_tap_button"
                     android:foreground="@drawable/netflix_play"
                     android:clickable="true"
@@ -246,7 +246,6 @@
                     android:layout_height="70dp"
                     android:layout_width="70dp"
                     android:layout_gravity="center"
-
                     android:background="@drawable/video_tap_button"
                     android:foreground="@drawable/netflix_pause"
                     android:clickable="true"
@@ -258,6 +257,7 @@
                          android:layout_gravity="center_vertical"
                          android:layout_height="wrap_content">
                 <TextView
+                        android:id="@+id/exo_ffwd_text"
                         android:textColor="@color/white"
                         android:text="10"
                         android:textSize="15sp"
@@ -268,6 +268,7 @@
                         android:layout_height="40dp">
                 </TextView>
                 <ImageButton
+                        android:layout_gravity="center"
                         android:id="@id/exo_ffwd"
                         android:layout_height="50dp"
                         android:layout_width="50dp"
@@ -278,11 +279,11 @@
                         android:tintMode="src_in"
 
                 />
-
             </FrameLayout>
 
 
         </LinearLayout>
+
 
         <LinearLayout
                 android:layout_marginBottom="20dp"
@@ -328,8 +329,7 @@
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_marginStart="20dp"
+
                 android:layout_marginBottom="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
@@ -338,6 +338,7 @@
                 android:id="@+id/linearLayout">
 
             <TextView
+                    android:layout_marginStart="20dp"
                     android:id="@id/exo_position"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -365,7 +366,32 @@
                     android:paddingRight="4dp"
                     android:textColor="@color/textColor"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:layout_marginEnd="20dp"
+            />
+            <FrameLayout
+                    android:id="@+id/resize_player_holder"
+                    android:layout_margin="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+            >
+                <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_baseline_aspect_ratio_24">
+                </ImageView>
+                <ImageView
+                        android:id="@+id/resize_player"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_gravity="center"
+                        android:focusable="true"
+                        android:clickable="true"
+                        android:background="@drawable/video_tap_button">
+                </ImageView>
+
+            </FrameLayout>
 
         </LinearLayout>
         <RelativeLayout
@@ -427,13 +453,116 @@
                 </ImageView>
             </RelativeLayout>
         </RelativeLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <View android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/brightness_overlay"
+          android:background="@android:color/black"
+          android:alpha="0"
+    />
     <View android:layout_width="match_parent"
           android:layout_height="match_parent"
           android:id="@+id/click_overlay"
           android:clickable="true"
           android:focusable="true"
     />
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <RelativeLayout
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/centerMenuView"
+                android:id="@+id/progressBarLeftHolder"
+                android:layout_marginEnd="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0"
+        >
 
+            <ImageView
+                    android:layout_marginBottom="250dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_baseline_volume_up_24"
+            >
+
+            </ImageView>
+
+            <ProgressBar
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="4dp"
+                    android:layout_height="200dp"
+                    android:id="@+id/progressBarLeft"
+                    android:indeterminate="false"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:max="100"
+                    android:layout_marginEnd="50dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:progress="100"
+                    android:progressDrawable="@drawable/progress_drawable_vertical"
+            >
+
+
+            </ProgressBar>
+        </RelativeLayout>
+        <RelativeLayout
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/centerMenuView"
+                android:id="@+id/progressBarRightHolder"
+                android:layout_marginStart="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0"
+        >
+
+            <ImageView
+                    android:layout_marginBottom="250dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_baseline_brightness_7_24"
+            >
+
+            </ImageView>
+
+            <ProgressBar
+
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="4dp"
+                    android:layout_height="200dp"
+                    android:id="@+id/progressBarRight"
+                    android:indeterminate="false"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:max="100"
+                    android:layout_marginEnd="50dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:progress="100"
+                    android:progressDrawable="@drawable/progress_drawable_vertical"
+            >
+
+
+            </ProgressBar>
+        </RelativeLayout>
+        <View
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:id="@+id/centerMenuView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginEnd="110dp"
+                android:layout_marginStart="110dp"
+        >
+        </View>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

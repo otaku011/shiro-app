@@ -16,6 +16,7 @@ import com.lagradost.fastani.*
 import com.lagradost.fastani.AniListApi.Companion.secondsToReadable
 import com.lagradost.fastani.FastAniApi.Companion.requestHome
 import com.lagradost.fastani.MainActivity.Companion.loadPlayer
+import com.lagradost.fastani.MainActivity.Companion.getNextEpisode
 import com.lagradost.fastani.ui.GlideApp
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
@@ -24,7 +25,6 @@ import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_schedule.view.*
 import kotlinx.android.synthetic.main.home_recently_seen.view.*
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset.UTC
 import kotlin.concurrent.thread
 
@@ -57,16 +57,16 @@ class HomeFragment : Fragment() {
             recentlySeenScrollView.removeAllViews()
             scheduleScrollView.removeAllViews()
 
-            val cardInfo = data?.homeSlidesData?.get(0)
-            val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
+            val cardInfo = data?.homeSlidesData?.shuffled()?.take(1)?.get(0)
+            /*val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
                 GlideApp.with(it)
                     .load(glideUrl)
                     .into(main_backgroundImage)
-            }
+            }*/
 
             val glideUrlMain =
-                GlideUrl("https://fastani.net/" + cardInfo?.coverImage?.large) { FastAniApi.currentHeaders }
+                GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
                 GlideApp.with(it)
                     .load(glideUrlMain)
@@ -78,14 +78,29 @@ class HomeFragment : Fragment() {
             main_genres.text = cardInfo?.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
 
             main_watch_button.setOnClickListener {
+                //MainActivity.loadPage(cardInfo!!)
+                if (cardInfo != null) {
+                    val nextEpisode = getNextEpisode(cardInfo)
+                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, cardInfo)
+                }
+            }
+            main_watch_button.setOnLongClickListener {
+                //MainActivity.loadPage(cardInfo!!)
+                if (cardInfo != null) {
+                    val nextEpisode = getNextEpisode(cardInfo)
+                    Toast.makeText(activity, "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}", Toast.LENGTH_LONG).show()
+                }
+                return@setOnLongClickListener true
+            }
+            //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            main_info_button.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
             }
 
-            //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            main_poster.setOnClickListener {
+            /*main_poster.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
-            }
+            }*/
             fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: LinearLayout) {
                 data?.forEach { cardInfo ->
                     val card: View = layoutInflater.inflate(R.layout.home_card, null)
@@ -100,11 +115,11 @@ class HomeFragment : Fragment() {
 
                     card.imageText.text = cardInfo?.title?.english
 
-                    card.imageView.setOnLongClickListener {
+                    card.home_card_root.setOnLongClickListener {
                         Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
                     }
-                    card.imageView.setOnClickListener {
+                    card.home_card_root.setOnClickListener {
                         val _id = cardInfo?.id
                         if (FastAniApi.lastCards.containsKey(_id)) {
                             if (cardInfo != null) {
@@ -133,11 +148,11 @@ class HomeFragment : Fragment() {
 
                     card.imageText.text = cardInfo?.title?.english
 
-                    card.imageView.setOnLongClickListener {
+                    card.home_card_root.setOnLongClickListener {
                         Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
                     }
-                    card.imageView.setOnClickListener {
+                    card.home_card_root.setOnClickListener {
                         if (cardInfo != null) {
                             MainActivity.loadPage(cardInfo)
                         }
@@ -179,7 +194,7 @@ class HomeFragment : Fragment() {
                     val difference = unixTime - System.currentTimeMillis() / 1000
 
                     card.scheduleText.text = secondsToReadable(difference.toInt(), "Released")
-                    card.imageView.setOnLongClickListener {
+                    card.home_card_schedule_root.setOnLongClickListener {
                         Toast.makeText(context, title, Toast.LENGTH_SHORT).show()
                         return@setOnLongClickListener true
                     }
@@ -295,25 +310,33 @@ class HomeFragment : Fragment() {
 
             main_load.alpha = 0f
             main_scroll.alpha = 1f
-            main_reload_data_btt.alpha = 0f
-            main_reload_data_btt.isClickable = false
+            // This somehow crashes, hope this null check helps ¯\_(ツ)_/¯
+            if (main_reload_data_btt != null) {
+                main_reload_data_btt.alpha = 0f
+                main_reload_data_btt.isClickable = false
+            }
             main_layout.setPadding(0, MainActivity.statusHeight, 0, 0)
         }
     }
 
     private fun onHomeErrorCatch(fullRe: Boolean) {
-        main_reload_data_btt.alpha = 1f
-        main_load.alpha = 0f
-        main_reload_data_btt.isClickable = true
-        main_reload_data_btt.setOnClickListener {
-            main_reload_data_btt.alpha = 0f
-            main_load.alpha = 1f
-            main_reload_data_btt.isClickable = false
-            thread {
-                if (fullRe) {
-                    FastAniApi.init()
-                } else {
-                    FastAniApi.requestHome(false)
+        // Null check because somehow this can crash
+        activity?.runOnUiThread {
+            if (main_reload_data_btt != null) {
+                main_reload_data_btt.alpha = 1f
+                main_load.alpha = 0f
+                main_reload_data_btt.isClickable = true
+                main_reload_data_btt.setOnClickListener {
+                    main_reload_data_btt.alpha = 0f
+                    main_load.alpha = 1f
+                    main_reload_data_btt.isClickable = false
+                    thread {
+                        if (fullRe) {
+                            FastAniApi.init()
+                        } else {
+                            FastAniApi.requestHome(false)
+                        }
+                    }
                 }
             }
         }

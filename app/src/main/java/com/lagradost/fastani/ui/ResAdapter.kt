@@ -65,7 +65,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
     constructor(itemView: View, _context: Context, resView: AutofitRecyclerView) : RecyclerView.ViewHolder(itemView) {
         private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
         val context = _context
-        val cardView = itemView.imageView
+        val cardView = if (compactView) itemView.imageView else itemView.search_result_root
         val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()
         fun bind(card: FastAniApi.AnimeTitle) {
             if (compactView) {
@@ -117,7 +117,6 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             }
 
-
             itemView.apply {
                 layoutParams = LinearLayout.LayoutParams(
                     MATCH_PARENT,
@@ -146,7 +145,7 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
             context.let {
                 Glide.with(it)
                     .load(glideUrl)
-                    .into(cardView)
+                    .into(itemView.imageView)
             }
 
 

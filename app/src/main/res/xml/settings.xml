@@ -17,9 +17,9 @@
                 app:defaultValue="true"
         />
         <SwitchPreference
-                android:icon="@drawable/ic_baseline_screen_rotation_24"
-                app:key="rotation_enabled"
-                android:title="Allow screen rotation"
+                android:icon="@drawable/ic_baseline_screen_lock_landscape_24"
+                app:key="force_landscape"
+                android:title="Force landscape"
                 android:summary="Useful for tablets"
                 app:defaultValue="false"
         />
@@ -30,7 +30,16 @@
                 android:title="Compact search results"
                 app:defaultValue="true"
         />
+
+        <SwitchPreference android:key="acra.disable"
+                          android:icon="@drawable/ic_baseline_bug_report_24"
+                          android:title="@string/pref_disable_acra"
+                          android:summaryOff="Only sends data on crashes"
+                          android:summaryOn="Sends no data"
+                          android:defaultValue="false"/>
+
     </PreferenceCategory>
+
     <PreferenceCategory
             android:key="player"
             android:title="Player"
@@ -48,6 +57,13 @@
                 app:key="swipe_enabled"
                 android:title="Swipe to seek"
                 android:summary="Swipe left or right to control time in the videoplayer"
+                app:defaultValue="true"
+        />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_ondemand_video_24"
+                app:key="swipe_vertical_enabled"
+                android:title="Swipe to change settings"
+                android:summary="Swipe on the left or right side to change brightness or volume"
                 app:defaultValue="true"
         />
         <SwitchPreference
@@ -70,26 +86,33 @@
                 android:summary="Your preferred playback speed will still be used with this disabled"
                 app:defaultValue="false"
         />
-    </PreferenceCategory>
-
-
-    <PreferenceCategory
-            android:key="theme"
-            android:title="Theme"
-            app:isPreferenceVisible="false"
-    >
-        <SwitchPreferenceCompat
-                android:enabled="false"
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_aspect_ratio_24"
+                app:key="player_resize_enabled"
+                android:title="Player resize button"
+                android:summary="Cursed"
                 app:defaultValue="false"
-                android:key="auto_dark_mode"
-                app:title="Automatic dark mode"
-                android:summary="Based on phone theme"/>
-        <SwitchPreferenceCompat
-                app:defaultValue="true"
-                android:enabled="false"
-                android:key="dark_mode"
-                app:title="Dark mode"/>
+        />
+        <SeekBarPreference
+                android:icon="@drawable/ic_baseline_access_time_24"
+                android:title="Fast forward skip time"
+                android:defaultValue="10"
+                android:key="fast_forward_button_time"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+        >
+        </SeekBarPreference>
+        <SeekBarPreference
+                android:icon="@drawable/ic_baseline_access_time_24"
+                android:title="Double tap skip time"
+                android:defaultValue="10"
+                android:key="dobule_tap_time"
+                app:showSeekBarValue="true"
+                app:seekBarIncrement="5"
+        >
+        </SeekBarPreference>
     </PreferenceCategory>
+
     <PreferenceCategory
             android:key="history"
             android:title="History"
@@ -147,6 +170,12 @@
                 app:defaultValue="false"
                 app:isPreferenceVisible="false"
                 android:icon="@drawable/ic_baseline_warning_24"
+        />
+        <SwitchPreference
+                app:key="auto_update"
+                android:title="Automatically check for updates"
+                app:defaultValue="true"
+                android:icon="@drawable/ic_baseline_system_update_24"
         />
         <Preference
                 android:title="Check for updates"

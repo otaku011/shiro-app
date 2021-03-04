@@ -14,7 +14,7 @@
     <item
             android:id="@+id/navigation_downloads"
             android:icon="@drawable/main_dload_icon_navview"
-            android:title="Downloads"/>
+            android:title="@string/downloads"/>
 
     <item
             android:id="@+id/navigation_settings"

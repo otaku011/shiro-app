@@ -23,27 +23,40 @@ import android.content.Intent
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.content.BroadcastReceiver
+import android.content.Context.AUDIO_SERVICE
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import com.google.android.exoplayer2.Player.DefaultEventListener
 import android.content.res.Resources
+import android.database.ContentObserver
+import android.media.AudioManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.preference.PreferenceManager
+import androidx.transition.Fade
+import androidx.transition.Transition
 import android.view.*
 import android.view.View.*
+import android.view.animation.AccelerateInterpolator
+import android.widget.ProgressBar
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AlertDialog
+import androidx.transition.TransitionManager
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.lagradost.fastani.MainActivity.Companion.activity
 import com.lagradost.fastani.MainActivity.Companion.hideKeyboard
 import com.lagradost.fastani.MainActivity.Companion.hideSystemUI
 import com.lagradost.fastani.R
 import java.io.File
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 import kotlin.math.*
@@ -56,12 +69,6 @@ const val STATE_PLAYER_PLAYING = "playerOnPlay"
 const val ACTION_MEDIA_CONTROL = "media_control"
 const val EXTRA_CONTROL_TYPE = "control_type"
 const val PLAYBACK_SPEED = "playback_speed"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [PlayerFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 
 // TITLE AND URL OR CARD MUST BE PROVIDED
 // EPISODE AND SEASON SHOULD START AT 0
@@ -87,10 +94,44 @@ enum class PlayerEventType(val value: Int) {
     PlayPauseToggle(6)
 }
 
-class PlayerFragment(private var data: PlayerData) : Fragment() {
+class PlayerFragment() : Fragment() {
+    var data: PlayerData? = null
+    private val mapper = JsonMapper.builder().addModule(KotlinModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+
+    private class SettingsContentObserver(handler: Handler?) : ContentObserver(handler) {
+        private val audioManager = activity?.getSystemService(AUDIO_SERVICE) as AudioManager
+        override fun onChange(selfChange: Boolean) {
+            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val progressBarRight = activity?.findViewById<ProgressBar>(R.id.progressBarRight)
+            progressBarRight?.progress = currentVolume * 100 / maxVolume
+        }
+    }
+
+    private val volumeObserver = SettingsContentObserver(
+        Handler(
+            Looper.getMainLooper()
+        )
+    )
+
     companion object {
         var isInPlayer: Boolean = false
         var onLeftPlayer = Event<Boolean>()
+        fun newInstance(data: PlayerData) =
+            PlayerFragment().apply {
+                arguments = Bundle().apply {
+                    //println(data)
+                    putString("data", mapper.writeValueAsString(data))
+                }
+            }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        arguments?.getString("data")?.let {
+            data = mapper.readValue(it, PlayerData::class.java)
+        }
     }
 
     private var isLocked = false
@@ -103,20 +144,36 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private var isFullscreen = false
     private var isPlayerPlaying = true
     private var currentX = 0F
+    private var currentY = 0F
     private var isMovingStartTime = 0L
     private var skipTime = 0L
     private var hasPassedSkipLimit = false
+    private var preventHorizontalSwipe = false
+    private var hasPassedVerticalSwipeThreshold = false
+
     private var playbackSpeed = DataStore.getKey<Float>(PLAYBACK_SPEED_KEY, 1f)
     private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val swipeEnabled = settingsManager.getBoolean("swipe_enabled", true)
+    private val swipeVerticalEnabled = settingsManager.getBoolean("swipe_vertical_enabled", true)
     private val skipOpEnabled = settingsManager.getBoolean("skip_op_enabled", false)
     private val doubleTapEnabled = settingsManager.getBoolean("double_tap_enabled", false)
     private val playBackSpeedEnabled = settingsManager.getBoolean("playback_speed_enabled", false)
+    private val playerResizeEnabled = settingsManager.getBoolean("player_resize_enabled", false)
+    private val doubleTapTime = settingsManager.getInt("dobule_tap_time", 10)
+    private val fastForwardTime = settingsManager.getInt("fast_forward_button_time", 10)
+    private val resizeModes = listOf(
+        AspectRatioFrameLayout.RESIZE_MODE_FIT,
+        AspectRatioFrameLayout.RESIZE_MODE_FILL,
+        AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
+    )
+    private var resizeMode = DataStore.getKey<Int>(RESIZE_MODE_KEY, 0)
+
+    // width as it's rotated
     private var width = Resources.getSystem().displayMetrics.heightPixels
+    private var height = Resources.getSystem().displayMetrics.widthPixels
     private var prevDiffX = 0.0
 
     abstract class DoubleClickListener(ctx: PlayerFragment) : OnTouchListener {
-
         // The time in which the second tap should be done in order to qualify as
         // a double click
 
@@ -184,46 +241,46 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     }
 
     private fun canPlayNextEpisode(): Boolean {
-        if (data.card == null || data.seasonIndex == null || data.episodeIndex == null) {
+        if (data?.card == null || data?.seasonIndex == null || data?.episodeIndex == null) {
             return false
         }
         return try {
-            MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!).isFound
+            MainActivity.canPlayNextEpisode(data?.card!!, data?.seasonIndex!!, data?.episodeIndex!!).isFound
         } catch (e: Exception) {
             false
         }
     }
 
-    private fun getCurrentEpisode(): FastAniApi.FullEpisode {
-        return data.card!!.cdnData.seasons[data.seasonIndex!!].episodes[data.episodeIndex!!]
+    private fun getCurrentEpisode(): FastAniApi.FullEpisode? {
+        return data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
     private fun getCurrentTitle(): String {
-        if (data.title != null) return data.title!!
+        if (data?.title != null) return data?.title!!
 
-        val isMovie: Boolean = data.card!!.episodes == 1 && data.card!!.status == "FINISHED"
-        // data.card!!.cdnData.seasons.size == 1 && data.card!!.cdnData.seasons[0].episodes.size == 1
+        val isMovie: Boolean = data?.card!!.episodes == 1 && data?.card!!.status == "FINISHED"
+        // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
-            preTitle = "S${data.seasonIndex!! + 1}:E${data.episodeIndex!! + 1} · "
+            preTitle = "S${data?.seasonIndex!! + 1}:E${data?.episodeIndex!! + 1} · "
         }
         // Replaces with "" if it's null
-        return preTitle + (getCurrentEpisode().title ?: "")
+        return preTitle + (getCurrentEpisode()?.title ?: "")
     }
 
-    private fun getCurrentUrl(): String {
-        println("MAN::: " + data.url)
-        if (data.url != null) return data.url!!
-        return getCurrentEpisode().file
+    private fun getCurrentUrl(): String? {
+        println("MAN::: " + data?.url)
+        if (data?.url != null) return data?.url!!
+        return getCurrentEpisode()?.file
     }
 
     fun savePos() {
-        if (((data.anilistId != null
-                    && data.seasonIndex != null
-                    && data.episodeIndex != null) || data.card != null)
+        if (((data?.anilistId != null
+                    && data?.seasonIndex != null
+                    && data?.episodeIndex != null) || data?.card != null)
             && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
         ) {
-            MainActivity.setViewPosDur(data, exoPlayer.currentPosition, exoPlayer.duration)
+            MainActivity.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
         }
     }
 
@@ -236,7 +293,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         MainActivity.showSystemUI()
         MainActivity.onPlayerEvent -= ::handlePlayerEvent
         MainActivity.onAudioFocusEvent -= ::handleAudioFocusEvent
-
+        requireActivity().contentResolver.unregisterContentObserver(volumeObserver);
         super.onDestroy()
         //MainActivity.showSystemUI()
     }
@@ -401,57 +458,114 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         // TIME_UNSET   ==   -9223372036854775807L
         // No swiping on unloaded
         // https://exoplayer.dev/doc/reference/constant-values.html
-        if (isLocked || exoPlayer.duration == -9223372036854775807L || !swipeEnabled) return
+        if (isLocked || exoPlayer.duration == -9223372036854775807L || (!swipeEnabled && !swipeVerticalEnabled)) return
+        val audioManager = requireActivity().getSystemService(AUDIO_SERVICE) as AudioManager
 
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 currentX = motionEvent.rawX
+                currentY = motionEvent.rawY
                 //println("DOWN: " + currentX)
                 isMovingStartTime = exoPlayer.currentPosition
             }
             MotionEvent.ACTION_MOVE -> {
-                val distanceMultiplier = 2F
-                val distance = (motionEvent.rawX - currentX) * distanceMultiplier
+                if (swipeVerticalEnabled) {
+                    val distanceMultiplierY = 2F
+                    val distanceY = (motionEvent.rawY - currentY) * distanceMultiplierY
+                    val diffY = distanceY * 2.0 / height
 
-                val diffX = distance * 2.0 / width
-                // Forces 'smooth' moving preventing a bug where you
-                // can make it think it moved half a screen in a frame
-                if (abs(diffX - prevDiffX) > 0.5) {
-                    return
+                    // Forces 'smooth' moving preventing a bug where you
+                    // can make it think it moved half a screen in a frame
+
+                    if (abs(diffY) >= 0.2 && !hasPassedSkipLimit) {
+                        hasPassedVerticalSwipeThreshold = true
+                        preventHorizontalSwipe = true
+
+                    }
+                    if (hasPassedVerticalSwipeThreshold && abs(diffY) >= 0.1) {
+                        if (currentX > width * 0.5) {
+                            progressBarLeftHolder.alpha = 1f
+                            val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+                            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                            val newVolume =
+                                minOf(maxVolume, currentVolume + (maxVolume / 20) * if (diffY > 0) -1 else 1)
+                            val newVolumeAdjusted = if (diffY > 0) AudioManager.ADJUST_LOWER else AudioManager.ADJUST_RAISE
+                            //println(newVolume.toFloat() / maxVolume)
+                            if (audioManager.isVolumeFixed) {
+                                // Lmao might earrape, we'll see in bug reports
+                                exoPlayer.volume = minOf(1f, maxOf(newVolume.toFloat() / maxVolume, 0f))
+                            } else {
+                                //audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+                                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, newVolumeAdjusted, 0)
+                            }
+                            progressBarLeft.progress = newVolume * 100 / maxVolume
+                            currentY = motionEvent.rawY
+                        } else {
+                            progressBarRightHolder.alpha = 1f
+                            val alpha = minOf(0.95f, brightness_overlay.alpha + 0.05f * if (diffY > 0) 1 else -1)
+                            brightness_overlay.alpha = alpha
+                            progressBarRight.progress = ((1f - alpha) * 100).toInt()
+
+                            currentY = motionEvent.rawY
+                        }
+                    }
                 }
-                prevDiffX = diffX
-                skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
-                if (isMovingStartTime + skipTime < 0) {
-                    skipTime = -isMovingStartTime
-                } else if (isMovingStartTime + skipTime > exoPlayer.duration) {
-                    skipTime = exoPlayer.duration - isMovingStartTime
-                }
-                if (abs(skipTime) > 3000 || hasPassedSkipLimit) {
-                    hasPassedSkipLimit = true
-                    val timeString =
-                        "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
-                            convertTimeToString(abs(skipTime / 1000.0))
-                        }]"
-                    timeText.alpha = 1f
-                    timeText.text = timeString
-                } else {
-                    timeText.alpha = 0f
+
+                if (swipeEnabled) {
+                    val distanceMultiplierX = 2F
+                    val distanceX = (motionEvent.rawX - currentX) * distanceMultiplierX
+                    val diffX = distanceX * 2.0 / width
+                    if (abs(diffX - prevDiffX) > 0.5) {
+                        return
+                    }
+                    prevDiffX = diffX
+
+                    skipTime = ((exoPlayer.duration * (diffX * diffX) / 10) * (if (diffX < 0) -1 else 1)).toLong()
+                    if (isMovingStartTime + skipTime < 0) {
+                        skipTime = -isMovingStartTime
+                    } else if (isMovingStartTime + skipTime > exoPlayer.duration) {
+                        skipTime = exoPlayer.duration - isMovingStartTime
+                    }
+                    if ((abs(skipTime) > 3000 || hasPassedSkipLimit) && !preventHorizontalSwipe) {
+                        hasPassedSkipLimit = true
+                        val timeString =
+                            "${convertTimeToString((isMovingStartTime + skipTime) / 1000.0)} [${(if (abs(skipTime) < 1000) "" else (if (skipTime > 0) "+" else "-"))}${
+                                convertTimeToString(abs(skipTime / 1000.0))
+                            }]"
+                        timeText.alpha = 1f
+                        timeText.text = timeString
+                    } else {
+                        timeText.alpha = 0f
+                    }
                 }
             }
             MotionEvent.ACTION_UP -> {
-                hasPassedSkipLimit = false
-                prevDiffX = 0.0
-                if (abs(skipTime) > 7000) {
+                val transition: Transition = Fade()
+                transition.duration = 1000
+
+                TransitionManager.beginDelayedTransition(player_holder, transition)
+
+                if (abs(skipTime) > 7000 && !preventHorizontalSwipe && swipeEnabled) {
                     exoPlayer.seekTo(maxOf(minOf(skipTime + isMovingStartTime, exoPlayer.duration), 0))
                 }
+                hasPassedSkipLimit = false
+                hasPassedVerticalSwipeThreshold = false
+                preventHorizontalSwipe = false
+                prevDiffX = 0.0
                 skipTime = 0
 
-                val fadeAnimation = AlphaAnimation(1f, 0f)
-
-                fadeAnimation.duration = 100
-                fadeAnimation.fillAfter = true
-
-                timeText.startAnimation(fadeAnimation)
+                timeText.animate().alpha(0f).setDuration(200)
+                    .setInterpolator(AccelerateInterpolator()).start()
+                progressBarRightHolder.animate().alpha(0f).setDuration(200)
+                    .setInterpolator(AccelerateInterpolator()).start()
+                progressBarLeftHolder.animate().alpha(0f).setDuration(200)
+                    .setInterpolator(AccelerateInterpolator()).start()
+                //val fadeAnimation = AlphaAnimation(1f, 0f)
+                //fadeAnimation.duration = 100
+                //fadeAnimation.fillAfter = true
+                //progressBarLeftHolder.startAnimation(fadeAnimation)
+                //progressBarRightHolder.startAnimation(fadeAnimation)
+                //timeText.startAnimation(fadeAnimation)
 
             }
         }
@@ -460,6 +574,12 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+        requireActivity().contentResolver
+            .registerContentObserver(
+                android.provider.Settings.System.CONTENT_URI, true, volumeObserver
+            )
 
         MainActivity.onPlayerEvent += ::handlePlayerEvent
         MainActivity.onAudioFocusEvent += ::handleAudioFocusEvent
@@ -483,7 +603,20 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         player_holder.setOnTouchListener(OnTouchListener { v, event -> // ignore all touch events
             !isShowing
         })*/
-
+        //println("RESIZE $resizeMode")
+        player_view.resizeMode = resizeModes[resizeMode!!]
+        if (playerResizeEnabled) {
+            resize_player_holder.visibility = VISIBLE
+            resize_player.setOnClickListener {
+                resizeMode = Math.floorMod(resizeMode!! + 1, resizeModes.size)
+                //println("RESIZE $resizeMode")
+                DataStore.setKey(RESIZE_MODE_KEY, resizeMode)
+                player_view.resizeMode = resizeModes[resizeMode!!]
+                //exoPlayer.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+            }
+        } else {
+            resize_player_holder.visibility = GONE
+        }
 
         class Listener : DoubleClickListener(this) {
             // Declaring a seekAnimation here will cause a bug
@@ -493,8 +626,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                     val seekAnimation = AlphaAnimation(1f, 0f)
                     seekAnimation.duration = 1200
                     seekAnimation.fillAfter = true
-                    seekTime(10000L)
-                    timeTextRight.text = "+ ${convertTimeToString((clicks * 10).toDouble())}"
+                    seekTime(doubleTapTime * 1000L)
+                    timeTextRight.text = "+ ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
                     timeTextRight.alpha = 1f
                     timeTextRight.startAnimation(seekAnimation)
                 }
@@ -505,8 +638,8 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                     val seekAnimation = AlphaAnimation(1f, 0f)
                     seekAnimation.duration = 1200
                     seekAnimation.fillAfter = true
-                    seekTime(-10000L)
-                    timeTextLeft.text = "- ${convertTimeToString((clicks * 10).toDouble())}"
+                    seekTime(doubleTapTime * -1000L)
+                    timeTextLeft.text = "- ${convertTimeToString((clicks * doubleTapTime).toDouble())}"
                     timeTextLeft.alpha = 1f
                     timeTextLeft.startAnimation(seekAnimation)
                 }
@@ -522,6 +655,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             }
 
         }
+
 
         click_overlay.setOnTouchListener(
             Listener()
@@ -564,15 +698,17 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             MainActivity.popCurrentPage()
         }
 
+        exo_rew_text.text = fastForwardTime.toString()
+        exo_ffwd_text.text = fastForwardTime.toString()
         exo_rew.setOnClickListener {
             val rotateLeft = AnimationUtils.loadAnimation(context, R.anim.rotate_left)
             exo_rew.startAnimation(rotateLeft)
-            seekTime(-10000L)
+            seekTime(fastForwardTime * -1000L)
         }
         exo_ffwd.setOnClickListener {
             val rotateRight = AnimationUtils.loadAnimation(context, R.anim.rotate_right)
             exo_ffwd.startAnimation(rotateRight)
-            seekTime(10000L)
+            seekTime(fastForwardTime * 1000L)
         }
 
         playback_speed_holder.visibility = if (playBackSpeedEnabled) VISIBLE else GONE
@@ -612,6 +748,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
             playbackPosition = savedInstanceState.getLong(STATE_RESUME_POSITION)
             isFullscreen = savedInstanceState.getBoolean(STATE_PLAYER_FULLSCREEN)
             isPlayerPlaying = savedInstanceState.getBoolean(STATE_PLAYER_PLAYING)
+            resizeMode = savedInstanceState.getInt(RESIZE_MODE_KEY)
             playbackSpeed = savedInstanceState.getFloat(PLAYBACK_SPEED)
         }
     }
@@ -632,6 +769,7 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
         outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, isFullscreen)
         outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
+        outState.putInt(RESIZE_MODE_KEY, resizeMode!!)
         outState.putFloat(PLAYBACK_SPEED, playbackSpeed!!)
         savePos()
         super.onSaveInstanceState(outState)
@@ -640,51 +778,58 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
     private fun initPlayer() {
         // NEEDED FOR HEADERS
         var currentUrl = getCurrentUrl()
+        if (currentUrl == null) {
+            requireActivity().runOnUiThread {
+                Toast.makeText(activity, "Error getting link", Toast.LENGTH_LONG).show()
+                //MainActivity.popCurrentPage()
+            }
+            currentUrl = ""
+        }
         val isOnline = currentUrl.startsWith("https://") || currentUrl.startsWith("http://")
 
         class CustomFactory : DataSource.Factory {
             override fun createDataSource(): DataSource {
-                if (isOnline) {
+                return if (isOnline) {
                     val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
                     FastAniApi.currentHeaders?.forEach {
                         dataSource.setRequestProperty(it.key, it.value)
                     }
-                    return dataSource
+                    dataSource
                 } else {
-                    return DefaultDataSourceFactory(requireContext(), "ua").createDataSource()
+                    DefaultDataSourceFactory(requireContext(), "ua").createDataSource()
                 }
             }
         }
-        if (data.card != null || (data.anilistId != null && data.episodeIndex != null && data.seasonIndex != null)) {
+        if (data?.card != null || (data?.anilistId != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
             val pro = getViewPosDur(
-                if (data.card != null) data.card!!.anilistId else data.anilistId!!,
-                data.seasonIndex!!,
-                data.episodeIndex!!
+                if (data?.card != null) data?.card!!.anilistId else data?.anilistId!!,
+                data?.seasonIndex!!,
+                data?.episodeIndex!!
             )
             playbackPosition = if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 pro.pos
             } else {
                 0L
             }
-        } else if (data.startAt != null) {
-            playbackPosition = data.startAt!!
+        } else if (data?.startAt != null) {
+            playbackPosition = data?.startAt!!
         }
         video_title.text = getCurrentTitle()
         if (canPlayNextEpisode()) {
             next_episode_btt.visibility = VISIBLE
             next_episode_btt.setOnClickListener {
                 savePos()
-                val next = MainActivity.canPlayNextEpisode(data.card!!, data.seasonIndex!!, data.episodeIndex!!)
+                val next = MainActivity.canPlayNextEpisode(data?.card!!, data?.seasonIndex!!, data?.episodeIndex!!)
                 val key = MainActivity.getViewKey(
-                    data.card!!.anilistId,
+                    data?.card!!.anilistId,
                     next.seasonIndex,
                     next.episodeIndex
                 )
                 DataStore.removeKey(VIEW_POS_KEY, key)
                 DataStore.removeKey(VIEW_DUR_KEY, key)
 
-                data.seasonIndex = next.seasonIndex
-                data.episodeIndex = next.episodeIndex
+                data?.seasonIndex = next.seasonIndex
+                data?.episodeIndex = next.episodeIndex
                 releasePlayer()
                 initPlayer()
             }
@@ -749,7 +894,10 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 // Lets pray this doesn't spam Toasts :)
                 when (error.type) {
                     ExoPlaybackException.TYPE_SOURCE -> {
-                        Toast.makeText(activity, "Source error\n" + error.sourceException.message, LENGTH_LONG).show()
+                        if (currentUrl != "") {
+                            Toast.makeText(activity, "Source error\n" + error.sourceException.message, LENGTH_LONG)
+                                .show()
+                        }
                     }
                     ExoPlaybackException.TYPE_REMOTE -> {
                         Toast.makeText(activity, "Remote error", LENGTH_LONG)
@@ -769,13 +917,14 @@ class PlayerFragment(private var data: PlayerData) : Fragment() {
                 }
             }
         })
+
     }
 
     override fun onStart() {
         super.onStart()
         hideSystemUI()
-        if (data.card != null) {
-            val pro = getViewPosDur(data.card!!.anilistId, data.seasonIndex!!, data.episodeIndex!!)
+        if (data?.card != null) {
+            val pro = getViewPosDur(data?.card!!.anilistId, data?.seasonIndex!!, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }

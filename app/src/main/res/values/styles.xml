@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <!-- Base application theme. -->
@@ -24,7 +25,8 @@
             @style/CustomCastExpandedController
         </item>
         <item name="castMiniControllerStyle">@style/CustomCastMiniController</item>
-
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
     </style>
 
     <style name="Widget.App.BottomNavigationView" parent="Widget.Design.BottomNavigationView">
@@ -90,4 +92,7 @@
         <item name="castClosedCaptionsButtonDrawable">@drawable/cast_ic_mini_controller_closed_caption</item>
     </style>
 
+    <style name="Button.White" parent="ThemeOverlay.AppCompat">
+        <item name="colorPrimary">@android:color/white</item>
+    </style>
 </resources>

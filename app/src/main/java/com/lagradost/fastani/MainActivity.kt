@@ -3,6 +3,7 @@ package com.lagradost.fastani
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
+import android.app.Dialog
 import android.app.PictureInPictureParams
 import android.content.Context
 import android.content.Intent
@@ -20,10 +21,15 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
 import android.view.*
+import android.view.KeyEvent
+import android.view.KeyEvent.ACTION_DOWN
+import android.view.View.FOCUS_UP
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -34,14 +40,22 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.concurrent.thread
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.material.bottomappbar.BottomAppBar
+import com.lagradost.fastani.FastAniApi.Companion.getAppUpdate
 import com.lagradost.fastani.FastAniApi.Companion.getCardById
 import com.lagradost.fastani.FastAniApi.Companion.getDonorStatus
 import com.lagradost.fastani.ui.PlayerData
 import com.lagradost.fastani.ui.PlayerEventType
 import com.lagradost.fastani.ui.PlayerFragment
 import com.lagradost.fastani.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.fastani.ui.downloads.DownloadFragment
 import com.lagradost.fastani.ui.result.ResultFragment
 import com.lagradost.fastani.ui.result.ResultFragment.Companion.isInResults
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.update_dialog.*
 import java.lang.Exception
 import java.net.URL
 import java.net.URLDecoder
@@ -53,6 +67,7 @@ val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).
 data class EpisodePosDurInfo(
     @JsonProperty("pos") val pos: Long,
     @JsonProperty("dur") val dur: Long,
+    @JsonProperty("viewstate") val viewstate: Boolean,
 )
 
 data class LastEpisodeInfo(
@@ -102,6 +117,20 @@ class MainActivity : AppCompatActivity() {
             return System.currentTimeMillis() / 1000L
         }
 
+        fun isCastApiAvailable(): Boolean {
+            val isCastApiAvailable =
+                GoogleApiAvailability.getInstance()
+                    .isGooglePlayServicesAvailable(activity?.applicationContext) == ConnectionResult.SUCCESS
+            try {
+                activity?.applicationContext?.let { CastContext.getSharedInstance(it) }
+            } catch (e: Exception) {
+                // track non-fatal
+                return false
+            }
+            return isCastApiAvailable
+        }
+
+
         fun getViewKey(data: PlayerData): String {
             return getViewKey(
                 if (data.card != null) data.card.anilistId else data.anilistId!!,
@@ -143,15 +172,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun changeStatusBarState(hide: Boolean) {
-            if (hide) {
+            statusHeight = if (hide) {
                 activity!!.window.setFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN
                 )
-                statusHeight = 0
+                0
             } else {
                 activity!!.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                statusHeight = activity!!.getStatusBarHeight()
+                activity!!.getStatusBarHeight()
             }
         }
 
@@ -166,7 +195,8 @@ class MainActivity : AppCompatActivity() {
 
             return EpisodePosDurInfo(
                 DataStore.getKey<Long>(VIEW_POS_KEY, key, -1L)!!,
-                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!
+                DataStore.getKey<Long>(VIEW_DUR_KEY, key, -1L)!!,
+                DataStore.containsKey(VIEWSTATE_KEY, key)
             )
         }
 
@@ -183,6 +213,35 @@ class MainActivity : AppCompatActivity() {
                 NextEpisode(true, episodeIndex + 1, seasonIndex)
             }
         }
+
+        fun getNextEpisode(data: FastAniApi.Card): NextEpisode {
+            // HANDLES THE LOGIC FOR NEXT EPISODE
+            var episodeIndex = 0
+            var seasonIndex = 0
+            val maxValue = 90
+            val firstPos = getViewPosDur(data.anilistId, 0, 0)
+            // Hacky but works :)
+            if (((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) && !firstPos.viewstate) {
+                val found = data.cdnData.seasons.getOrNull(seasonIndex)?.episodes?.getOrNull(episodeIndex) != null
+                return NextEpisode(found, episodeIndex, seasonIndex)
+            }
+
+            while (true) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
+                val next = canPlayNextEpisode(data, seasonIndex, episodeIndex)
+                if (next.isFound) {
+                    val nextPro = getViewPosDur(data.anilistId, next.seasonIndex, next.episodeIndex)
+                    seasonIndex = next.seasonIndex
+                    episodeIndex = next.episodeIndex
+                    if (((nextPro.pos * 100) / nextPro.dur <= maxValue || nextPro.pos == -1L) && !nextPro.viewstate) {
+                        return NextEpisode(true, episodeIndex, seasonIndex)
+                    }
+                } else {
+                    val found = data.cdnData.seasons.getOrNull(seasonIndex)?.episodes?.getOrNull(episodeIndex) != null
+                    return NextEpisode(found, episodeIndex, seasonIndex)
+                }
+            }
+        }
+
 
         fun setViewPosDur(data: PlayerData, pos: Long, dur: Long) {
             val key = getViewKey(data)
@@ -270,8 +329,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
-            if (settingsManager.getBoolean("rotation_enabled", false)) {
-                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+            if (settingsManager.getBoolean("force_landscape", false)) {
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
             } else {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
@@ -349,7 +408,7 @@ class MainActivity : AppCompatActivity() {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 ?.add(
-                    R.id.videoRoot, PlayerFragment(
+                    R.id.videoRoot, PlayerFragment.newInstance(
                         data
                     )
                 )
@@ -533,8 +592,8 @@ class MainActivity : AppCompatActivity() {
         @SuppressLint("HardwareIds")
         val androidId: String = Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID).md5()
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
-        if (settingsManager.getBoolean("rotation_enabled", false)) {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+        if (settingsManager.getBoolean("force_landscape", false)) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -545,6 +604,37 @@ class MainActivity : AppCompatActivity() {
         thread {
             // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
             isDonor = getDonorStatus() == androidId
+        }
+        if (settingsManager.getBoolean("auto_update", true)) {
+            thread {
+                val update = getAppUpdate()
+                if (update.shouldUpdate && update.updateURL != null) {
+
+                    activity!!.runOnUiThread {
+                        val dialog = Dialog(activity!!)
+                        //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                        dialog.setTitle("New update found")
+
+                        dialog.setContentView(R.layout.update_dialog)
+                        dialog.update_dialog_header.text = "New update found!\n${update.updateVersion}\n"
+
+                        dialog.update_later.setOnClickListener {
+                            dialog.dismiss()
+                        }
+
+                        dialog.update_never.setOnClickListener {
+                            settingsManager.edit().putBoolean("auto_update", false).apply()
+                            dialog.dismiss()
+                        }
+                        dialog.update_now.setOnClickListener {
+                            Toast.makeText(activity!!, "Download started", Toast.LENGTH_LONG).show()
+                            DownloadManager.downloadUpdate(update.updateURL)
+                            dialog.dismiss()
+                        }
+                        dialog.show()
+                    }
+                }
+            }
         }
         //https://stackoverflow.com/questions/29146757/set-windowtranslucentstatus-true-when-android-lollipop-or-higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -621,19 +711,60 @@ class MainActivity : AppCompatActivity() {
         mediaSession!!.isActive = true
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val navView: BottomNavigationView = findViewById(R.id.nav_view)
 
-        navController = findNavController(R.id.nav_host_fragment)
+        setContentView(R.layout.activity_main)
+
+        val layout = listOf(
+            R.id.navigation_home, R.id.navigation_search, R.id.navigation_downloads, R.id.navigation_settings
+        )
+        val appBarConfiguration = AppBarConfiguration(
+            layout.toSet()
+        )
+
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_home, R.id.navigation_search, R.id.navigation_downloads, R.id.navigation_settings
-            )
-        )
         //setupActionBarWithNavController(navController, appBarConfiguration)
+        val navView: BottomNavigationView = findViewById(R.id.nav_view)
+        navController = findNavController(R.id.nav_host_fragment)
         navView.setupWithNavController(navController!!)
+
+        /*navView.setOnKeyListener { v, keyCode, event ->
+            println("$keyCode $event")
+            if (event.action == ACTION_DOWN) {
+
+                when (event.keyCode) {
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+
+                        val newItem =
+                            navView.menu.findItem(layout[(layout.indexOf(navView.selectedItemId) + 1) % 4])
+                        newItem.isChecked = true
+
+                    }
+                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+
+                        val newItem =
+                            navView.menu.findItem(
+                                layout[Math.floorMod(
+                                    layout.indexOf(navView.selectedItemId) - 1,
+                                    4
+                                )]
+                            )
+                        newItem.isChecked = true
+
+                    }
+                    // TODO FIX
+                    KeyEvent.KEYCODE_ENTER -> {
+                        navController!!.navigate(navView.selectedItemId)
+                    }
+                    KeyEvent.KEYCODE_DPAD_UP -> {
+                        navView.isFocusable = false
+                        navView.clearFocus()
+                        navView.requestFocus(FOCUS_UP)
+                    }
+                }
+            }
+            return@setOnKeyListener true
+        }*/
 
         window.setBackgroundDrawableResource(R.color.background);
         //val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
