@@ -13,25 +13,10 @@ import com.lagradost.shiro.MainActivity.Companion.md5
 import khttp.structures.cookie.CookieJar
 import org.jsoup.Jsoup
 import java.lang.Exception
+import java.net.URLEncoder
 import kotlin.concurrent.thread
 
 class FastAniApi {
-    data class AnimeTitle(
-        val url: String,
-        val title: String,
-        val posterUrl: String
-    )
-
-    data class AnimePage(
-        val url: String,
-        val title: String,
-        val description: String,
-        val episodes: List<String>,
-        val posterUrl: String,
-        val genres: String
-    )
-
-
     data class HomePageResponse(
         @JsonProperty("animeData") val animeData: AnimeData,
         @JsonProperty("homeSlidesData") val homeSlidesData: List<Card>,
@@ -110,17 +95,27 @@ class FastAniApi {
 
     data class AnimeData(@JsonProperty("cards") val cards: List<Card>)
     data class SearchResponse(
-        @JsonProperty("animeData") val animeData: AnimeData,
+        @JsonProperty("animeData") val animeData: AnimeData?,
         @JsonProperty("success") val success: Boolean
     )
 
+    data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("native") val nextEpisode: Int)
+
+    data class Update(
+        @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
+        @JsonProperty("updateURL") val updateURL: String?,
+        @JsonProperty("updateVersion") val updateVersion: String?
+    )
+
+    data class Donor(@JsonProperty("id") val id: String)
+
     data class ShiroSearchResponseShow(
         val canonicalTitle: String,
-        val english: String,
+        val english: String?,
         val image: String,
         val _id: String,
-
-        )
+        val slug: String,
+    )
 
     data class ShiroSearchResponse(
         val data: List<ShiroSearchResponseShow>,
@@ -139,7 +134,7 @@ class FastAniApi {
         val episode_number: Int,
         val slug: String,
         val update: String,
-        val id: String,
+        val _id: String,
         val videos: List<ShiroVideo>
     )
 
@@ -161,16 +156,10 @@ class FastAniApi {
         val episodes: List<ShiroEpisodes>
     )
 
-
-    data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("native") val nextEpisode: Int)
-
-    data class Update(
-        @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
-        @JsonProperty("updateURL") val updateURL: String?,
-        @JsonProperty("updateVersion") val updateVersion: String?
+    data class AnimePage(
+        val data: AnimePageData,
+        val status: String
     )
-
-    data class Donor(@JsonProperty("id") val id: String)
 
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
@@ -252,35 +241,51 @@ class FastAniApi {
             }
         }
 
-        //search via http get request, NOT INSTANT
-        // ONLY PAGE 1
 
-        private fun addFullUrl(url: String?): String {
-            if (url == null) return ""
-            return if (url.startsWith(".")) {
-                url.replaceFirst(".", "https://4anime.to")
-            } else url
+        fun getVideoLink(id: String): String? {
 
+            val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id").text
+            println(res)
+            val document = Jsoup.parse(res)
+            return document.select("source").firstOrNull()?.attr("src")
         }
 
 
-        fun search(query: String, page: Int = 1): List<AnimeTitle> {
+        fun getAnimePage(show: ShiroSearchResponseShow): AnimePage? {
+            val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
+            val response = khttp.get(url)
+            val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+            return if (mapped.status == "Found")
+                mapped
+            else null
+        }
+
+
+        //search via http get request, NOT INSTANT
+        // ONLY PAGE 1
+        fun search(query: String, page: Int = 1): ShiroSearchResponse? {
             // Tags and years can be added
-            val url = "https://4anime.to/"
+            println("TOKEN!!!!!!!!!!!! ${currentToken?.token}")
+            val url = "https://ani.api-web.site/anime/auto-complete/${
+                URLEncoder.encode(
+                    query,
+                    "UTF-8"
+                )
+            }?token=${currentToken?.token}"
             // Security headers
-            val res = khttp.post(url, data = mapOf("s" to query)).text
-            println(res)
-            val document = Jsoup.parse(res)
-            val searchResults = mutableListOf<AnimeTitle>()
-            document.select("div#headerDIV_2").forEach {
-                val animeUrl = it.select("a").getOrNull(0)?.attr("href")
-                val animeTitle = it.select("div").getOrNull(0)?.text()
-                val posterUrl = it.select("a > img").getOrNull(0)?.attr("src")
-                if (animeUrl != null && animeTitle != null && posterUrl != null) {
-                    searchResults.add(AnimeTitle(addFullUrl(animeUrl), animeTitle, addFullUrl(posterUrl)))
-                }
-            }
-            return searchResults
+            val headers = currentToken?.headers
+            val response = headers?.let { khttp.get(url) }
+            val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
+            return if (mapped?.status == "Found")
+                mapped
+            else null
+            //return response?.text?.let { mapper.readValue(it) }
+        }
+
+        fun getFullUrl(url: String): String {
+            return if (!url.startsWith("http")) {
+                "https://ani-cdn.api-web.site/$url"
+            } else url
         }
 
         val lastCards = hashMapOf<String, Card>()
@@ -339,7 +344,8 @@ class FastAniApi {
         fun requestHome(canBeCached: Boolean = true): HomePageResponse? {
             println("LOAD HOME $currentToken")
             if (currentToken == null) return null
-            return getHome(canBeCached)
+            getHome(canBeCached)
+            return null
         }
 
         private fun getSchedule(): List<ScheduleItem>? {
@@ -352,46 +358,8 @@ class FastAniApi {
             } else null
         }
 
-        fun getAnimePage(url: String): AnimePage? {
-            val res = khttp.get(url).text
-            val document = Jsoup.parse(res)
-            val title = document.select("p.single-anime-desktop").firstOrNull()?.text()
-            val info = ""//document.select("div.anime__details__widget > div.row").firstOrNull()?.text()
-            val genres = ""//Regex("""Genre:(.*?)Episodes""").find(info.toString())!!.destructured
-            val episodes = document.select("ul.episodes.range.active > li > a").map { it.attr("href") }
-            val description = document.select("div#description-mob").firstOrNull()?.text()
-            val poster = addFullUrl(
-                document.select("div.cover").firstOrNull()?.attr("src")
-            )
-            println(episodes)
-            return if (title != null && description != null) {
-                AnimePage(url, title, description, episodes, poster, genres)
-            } else null
-        }
-
-        fun getVideoLink(id: String): String? {
-            val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id").text
-            val document = Jsoup.parse(res)
-            return document.select("source").firstOrNull()?.attr("src")
-        }
-
-        fun getLatest(): List<AnimeTitle> {
-            val url = "https://genoanime.com/browse?sort=latest"
-            val res = khttp.get(addFullUrl(url)).text
-            val document = Jsoup.parse(res)
-            val anime = document.select("div.row > div.col-lg-3.col-6 > div.product__item")
-            return anime.map {
-                val animeTitleElement = it.select("div.product__item__text > h5")
-                val animeTitle = animeTitleElement.text()
-                val animeUrl = addFullUrl(animeTitleElement.select("a").firstOrNull()?.attr("href"))
-                val animePosterUrl =
-                    addFullUrl(it.select("div.product__item__pic set-bg").firstOrNull()?.attr("data-setbg"))
-                AnimeTitle(animeUrl, animeTitle, animePosterUrl)
-            }
-        }
-
-
         fun getHome(canBeCached: Boolean): HomePageResponse? {
+            return null
             var res: HomePageResponse? = null
             if (canBeCached && cachedHome != null) {
                 res = cachedHome
@@ -399,13 +367,7 @@ class FastAniApi {
                 val url = "https://fastani.net/api/data"
                 val response =
                     currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
-                res = response?.text?.let {
-                    try {
-                        mapper.readValue(it)
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
+                res = response?.text?.let { mapper.readValue(it) }
                 res?.schedule = getSchedule()
             }
             // Anything below here shouldn't do network requests (network on main thread)

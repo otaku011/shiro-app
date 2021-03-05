@@ -1,11 +1,8 @@
 package com.lagradost.shiro.ui.result
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.res.ColorStateList
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.transition.ChangeBounds
@@ -13,17 +10,14 @@ import android.transition.Transition
 import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.mediarouter.app.MediaRouteButton
 import androidx.preference.PreferenceManager
-import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.cast.CastPlayer
@@ -37,20 +31,12 @@ import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.CastStateListener
 import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.*
-import com.lagradost.shiro.AniListApi.Companion.AniListStatusType
-import com.lagradost.shiro.AniListApi.Companion.fromIntToAnimeStatus
-import com.lagradost.shiro.AniListApi.Companion.getAllSeasons
-import com.lagradost.shiro.AniListApi.Companion.postDataAboutId
-import com.lagradost.shiro.AniListApi.Companion.secondsToReadable
 import com.lagradost.shiro.DataStore.mapper
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
-import com.lagradost.shiro.MALApi.Companion.malStatusAsString
-import com.lagradost.shiro.MALApi.Companion.setScoreRequest
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
-import com.lagradost.shiro.MainActivity.Companion.openBrowser
-import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.episode_result.view.*
@@ -58,7 +44,6 @@ import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.number_picker_dialog.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import kotlinx.android.synthetic.main.search_result.view.*
@@ -68,8 +53,8 @@ import kotlin.concurrent.thread
 
 const val DESCRIPTION_LENGTH1 = 200
 
-class GenoResultFragment : Fragment() {
-    var data: FastAniApi.AnimePage? = null
+class ShiroResultFragment : Fragment() {
+    var data: FastAniApi.AnimePageData? = null
     private lateinit var resultViewModel: ResultViewModel
     private var isMovie: Boolean = false
     var isBookmarked = false
@@ -79,7 +64,7 @@ class GenoResultFragment : Fragment() {
         var isViewState: Boolean = true
 
         fun newInstance(data: FastAniApi.AnimePage) =
-            GenoResultFragment().apply {
+            ShiroResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
                     putString("data", mapper.writeValueAsString(data))
@@ -95,13 +80,13 @@ class GenoResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
-        return inflater.inflate(R.layout.fragment_results_geno, container, false)
+        return inflater.inflate(R.layout.fragment_results, container, false)
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("data")?.let {
-            data = mapper.readValue(it, FastAniApi.AnimePage::class.java)
+            data = mapper.readValue(it, FastAniApi.AnimePage::class.java).data
             println("DATAATATAT $data")
         }
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
@@ -135,7 +120,7 @@ class GenoResultFragment : Fragment() {
                 BookmarkedTitle(data!!.url, data!!.title, data!!.posterUrl)
             )*/
         } else {
-            DataStore.removeKey(BOOKMARK_KEY, data!!.url)
+            DataStore.removeKey(BOOKMARK_KEY, data!!._id)
         }
         thread {
             requestHome(true)
@@ -146,16 +131,16 @@ class GenoResultFragment : Fragment() {
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
         castContext.castOptions
         val url = data!!.episodes[episodeIndex]
-        val key = data!!.url + episodeIndex//MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
+        val key = data!!._id + episodeIndex//MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
 
         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
         movieMetadata.putString(
             MediaMetadata.KEY_TITLE,
             "Episode ${episodeIndex + 1}"
         )
-        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.title)
-        movieMetadata.addImage(WebImage(Uri.parse(data!!.posterUrl)))
-        val mediaInfo = MediaInfo.Builder(url)
+        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.name)
+        movieMetadata.addImage(WebImage(Uri.parse(getFullUrl(data!!.image))))
+        val mediaInfo = MediaInfo.Builder(getVideoLink(url.slug))
             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
             .setContentType(MimeTypes.VIDEO_UNKNOWN)
             .setMetadata(movieMetadata).build()
@@ -194,7 +179,7 @@ class GenoResultFragment : Fragment() {
                 epNum++
 
                 val card: View = layoutInflater.inflate(R.layout.episode_result, null)
-                val key = data!!.url + epIndex//MainActivity.getViewKey(data!!.url, index, epIndex)
+                val key = data!!._id + epIndex//MainActivity.getViewKey(data!!.url, index, epIndex)
 
                 if (false) {
                     card.cdi.setOnClickListener {
@@ -237,9 +222,13 @@ class GenoResultFragment : Fragment() {
                         loadSeason()
                     } else {
                         thread {
-                            val videoUrl = getVideoLink(data!!.episodes[epIndex])
+                            val videoUrl = data!!.episodes[epIndex].videos.getOrNull(0)?.video_id?.let { it1 ->
+                                getVideoLink(
+                                    it1
+                                )
+                            }
                             if (videoUrl != null) {
-                                MainActivity.loadPlayer("${data!!.title} - Episode ${epIndex + 1}", videoUrl, 0L)
+                                MainActivity.loadPlayer("${data!!.name} - Episode ${epIndex + 1}", videoUrl, 0L)
                             } else {
                                 requireActivity().runOnUiThread {
                                     Toast.makeText(activity, "Failed to get video link :(", Toast.LENGTH_LONG).show()
@@ -272,7 +261,7 @@ class GenoResultFragment : Fragment() {
                     )
                 }
 
-                val pro = MainActivity.getViewPosDur(data!!.url, 0, epIndex)
+                val pro = MainActivity.getViewPosDur(data!!._id, 0, epIndex)
                 //println("DURPOS:" + epNum + "||" + pro.pos + "|" + pro.dur)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
@@ -287,7 +276,7 @@ class GenoResultFragment : Fragment() {
                 }
 
                 if (MainActivity.isDonor) {
-                    val internalId = (data!!.url + "E${epIndex}").hashCode()
+                    val internalId = (data!!._id + "E${epIndex}").hashCode()
                     val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(
                         DOWNLOAD_CHILD_KEY,
                         internalId.toString()
@@ -368,7 +357,7 @@ class GenoResultFragment : Fragment() {
                                 return DownloadManager.DownloadInfo(
                                     child.seasonIndex,
                                     child.episodeIndex,
-                                    FastAniApi.Title(data!!.title, data!!.title, data!!.title),
+                                    FastAniApi.Title(data!!.name, data!!.name, data!!.name),
                                     isMovie,
                                     child.anilistId,
                                     child.fastAniId,
@@ -547,8 +536,10 @@ class GenoResultFragment : Fragment() {
             0,
         )
 
-        //val glideUrl =
-        //    GlideUrl(data!!.posterUrl)
+        val glideUrl =
+            GlideUrl(
+                getFullUrl(data!!.image)
+            )
 
         /*if (data!!.trailer != null) {
             title_background.setOnLongClickListener {
@@ -570,14 +561,15 @@ class GenoResultFragment : Fragment() {
         // SEASON SELECTOR
         loadSeason()
 
-        /*context?.let {
+        /*
+        context?.let {
             GlideApp.with(it)
                 .load(glideUrl)
                 .into(title_background)
         }*/
 
-        title_name.text = data!!.title
-        val descript = data!!.description
+        title_name.text = data!!.name
+        val descript = data!!.synopsis
             .replace("<br>", "")
             .replace("<i>", "")
             .replace("</i>", "")
@@ -599,6 +591,6 @@ class GenoResultFragment : Fragment() {
         if (!ratTxt.contains('.')) ratTxt += ".0"
         title_rating.text = "Rated: $ratTxt"
         */
-        title_genres.text = data!!.genres
+        title_genres.text = data!!.genres.toString()
     }
 }

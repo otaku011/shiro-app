@@ -11,9 +11,10 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
+import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
+import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
 import com.lagradost.shiro.MainActivity.Companion.activity
-import com.lagradost.shiro.ui.result.GenoResultFragment
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
 import kotlinx.android.synthetic.main.search_result.view.imageView
@@ -23,20 +24,15 @@ import kotlin.math.roundToInt
 
 val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
 
-class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    var cardList = ArrayList<FastAniApi.AnimeTitle>()
-    var context: Context? = null
-    var resView: AutofitRecyclerView? = null
-
-    constructor(
-        context: Context,
-        cardList: ArrayList<FastAniApi.AnimeTitle>,
-        resView: AutofitRecyclerView
-    ) : super() {
-        this.context = context
-        this.cardList = cardList
-        this.resView = resView
-    }
+class ResAdapter(
+    context: Context,
+    animeList: ArrayList<FastAniApi.ShiroSearchResponseShow>,
+    resView: AutofitRecyclerView
+) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    var cardList = animeList
+    var context: Context? = context
+    var resView: AutofitRecyclerView? = resView
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val compactView = settingsManager.getBoolean("compact_search_enabled", true)
@@ -65,12 +61,12 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
     constructor(itemView: View, _context: Context, resView: AutofitRecyclerView) : RecyclerView.ViewHolder(itemView) {
         private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
         val context = _context
-        val cardView = if (compactView) itemView.imageView else itemView.search_result_root
+        val cardView = itemView.imageView
         val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()
-        fun bind(card: FastAniApi.AnimeTitle) {
+        fun bind(card: FastAniApi.ShiroSearchResponseShow) {
             if (compactView) {
                 // COPIED -----------------------------------------
-                var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, card.url)
+                var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, card._id)
                 fun toggleHeartVisual(_isBookmarked: Boolean) {
                     if (_isBookmarked) {
                         itemView.title_bookmark.setImageResource(R.drawable.filled_heart)
@@ -85,11 +81,11 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     if (_isBookmarked) {
                         DataStore.setKey<BookmarkedTitle>(
                             BOOKMARK_KEY,
-                            card.anilistId,
+                            card._id,
                             BookmarkedTitle(
-                                card.id,
-                                card.anilistId,
-                                card.description,
+                                card._id,
+                                card._id,
+                                "card.description",
                                 card.title,
                                 card.coverImage
                             )
@@ -108,14 +104,17 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 // ------------------------------------------------
                 itemView.backgroundCard.setOnClickListener {
                     thread {
-                        val data = FastAniApi.getAnimePage(card.url)
-                        activity?.supportFragmentManager?.beginTransaction()
-                            ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            ?.add(R.id.homeRoot, GenoResultFragment.newInstance(data!!))
-                            ?.commit()
+                        val data = getAnimePage(card)
+                        if (data != null) {
+                            activity?.supportFragmentManager?.beginTransaction()
+                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(data))
+                                ?.commit()
+                        }
                     }
                 }
             }
+
 
             itemView.apply {
                 layoutParams = LinearLayout.LayoutParams(
@@ -123,29 +122,31 @@ class ResAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     coverHeight
                 )
             }
-            itemView.imageText.text = card.title
+            itemView.imageText.text = card.english
             cardView.setOnLongClickListener {
-                Toast.makeText(context, card.title, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, card.english, Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
             }
 
             cardView.setOnClickListener {
                 thread {
-                    val data = FastAniApi.getAnimePage(card.url)
-                    activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, GenoResultFragment.newInstance(data!!))
-                        ?.commit()
-                    /*MainActivity.loadPage(card)*/
+                    val data = getAnimePage(card)
+                    if (data != null) {
+                        activity?.supportFragmentManager?.beginTransaction()
+                            ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                            ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(data))
+                            ?.commit()
+                    }
                 }
+                /*MainActivity.loadPage(card)*/
             }
 
             val glideUrl =
-                GlideUrl(card.posterUrl) //{ FastAniApi.currentHeaders }
+                GlideUrl("https://shiro.is/" + card.image) { FastAniApi.currentHeaders }
             context.let {
                 Glide.with(it)
                     .load(glideUrl)
-                    .into(itemView.imageView)
+                    .into(cardView)
             }
 
 
