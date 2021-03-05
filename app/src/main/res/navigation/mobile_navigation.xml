@@ -7,14 +7,14 @@
 
     <fragment
             android:id="@+id/navigation_home"
-            android:name="com.lagradost.fouranime.ui.home.HomeFragment"
+            android:name="com.lagradost.shiro.ui.home.HomeFragment"
             android:label="@string/title_home"
             android:layout_height="match_parent"
             tools:layout="@layout/fragment_home"/>
 
     <fragment
             android:id="@+id/navigation_search"
-            android:name="com.lagradost.fouranime.ui.search.SearchFragment"
+            android:name="com.lagradost.shiro.ui.search.SearchFragment"
             android:label="@string/title_search"
             android:layout_height="match_parent"
             tools:layout="@layout/fragment_search"/>
@@ -22,14 +22,14 @@
     <fragment
             android:id="@+id/navigation_downloads"
             android:layout_height="match_parent"
-            android:name="com.lagradost.fouranime.ui.downloads.DownloadFragment"
+            android:name="com.lagradost.shiro.ui.downloads.DownloadFragment"
             android:label="Downloads"
     />
 
     <fragment
             android:id="@+id/navigation_settings"
             android:layout_height="match_parent"
-            android:name="com.lagradost.fouranime.ui.settings.SettingsFragment"
+            android:name="com.lagradost.shiro.ui.settings.SettingsFragment"
             android:label="@string/title_settings"
     />
 </navigation>

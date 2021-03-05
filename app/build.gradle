@@ -8,7 +8,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.lagradost.fouranime"
+        applicationId "com.lagradost.shiro"
         minSdkVersion 21
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
