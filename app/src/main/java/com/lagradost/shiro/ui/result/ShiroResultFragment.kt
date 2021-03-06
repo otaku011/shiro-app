@@ -11,6 +11,7 @@ import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.*
@@ -32,20 +33,37 @@ import com.google.android.gms.cast.framework.CastStateListener
 import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.mapper
+import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
+import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_results.*
+import kotlinx.android.synthetic.main.fragment_results.bookmark_holder
+import kotlinx.android.synthetic.main.fragment_results.media_route_button
+import kotlinx.android.synthetic.main.fragment_results.media_route_button_holder
+import kotlinx.android.synthetic.main.fragment_results.title_background
+import kotlinx.android.synthetic.main.fragment_results.title_bookmark
+import kotlinx.android.synthetic.main.fragment_results.title_descript
+import kotlinx.android.synthetic.main.fragment_results.title_genres
+import kotlinx.android.synthetic.main.fragment_results.title_go_back
+import kotlinx.android.synthetic.main.fragment_results.title_go_back_holder
+import kotlinx.android.synthetic.main.fragment_results.title_holder
+import kotlinx.android.synthetic.main.fragment_results.title_name
+import kotlinx.android.synthetic.main.fragment_results.title_season_cards
+import kotlinx.android.synthetic.main.fragment_results.title_trailer_btt
+import kotlinx.android.synthetic.main.fragment_results_geno.*
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.number_picker_dialog.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
+import kotlinx.android.synthetic.main.player_custom_layout.shadow_overlay
 import kotlinx.android.synthetic.main.search_result.view.*
 import java.io.File
 import kotlin.concurrent.thread
@@ -63,7 +81,7 @@ class ShiroResultFragment : Fragment() {
         var isInResults: Boolean = false
         var isViewState: Boolean = true
 
-        fun newInstance(data: FastAniApi.AnimePage) =
+        fun newInstance(data: FastAniApi.ShiroSearchResponseShow) =
             ShiroResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
@@ -80,14 +98,71 @@ class ShiroResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
-        return inflater.inflate(R.layout.fragment_results, container, false)
+        return inflater.inflate(R.layout.fragment_results_geno, container, false)
+    }
+
+    var onLoaded = Event<Boolean>()
+
+    private fun onLoadEvent(isSucc: Boolean) {
+        if (isSucc) {
+
+            activity?.runOnUiThread {
+                val fadeAnimation = AlphaAnimation(1f, 0f)
+
+                fadeAnimation.duration = 300
+                fadeAnimation.fillAfter = true
+
+                loading_overlay.startAnimation(fadeAnimation)
+                loadSeason()
+
+                val glideUrl =
+                    GlideUrl(
+                        getFullUrl(getFullUrl(data!!.image))
+                    )
+                context?.let {
+                    GlideApp.with(it)
+                        .load(glideUrl)
+                        .into(title_background)
+                }
+
+                title_name.text = data!!.name
+                val descript = data!!.synopsis
+                    .replace("<br>", "")
+                    .replace("<i>", "")
+                    .replace("</i>", "")
+                    .replace("\n", " ")
+
+                title_descript.text = descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..."
+                title_descript.setOnClickListener {
+                    val transition: Transition = ChangeBounds()
+                    transition.duration = 100
+                    if (title_descript.text.length == 200) {
+                        title_descript.text = descript
+                    } else {
+                        title_descript.text =
+                            descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..."
+                    }
+                    TransitionManager.beginDelayedTransition(title_holder, transition)
+                }
+
+                /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
+                if (!ratTxt.contains('.')) ratTxt += ".0"
+                title_rating.text = "Rated: $ratTxt"
+                */
+                title_genres.text = data!!.genres.joinToString(", ")
+            }
+
+
+        }
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("data")?.let {
-            data = mapper.readValue(it, FastAniApi.AnimePage::class.java).data
-            println("DATAATATAT $data")
+            thread {
+                data = getAnimePage(mapper.readValue(it, FastAniApi.ShiroSearchResponseShow::class.java))?.data
+                onLoaded.invoke(true)
+            }
         }
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
         //isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.anilistId)
@@ -474,7 +549,7 @@ class ShiroResultFragment : Fragment() {
     }
 
     fun onLeftVideoPlayer(event: Boolean) {
-        //loadSeason(currentSeasonIndex)
+        loadSeason()
     }
 
     fun onDownloadStarted(anilistId: String) {
@@ -488,6 +563,7 @@ class ShiroResultFragment : Fragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        isInResults = true
 
         hideKeyboard()
         //title_duration.text = data!!.duration.toString() + "min"
@@ -505,7 +581,6 @@ class ShiroResultFragment : Fragment() {
                 }
             }
         })
-        isInResults = true
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
         DownloadManager.downloadStartEvent += ::onDownloadStarted
@@ -536,10 +611,6 @@ class ShiroResultFragment : Fragment() {
             0,
         )
 
-        val glideUrl =
-            GlideUrl(
-                getFullUrl(data!!.image)
-            )
 
         /*if (data!!.trailer != null) {
             title_background.setOnLongClickListener {
@@ -559,38 +630,8 @@ class ShiroResultFragment : Fragment() {
 */
         title_trailer_btt.alpha = 0f
         // SEASON SELECTOR
-        loadSeason()
+        onLoaded += ::onLoadEvent
 
-        /*
-        context?.let {
-            GlideApp.with(it)
-                .load(glideUrl)
-                .into(title_background)
-        }*/
 
-        title_name.text = data!!.name
-        val descript = data!!.synopsis
-            .replace("<br>", "")
-            .replace("<i>", "")
-            .replace("</i>", "")
-            .replace("\n", " ")
-
-        title_descript.text = descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..."
-        title_descript.setOnClickListener {
-            val transition: Transition = ChangeBounds()
-            transition.duration = 100
-            if (title_descript.text.length == 200) {
-                title_descript.text = descript
-            } else {
-                title_descript.text = descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..."
-            }
-            TransitionManager.beginDelayedTransition(title_holder, transition)
-        }
-
-        /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
-        if (!ratTxt.contains('.')) ratTxt += ".0"
-        title_rating.text = "Rated: $ratTxt"
-        */
-        title_genres.text = data!!.genres.toString()
     }
 }

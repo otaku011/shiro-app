@@ -53,7 +53,7 @@ import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.downloads.DownloadFragment
 import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.update_dialog.*
 import java.lang.Exception
@@ -340,11 +340,13 @@ class MainActivity : AppCompatActivity() {
             if (isInPlayer) {
                 activity?.supportFragmentManager!!.beginTransaction()
                     //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment).commit()
+                    .remove(currentFragment)
+                    .commit()
             } else {
                 activity?.supportFragmentManager!!.beginTransaction()
                     .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment).commit()
+                    .remove(currentFragment)
+                    .commit()
             }
         }
 
@@ -464,7 +466,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        println("BACK PRESSED!!!!")
+        println("BACK PRESSED!!!! $isInResults")
 
         if (isInResults || isInPlayer) {
             popCurrentPage()
@@ -472,7 +474,6 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
-
     private fun getStatusBarHeight(): Int {
         var result = 0
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")

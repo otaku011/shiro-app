@@ -139,7 +139,7 @@ class FastAniApi {
     )
 
     data class AnimePageData(
-        val banner: String,
+        val banner: String?,
         val canonicalTitle: String,
         val episodeCount: String,
         val genres: List<String>,
@@ -243,9 +243,7 @@ class FastAniApi {
 
 
         fun getVideoLink(id: String): String? {
-
             val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id").text
-            println(res)
             val document = Jsoup.parse(res)
             return document.select("source").firstOrNull()?.attr("src")
         }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.preference.PreferenceManager
@@ -14,6 +15,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
 import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.MainActivity.Companion.activity
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
@@ -61,8 +63,8 @@ class ResAdapter(
     constructor(itemView: View, _context: Context, resView: AutofitRecyclerView) : RecyclerView.ViewHolder(itemView) {
         private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
         val context = _context
-        val cardView = itemView.imageView
-        val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()
+        val cardView: ImageView = itemView.imageView
+        private val coverHeight: Int = if (compactView) 80.toPx else (resView.itemWidth / 0.68).roundToInt()
         fun bind(card: FastAniApi.ShiroSearchResponseShow) {
             if (compactView) {
                 // COPIED -----------------------------------------
@@ -103,18 +105,14 @@ class ResAdapter(
                 }
                 // ------------------------------------------------
                 itemView.backgroundCard.setOnClickListener {
-                    thread {
-                        val data = getAnimePage(card)
-                        if (data != null) {
-                            activity?.supportFragmentManager?.beginTransaction()
-                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                                ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(data))
-                                ?.commit()
-                        }
-                    }
+                    activity?.supportFragmentManager?.beginTransaction()
+                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(card))
+                        ?.commit()
+
+
                 }
             }
-
 
             itemView.apply {
                 layoutParams = LinearLayout.LayoutParams(
@@ -127,22 +125,19 @@ class ResAdapter(
                 Toast.makeText(context, card.english, Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
             }
-
             cardView.setOnClickListener {
-                thread {
-                    val data = getAnimePage(card)
-                    if (data != null) {
-                        activity?.supportFragmentManager?.beginTransaction()
-                            ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                            ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(data))
-                            ?.commit()
-                    }
-                }
+
+                    activity?.supportFragmentManager?.beginTransaction()
+                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(card))
+                        ?.commit()
+
+
                 /*MainActivity.loadPage(card)*/
             }
 
             val glideUrl =
-                GlideUrl("https://shiro.is/" + card.image) { FastAniApi.currentHeaders }
+                GlideUrl(getFullUrl(card.image)) { FastAniApi.currentHeaders }
             context.let {
                 Glide.with(it)
                     .load(glideUrl)
