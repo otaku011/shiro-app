@@ -120,17 +120,17 @@ class ResAdapter(
                     coverHeight
                 )
             }
-            itemView.imageText.text = card.english
+            itemView.imageText.text = card.name
             cardView.setOnLongClickListener {
-                Toast.makeText(context, card.english, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, card.name, Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true
             }
             cardView.setOnClickListener {
 
-                    activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                        ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(card))
-                        ?.commit()
+                activity?.supportFragmentManager?.beginTransaction()
+                    ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                    ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(card))
+                    ?.commit()
 
 
                 /*MainActivity.loadPage(card)*/

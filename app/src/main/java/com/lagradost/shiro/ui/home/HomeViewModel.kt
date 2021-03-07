@@ -11,11 +11,11 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
-    val apiData = MutableLiveData<FastAniApi.HomePageResponse>().apply {
+    val apiData = MutableLiveData<FastAniApi.ShiroHomePage>().apply {
         FastAniApi.onHomeFetched += ::homeLoaded
     }
 
-    private fun homeLoaded(data: FastAniApi.HomePageResponse?) {
+    private fun homeLoaded(data: FastAniApi.ShiroHomePage?) {
         apiData.postValue(data!!)
     }
 }

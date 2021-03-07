@@ -274,7 +274,7 @@
                 <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/trending_now"
+                        android:text="@string/trending_anime"
                         android:gravity="center_horizontal"
                         android:textStyle="bold"
                         android:textColor="@color/textColor"
@@ -288,7 +288,7 @@
                         android:layout_marginBottom="20dp"
                 >
                     <LinearLayout
-                            android:id="@+id/trendingScrollView"
+                            android:id="@+id/trending_anime_scroll_view"
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
@@ -299,7 +299,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/textColor"
                         android:gravity="center_horizontal"
-                        android:text="@string/home_recently_added"
+                        android:text="@string/home_recently_updated"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:padding="10dp"
@@ -311,12 +311,39 @@
                         android:paddingBottom="20dp"
                 >
                     <LinearLayout
-                            android:id="@+id/recentScrollView"
+                            android:id="@+id/recently_updated_scroll_view"
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
                     </LinearLayout>
                 </HorizontalScrollView>
+
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textColor"
+                        android:gravity="center_horizontal"
+                        android:text="@string/home_ongoing"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:padding="10dp"
+                >
+                </TextView>
+                <HorizontalScrollView
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:paddingBottom="20dp"
+                >
+                    <LinearLayout
+                            android:id="@+id/ongoing_anime_scroll_view"
+                            android:orientation="horizontal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+
                 <LinearLayout
                         android:orientation="vertical"
                         android:id="@+id/scheduleRoot"

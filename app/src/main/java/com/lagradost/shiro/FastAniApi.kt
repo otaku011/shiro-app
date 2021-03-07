@@ -110,12 +110,23 @@ class FastAniApi {
     data class Donor(@JsonProperty("id") val id: String)
 
     data class ShiroSearchResponseShow(
-        val canonicalTitle: String,
-        val english: String?,
         val image: String,
         val _id: String,
         val slug: String,
+        val name: String,
     )
+
+    data class ShiroHomePageData(
+        val trending_animes: List<AnimePageData>,
+        val ongoing_animes: List<AnimePageData>,
+        val latest_animes: List<AnimePageData>,
+    )
+
+    data class ShiroHomePage(
+        val status: String,
+        val data: ShiroHomePageData
+    )
+
 
     data class ShiroSearchResponse(
         val data: List<ShiroSearchResponseShow>,
@@ -140,20 +151,20 @@ class FastAniApi {
 
     data class AnimePageData(
         val banner: String?,
-        val canonicalTitle: String,
+        val canonicalTitle: String?,
         val episodeCount: String,
-        val genres: List<String>,
+        val genres: List<String>?,
         val image: String,
-        val japanese: String,
+        val japanese: String?,
         val language: String,
         val name: String,
         val slug: String,
         val synopsis: String,
-        val type: String,
-        val views: Int,
-        val year: String,
+        val type: String?,
+        val views: Int?,
+        val year: String?,
         val _id: String,
-        val episodes: List<ShiroEpisodes>
+        val episodes: List<ShiroEpisodes>?
     )
 
     data class AnimePage(
@@ -301,7 +312,7 @@ class FastAniApi {
             return resp
         }
 
-        var cachedHome: HomePageResponse? = null
+        var cachedHome: ShiroHomePage? = null
 
         private fun getFav(): List<BookmarkedTitle?> {
             val keys = DataStore.getKeys(BOOKMARK_KEY)
@@ -356,17 +367,15 @@ class FastAniApi {
             } else null
         }
 
-        fun getHome(canBeCached: Boolean): HomePageResponse? {
-            return null
-            var res: HomePageResponse? = null
+        fun getHome(canBeCached: Boolean): ShiroHomePage? {
+            var res: ShiroHomePage? = null
             if (canBeCached && cachedHome != null) {
                 res = cachedHome
             } else {
-                val url = "https://fastani.net/api/data"
-                val response =
-                    currentToken?.let { khttp.get(url, headers = it.headers, cookies = currentToken!!.cookies) }
-                res = response?.text?.let { mapper.readValue(it) }
-                res?.schedule = getSchedule()
+                val url = "https://ani.api-web.site/latest?token=${currentToken!!.token}"
+                val response = khttp.get(url)
+                res = response.text.let { mapper.readValue(it) }
+                //res?.schedule = getSchedule()
             }
             // Anything below here shouldn't do network requests (network on main thread)
             // (card.removeButton.setOnClickListener {requestHome(true)})
@@ -376,8 +385,8 @@ class FastAniApi {
                 onHomeError.invoke(false)
                 return null
             }
-            res.favorites = getFav()
-            res.recentlySeen = getLastWatch()
+            //res.favorites = getFav()
+            //res.recentlySeen = getLastWatch()
 
             cachedHome = res
             onHomeFetched.invoke(res)
@@ -386,7 +395,7 @@ class FastAniApi {
 
         var currentToken: Token? = null
         var currentHeaders: MutableMap<String, String>? = null
-        var onHomeFetched = Event<HomePageResponse?>()
+        var onHomeFetched = Event<ShiroHomePage?>()
         var onHomeError = Event<Boolean>() // TRUE IF FULL RELOAD OF TOKEN, FALSE IF JUST HOME
         var hasThrownError = -1
 

@@ -2,30 +2,23 @@ package com.lagradost.shiro.ui.home
 
 import android.os.Bundle
 import android.view.*
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
-import androidx.transition.ChangeBounds
-import androidx.transition.Transition
-import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
-import com.lagradost.shiro.AniListApi.Companion.secondsToReadable
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
-import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.result.ShiroResultFragment
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageText
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_schedule.view.*
 import kotlinx.android.synthetic.main.home_recently_seen.view.*
-import java.time.LocalDateTime
-import java.time.ZoneOffset.UTC
 import kotlin.concurrent.thread
 
 const val MAXIMUM_FADE = 0.3f
@@ -48,16 +41,16 @@ class HomeFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    private fun homeLoaded(data: FastAniApi.HomePageResponse?) {
+    private fun homeLoaded(data: FastAniApi.ShiroHomePage?) {
         activity?.runOnUiThread {
 
-            trendingScrollView.removeAllViews()
-            recentScrollView.removeAllViews()
+            trending_anime_scroll_view.removeAllViews()
+            recently_updated_scroll_view.removeAllViews()
             favouriteScrollView.removeAllViews()
             recentlySeenScrollView.removeAllViews()
             scheduleScrollView.removeAllViews()
 
-            val cardInfo = data?.homeSlidesData?.shuffled()?.take(1)?.get(0)
+            //val cardInfo = data?.homeSlidesData?.shuffled()?.take(1)?.get(0)
             /*val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
                 GlideApp.with(it)
@@ -65,7 +58,7 @@ class HomeFragment : Fragment() {
                     .into(main_backgroundImage)
             }*/
 
-            val glideUrlMain =
+            /*val glideUrlMain =
                 GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
                 GlideApp.with(it)
@@ -96,109 +89,40 @@ class HomeFragment : Fragment() {
             main_info_button.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
             }
-
+*/
             /*main_poster.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
             }*/
-            fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: LinearLayout) {
+
+            fun displayCardData(data: List<FastAniApi.AnimePageData?>?, scrollView: LinearLayout) {
                 data?.forEach { cardInfo ->
-                    val card: View = layoutInflater.inflate(R.layout.home_card, null)
-                    val glideUrl =
-                        GlideUrl("https://fastani.net/" + cardInfo?.coverImage?.large) { FastAniApi.currentHeaders }
-                    //  activity?.runOnUiThread {
-                    context?.let {
-                        GlideApp.with(it)
-                            .load(glideUrl)
-                            .into(card.imageView)
-                    }
-
-                    card.imageText.text = cardInfo?.title?.english
-
-                    card.home_card_root.setOnLongClickListener {
-                        Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
-                        return@setOnLongClickListener true
-                    }
-                    card.home_card_root.setOnClickListener {
-                        val _id = cardInfo?.id
-                        if (FastAniApi.lastCards.containsKey(_id)) {
-                            if (cardInfo != null) {
-                                MainActivity.loadPage(FastAniApi.lastCards[_id]!!)
-                            }
-                        } else {
-                            Toast.makeText(context, "Loading " + cardInfo?.title?.english + "... ", Toast.LENGTH_SHORT)
-                                .show()
+                    if (cardInfo != null) {
+                        val card: View = layoutInflater.inflate(R.layout.home_card, null)
+                        val glideUrl =
+                            GlideUrl(getFullUrl(cardInfo.image))
+                        //  activity?.runOnUiThread {
+                        context?.let {
+                            GlideApp.with(it)
+                                .load(glideUrl)
+                                .into(card.imageView)
                         }
-                    }
-                    scrollView.addView(card)
-                }
-            }
 
-            fun displayCardData(data: List<FastAniApi.Card?>?, scrollView: LinearLayout) {
-                data?.forEach { cardInfo ->
-                    val card: View = layoutInflater.inflate(R.layout.home_card, null)
-                    val glideUrl =
-                        GlideUrl("https://fastani.net/" + cardInfo?.coverImage?.large) { FastAniApi.currentHeaders }
-                    //  activity?.runOnUiThread {
-                    context?.let {
-                        GlideApp.with(it)
-                            .load(glideUrl)
-                            .into(card.imageView)
-                    }
+                        card.imageText.text = cardInfo.name
 
-                    card.imageText.text = cardInfo?.title?.english
-
-                    card.home_card_root.setOnLongClickListener {
-                        Toast.makeText(context, cardInfo?.title?.english, Toast.LENGTH_SHORT).show()
-                        return@setOnLongClickListener true
-                    }
-                    card.home_card_root.setOnClickListener {
-                        if (cardInfo != null) {
-                            MainActivity.loadPage(cardInfo)
+                        card.home_card_root.setOnLongClickListener {
+                            Toast.makeText(context, cardInfo?.name, Toast.LENGTH_SHORT).show()
+                            return@setOnLongClickListener true
                         }
-                    }
-                    scrollView.addView(card)
-                }
-            }
+                        card.home_card_root.setOnClickListener {
+                            activity?.supportFragmentManager?.beginTransaction()
+                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                                ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(cardInfo))
+                                ?.commit()
 
-            fun displayCardData(data: List<FastAniApi.ScheduleItem?>?, scrollView: LinearLayout) {
-                data?.forEach { cardInfo ->
-                    val card: View = layoutInflater.inflate(R.layout.home_card_schedule, null)
-                    var title = ""
-                    title = when {
-                        cardInfo?.media?.title?.english != null -> {
-                            cardInfo.media.title.english
                         }
-                        cardInfo?.media?.title?.romaji != null -> {
-                            cardInfo.media.title.romaji
-                        }
-                        cardInfo?.media?.title?.native != null -> {
-                            cardInfo.media.title.native
-                        }
-                        else -> {
-                            return@forEach
-                        }
+                        scrollView.addView(card)
                     }
-                    card.imageText.text = title
-                    val glideUrl =
-                        GlideUrl(cardInfo.media.coverImage.large) { FastAniApi.currentHeaders }
-                    //  activity?.runOnUiThread {
-                    context?.let {
-                        GlideApp.with(it)
-                            .load(glideUrl)
-                            .into(card.imageView)
-                    }
-
-                    val date = LocalDateTime.parse(cardInfo.timeUntilAiring.substring(0, 23))
-                    val unixTime = date.atZone(UTC).toEpochSecond()
-                    val difference = unixTime - System.currentTimeMillis() / 1000
-
-                    card.scheduleText.text = secondsToReadable(difference.toInt(), "Released")
-                    card.home_card_schedule_root.setOnLongClickListener {
-                        Toast.makeText(context, title, Toast.LENGTH_SHORT).show()
-                        return@setOnLongClickListener true
-                    }
-                    scrollView.addView(card)
                 }
             }
 
@@ -278,8 +202,16 @@ class HomeFragment : Fragment() {
             }
 
 
-            displayCardData(data?.trendingData, trendingScrollView)
-            displayCardData(data?.recentlyAddedData, recentScrollView)
+            if (data != null) {
+                displayCardData(data.data.trending_animes, trending_anime_scroll_view)
+
+                // THESE WORK BUT WILL LAG
+                // TODO DYNAMIC LOADING with RecyclerView
+                //displayCardData(data.data.latest_animes, recently_updated_scroll_view)
+                //displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
+
+            }
+            /*displayCardData(data?.recentlyAddedData, recentScrollView)
 
             // RELOAD ON NEW FAV!
             if (data?.favorites?.isNotEmpty() == true) {
@@ -307,7 +239,7 @@ class HomeFragment : Fragment() {
                 recentlySeenRoot.visibility = GONE
             }
             TransitionManager.beginDelayedTransition(main_scroll, transition)
-
+*/
             main_load.alpha = 0f
             main_scroll.alpha = 1f
             // This somehow crashes, hope this null check helps ¯\_(ツ)_/¯

@@ -85,7 +85,15 @@ class ShiroResultFragment : Fragment() {
             ShiroResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
-                    putString("data", mapper.writeValueAsString(data))
+                    putString("ShiroSearchResponseShow", mapper.writeValueAsString(data))
+                }
+            }
+
+        fun newInstance(data: FastAniApi.AnimePageData) =
+            ShiroResultFragment().apply {
+                arguments = Bundle().apply {
+                    //println(data)
+                    putString("AnimePageData", mapper.writeValueAsString(data))
                 }
             }
     }
@@ -149,7 +157,7 @@ class ShiroResultFragment : Fragment() {
                 if (!ratTxt.contains('.')) ratTxt += ".0"
                 title_rating.text = "Rated: $ratTxt"
                 */
-                title_genres.text = data!!.genres.joinToString(", ")
+                title_genres.text = data!!.genres?.joinToString(", ")
             }
 
 
@@ -158,9 +166,17 @@ class ShiroResultFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        arguments?.getString("data")?.let {
+        arguments?.getString("ShiroSearchResponseShow")?.let {
             thread {
                 data = getAnimePage(mapper.readValue(it, FastAniApi.ShiroSearchResponseShow::class.java))?.data
+                onLoaded.invoke(true)
+            }
+        }
+        // Kinda hacky solution, but works
+        arguments?.getString("AnimePageData")?.let {
+            thread {
+                val pageData = mapper.readValue(it, FastAniApi.AnimePageData::class.java)
+                data = getAnimePage(FastAniApi.ShiroSearchResponseShow(pageData.image, pageData._id, pageData.slug, pageData.name))?.data
                 onLoaded.invoke(true)
             }
         }
@@ -205,7 +221,7 @@ class ShiroResultFragment : Fragment() {
     private fun castEpsiode(episodeIndex: Int) {
         val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
         castContext.castOptions
-        val url = data!!.episodes[episodeIndex]
+        val url = data!!.episodes?.get(episodeIndex)
         val key = data!!._id + episodeIndex//MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
 
         val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
@@ -215,7 +231,7 @@ class ShiroResultFragment : Fragment() {
         )
         movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.name)
         movieMetadata.addImage(WebImage(Uri.parse(getFullUrl(data!!.image))))
-        val mediaInfo = MediaInfo.Builder(getVideoLink(url.slug))
+        val mediaInfo = MediaInfo.Builder(url?.let { getVideoLink(it.slug) })
             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
             .setContentType(MimeTypes.VIDEO_UNKNOWN)
             .setMetadata(movieMetadata).build()
@@ -248,8 +264,8 @@ class ShiroResultFragment : Fragment() {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
         val save = settingsManager.getBoolean("save_history", true)
 
-        if (data!!.episodes.isNotEmpty()) {
-            data!!.episodes.forEach { fullEpisode ->
+        if (data!!.episodes?.isNotEmpty() == true) {
+            data!!.episodes?.forEach { fullEpisode ->
                 val epIndex = epNum
                 epNum++
 
@@ -260,17 +276,17 @@ class ShiroResultFragment : Fragment() {
                     card.cdi.setOnClickListener {
                         if (data != null) {
                             /*DownloadManager.downloadEpisode(
-                                DownloadManager.DownloadInfo(
-                                    index,
-                                    epIndex,
-                                    data!!.title,
-                                    isMovie,
-                                    data!!.anilistId,
-                                    data!!.id,
-                                    data!!.cdnData.seasons[index].episodes[epIndex],
-                                    data!!.coverImage.large
-                                )
-                            )*/
+                                        DownloadManager.DownloadInfo(
+                                            index,
+                                            epIndex,
+                                            data!!.title,
+                                            isMovie,
+                                            data!!.anilistId,
+                                            data!!.id,
+                                            data!!.cdnData.seasons[index].episodes[epIndex],
+                                            data!!.coverImage.large
+                                        )
+                                    )*/
                         }
                     }
                 } else {
@@ -297,7 +313,7 @@ class ShiroResultFragment : Fragment() {
                         loadSeason()
                     } else {
                         thread {
-                            val videoUrl = data!!.episodes[epIndex].videos.getOrNull(0)?.video_id?.let { it1 ->
+                            val videoUrl = data!!.episodes?.get(epIndex)?.videos?.getOrNull(0)?.video_id?.let { it1 ->
                                 getVideoLink(
                                     it1
                                 )
