@@ -3,17 +3,22 @@ package com.lagradost.shiro.ui.result
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
+import android.text.Html.FROM_HTML_MODE_COMPACT
 import android.transition.ChangeBounds
 import android.transition.Transition
 import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -41,30 +46,8 @@ import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.episode_result.view.*
-import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.android.synthetic.main.fragment_results.*
-import kotlinx.android.synthetic.main.fragment_results.bookmark_holder
-import kotlinx.android.synthetic.main.fragment_results.media_route_button
-import kotlinx.android.synthetic.main.fragment_results.media_route_button_holder
-import kotlinx.android.synthetic.main.fragment_results.title_background
-import kotlinx.android.synthetic.main.fragment_results.title_bookmark
-import kotlinx.android.synthetic.main.fragment_results.title_descript
-import kotlinx.android.synthetic.main.fragment_results.title_genres
-import kotlinx.android.synthetic.main.fragment_results.title_go_back
-import kotlinx.android.synthetic.main.fragment_results.title_go_back_holder
-import kotlinx.android.synthetic.main.fragment_results.title_holder
-import kotlinx.android.synthetic.main.fragment_results.title_name
-import kotlinx.android.synthetic.main.fragment_results.title_season_cards
-import kotlinx.android.synthetic.main.fragment_results.title_trailer_btt
-import kotlinx.android.synthetic.main.fragment_results_geno.*
-import kotlinx.android.synthetic.main.fragment_search.*
-import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.number_picker_dialog.*
-import kotlinx.android.synthetic.main.player_custom_layout.*
-import kotlinx.android.synthetic.main.player_custom_layout.shadow_overlay
-import kotlinx.android.synthetic.main.search_result.view.*
+import kotlinx.android.synthetic.main.fragment_results_new.*
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -106,7 +89,7 @@ class ShiroResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
-        return inflater.inflate(R.layout.fragment_results_geno, container, false)
+        return inflater.inflate(R.layout.fragment_results_new, container, false)
     }
 
     var onLoaded = Event<Boolean>()
@@ -114,7 +97,7 @@ class ShiroResultFragment : Fragment() {
     private fun onLoadEvent(isSucc: Boolean) {
         if (isSucc) {
 
-            activity?.runOnUiThread {
+            requireActivity().runOnUiThread {
                 val fadeAnimation = AlphaAnimation(1f, 0f)
 
                 fadeAnimation.duration = 300
@@ -131,6 +114,48 @@ class ShiroResultFragment : Fragment() {
                     GlideApp.with(it)
                         .load(glideUrl)
                         .into(title_background)
+                }
+
+                val textColor = resources.getString(R.color.textColor).substring(3)
+                val textColorGrey = resources.getString(R.color.textColorGray).substring(3)
+                if (data!!.status != null) {
+                    title_status.text =
+                        Html.fromHtml(
+                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${data!!.status}</font>",
+                            FROM_HTML_MODE_COMPACT
+                        )
+                } else {
+                    title_status.visibility = GONE
+                }
+
+                title_episodes.text =
+                    Html.fromHtml(
+                        "<font color=#${textColor}>Episodes:</font><font color=#${textColorGrey}> ${data!!.episodeCount}</font>",
+                        FROM_HTML_MODE_COMPACT
+                    )
+
+                if (data!!.year != null) {
+                    title_year.text =
+                        Html.fromHtml(
+                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${data!!.year}</font>",
+                            FROM_HTML_MODE_COMPACT
+                        )
+                } else {
+                    title_year.visibility = GONE
+                }
+
+                if (data!!.genres != null) {
+                    title_genres.text =
+                        Html.fromHtml(
+                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${
+                                data!!.genres?.joinToString(
+                                    ", "
+                                )
+                            }</font>",
+                            FROM_HTML_MODE_COMPACT
+                        )
+                } else {
+                    title_genres.visibility = GONE
                 }
 
                 title_name.text = data!!.name
@@ -150,14 +175,13 @@ class ShiroResultFragment : Fragment() {
                         title_descript.text =
                             descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..."
                     }
-                    TransitionManager.beginDelayedTransition(title_holder, transition)
+                    TransitionManager.beginDelayedTransition(description_holder, transition)
                 }
 
                 /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
                 if (!ratTxt.contains('.')) ratTxt += ".0"
                 title_rating.text = "Rated: $ratTxt"
                 */
-                title_genres.text = data!!.genres?.joinToString(", ")
             }
 
 
@@ -176,7 +200,14 @@ class ShiroResultFragment : Fragment() {
         arguments?.getString("AnimePageData")?.let {
             thread {
                 val pageData = mapper.readValue(it, FastAniApi.AnimePageData::class.java)
-                data = getAnimePage(FastAniApi.ShiroSearchResponseShow(pageData.image, pageData._id, pageData.slug, pageData.name))?.data
+                data = getAnimePage(
+                    FastAniApi.ShiroSearchResponseShow(
+                        pageData.image,
+                        pageData._id,
+                        pageData.slug,
+                        pageData.name
+                    )
+                )?.data
                 onLoaded.invoke(true)
             }
         }
@@ -258,7 +289,6 @@ class ShiroResultFragment : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun loadSeason() {
-        println("LOAD SEASON! ${data?.episodes}")
         title_season_cards.removeAllViews()
         var epNum = 0
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
@@ -622,7 +652,7 @@ class ShiroResultFragment : Fragment() {
 
         title_holder.setPadding(
             title_holder.paddingLeft,
-            MainActivity.statusHeight + title_background.minimumHeight - 44.toPx,
+            MainActivity.statusHeight, //+ title_background.minimumHeight - 44.toPx,
             title_holder.paddingRight,
             0,
         )
@@ -643,8 +673,8 @@ class ShiroResultFragment : Fragment() {
             }
         } else {
         }
-*/
         title_trailer_btt.alpha = 0f
+*/
         // SEASON SELECTOR
         onLoaded += ::onLoadEvent
 

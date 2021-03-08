@@ -4,7 +4,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent" xmlns:tools="http://schemas.android.com/tools"
 >
 
     <androidx.cardview.widget.CardView
@@ -108,11 +108,11 @@
                         android:paddingLeft="10dp"
                         android:id="@+id/title_holder"
                 >
-                    <!--
-                               android:background="?android:attr/selectableItemBackgroundBorderless"
-                               -->
-                    <FrameLayout android:layout_width="match_parent" android:orientation="horizontal"
-                                 android:layout_height="wrap_content"
+
+                    <FrameLayout
+                            android:layout_width="match_parent"
+                            android:orientation="horizontal"
+                            android:layout_height="wrap_content"
                     >
 
                         <TextView
@@ -126,6 +126,8 @@
                                 android:textSize="20sp"
                         >
                         </TextView>
+
+
                         <FrameLayout
                                 android:layout_gravity="center_vertical|end"
                                 android:layout_width="match_parent"
@@ -186,7 +188,7 @@
                         </TextView>
 
                     </LinearLayout>
-
+                    <!-- Genres -->
                     <TextView
                             android:id="@+id/title_genres"
                             android:layout_width="match_parent"
@@ -195,7 +197,7 @@
                             android:paddingBottom="6dp"
                             android:text="Survival | Kaiju | Military | Henshin | Post-Apocalyptic | Tragedy">
                     </TextView>
-
+                    <!-- Desc -->
                     <TextView
                             android:id="@+id/title_descript"
                             android:layout_width="match_parent"
@@ -208,6 +210,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
 
                     </TextView>
 
+                    <!-- Anilsit holder -->
                     <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -309,6 +312,7 @@ Flash forward to the present and the city has not seen a titan in over 100 years
         </LinearLayout>
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
+            tools:visibility="gone"
             android:id="@+id/loading_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

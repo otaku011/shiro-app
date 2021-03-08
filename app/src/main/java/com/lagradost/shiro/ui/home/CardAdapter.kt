@@ -36,7 +36,6 @@ class CardAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        println("BIND $position")
         when (holder) {
             is CardViewHolder -> {
                 holder.bind(cardList[position])
@@ -64,7 +63,7 @@ class CardAdapter(
                         .transition(DrawableTransitionOptions.withCrossFade(100))
                         .into(card.imageView)
                 }
-
+                itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
                 itemView.imageText.text = cardInfo.name
 
                 itemView.home_card_root.setOnLongClickListener {

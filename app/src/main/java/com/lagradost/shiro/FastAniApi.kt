@@ -164,7 +164,8 @@ class FastAniApi {
         val views: Int?,
         val year: String?,
         val _id: String,
-        val episodes: List<ShiroEpisodes>?
+        val episodes: List<ShiroEpisodes>?,
+        val status: String?,
     )
 
     data class AnimePage(

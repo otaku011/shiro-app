@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
+>
+
+
+    <LinearLayout android:layout_width="match_parent"
+                  android:background="@color/backgroundLight"
+                  android:layout_height="match_parent">
+
+        <androidx.cardview.widget.CardView
+                android:id="@+id/title_holder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="@color/grayBackground"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="-10dp"
+        >
+            <RelativeLayout
+                    android:background="@color/background"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+            >
+                <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/title_go_back_holder"
+                >
+                    <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/arrow_back">
+                    </ImageView>
+                    <ImageView
+                            android:id="@+id/title_go_back"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_gravity="center"
+                            android:focusable="true"
+                            android:clickable="true"
+                            android:background="@drawable/video_tap_button">
+                    </ImageView>
+                </FrameLayout>
+                <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/media_route_button_holder"
+                        android:layout_toStartOf="@+id/title_bookmark_holder"
+                >
+                    <androidx.mediarouter.app.MediaRouteButton
+                            android:id="@+id/media_route_button"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:mediaRouteTypes="user"
+                            android:visibility="gone"
+                    />
+                </FrameLayout>
+                <FrameLayout android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:layout_alignParentEnd="true"
+                             android:id="@+id/title_bookmark_holder"
+                >
+                    <ImageView
+                            android:id="@+id/title_bookmark"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:elevation="10dp"
+
+                            android:src="@drawable/outlined_heart"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/bookmark_btt_hint"/>
+                    <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_gravity="center"
+                            android:focusable="true"
+                            android:clickable="true"
+                            android:id="@+id/bookmark_holder"
+                            android:background="@drawable/video_tap_button">
+                    </ImageView>
+                </FrameLayout>
+            </RelativeLayout>
+            <ScrollView
+                    android:layout_marginTop="50dp"
+                    android:background="@color/background"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+            >
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                >
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                    >
+
+                        <androidx.cardview.widget.CardView
+                                android:layout_marginTop="15dp"
+                                android:layout_marginStart="15dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:cardCornerRadius="10dp"
+                                app:cardBackgroundColor="@color/darkBar"
+                                android:elevation="10dp"
+                        >
+
+                            <!-- Width: 1280, Height 1802 -->
+                            <ImageView
+                                    android:id="@+id/title_background"
+                                    android:layout_width="107dp"
+                                    android:layout_height="150dp"
+                                    android:scaleType="centerCrop"
+                                    android:alpha="1"
+                            />
+
+                        </androidx.cardview.widget.CardView>
+                        <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="15dp"
+                                android:orientation="vertical"
+                        >
+
+                            <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="start"
+                                    android:text="The Promised Neverland"
+                                    android:id="@+id/title_name"
+                                    android:textColor="@color/textColor"
+                                    android:textStyle="bold"
+                                    android:textSize="17sp"
+                                    android:layout_marginBottom="10dp"
+                            >
+                            </TextView>
+                            <TextView
+                                    android:id="@+id/title_status"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/textColorGrayWhite"
+                                    android:text="Status: Finished"
+                                    android:textSize="12sp"
+                                    android:layout_marginBottom="10dp"
+                            >
+                            </TextView>
+                            <TextView
+                                    android:id="@+id/title_genres"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/textColorGrayWhite"
+                                    android:text="Genres: Sci-Fi, Mystery, Horror"
+                                    android:textSize="12sp"
+                                    android:layout_marginBottom="10dp"
+                            >
+                            </TextView>
+                            <TextView
+                                    android:id="@+id/title_episodes"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/textColorGrayWhite"
+                                    android:text="Episodes: 12"
+                                    android:textSize="12sp"
+                                    android:layout_marginBottom="10dp"
+                            >
+                            </TextView>
+                            <TextView
+                                    android:id="@+id/title_year"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/textColorGrayWhite"
+                                    android:text="Year: 2020"
+                                    android:textSize="12sp"
+                                    android:layout_marginBottom="10dp"
+                            >
+                            </TextView>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:id="@+id/description_holder"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                        <TextView
+                                android:layout_margin="10dp"
+                                android:id="@+id/title_descript"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/textColor"
+                                android:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)">
+
+                        </TextView>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/title_season_cards"
+                            android:layout_marginBottom="75dp"
+                            android:orientation="vertical"
+                    >
+
+                    </LinearLayout>
+                </LinearLayout>
+            </ScrollView>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+    >
+
+        <fragment
+                app:castControlButtons="@array/cast_mini_controller_control_buttons"
+                android:id="@+id/cast_mini_controller"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                class="com.google.android.gms.cast.framework.media.widget.MiniControllerFragment">
+
+        </fragment>
+    </LinearLayout>
+    <androidx.cardview.widget.CardView
+            tools:visibility="gone"
+            android:id="@+id/loading_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/background"
+            android:backgroundTint="@color/background"
+    >
+        <ProgressBar
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:id="@+id/main_load"
+        >
+        </ProgressBar>
+    </androidx.cardview.widget.CardView>
+
+</FrameLayout>

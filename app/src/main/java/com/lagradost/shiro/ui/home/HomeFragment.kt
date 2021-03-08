@@ -104,7 +104,7 @@ class HomeFragment : Fragment() {
                         scrollView,
                     )
                 }
-                println("HERE123")
+
                 scrollView.adapter = adapter
                 (scrollView.adapter as CardAdapter).cardList = data as ArrayList<FastAniApi.AnimePageData>
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
