@@ -99,7 +99,7 @@ class FastAniApi {
         @JsonProperty("success") val success: Boolean
     )
 
-    data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("native") val nextEpisode: Int)
+    data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("nextEpisode") val nextEpisode: Int)
 
     data class Update(
         @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
@@ -126,6 +126,7 @@ class FastAniApi {
         @JsonProperty("status") val status: String,
         @JsonProperty("data") val data: ShiroHomePageData,
         @JsonProperty("random") var random: AnimePage?,
+        @JsonProperty("favorites") var favorites: List<AnimePageData?>?
     )
 
 
@@ -330,16 +331,16 @@ class FastAniApi {
 
         var cachedHome: ShiroHomePage? = null
 
-        private fun getFav(): List<BookmarkedTitle?> {
+        private fun getFav(): List<AnimePageData?> {
             val keys = DataStore.getKeys(BOOKMARK_KEY)
             thread {
                 keys.pmap {
-                    DataStore.getKey<BookmarkedTitle>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+                    DataStore.getKey<AnimePageData>(it)
                 }
             }
 
             return keys.map {
-                DataStore.getKey<BookmarkedTitle>(it)
+                DataStore.getKey<AnimePageData>(it)
             }
         }
 
@@ -406,7 +407,7 @@ class FastAniApi {
                 onHomeError.invoke(false)
                 return null
             }
-            //res.favorites = getFav()
+            res.favorites = getFav()
             //res.recentlySeen = getLastWatch()
 
             cachedHome = res

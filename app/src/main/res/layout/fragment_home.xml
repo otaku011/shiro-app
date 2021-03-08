@@ -248,18 +248,19 @@
                             android:padding="10dp"
                     >
                     </TextView>
-                    <HorizontalScrollView
+                    <RelativeLayout
                             android:layout_width="wrap_content"
                             android:layout_height="200dp"
                             android:layout_marginBottom="20dp"
                     >
                         <androidx.recyclerview.widget.RecyclerView
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                                 android:id="@+id/favouriteScrollView"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content">
                         </androidx.recyclerview.widget.RecyclerView>
-                    </HorizontalScrollView>
+                    </RelativeLayout>
                 </LinearLayout>
                 <!--
                             <TextView

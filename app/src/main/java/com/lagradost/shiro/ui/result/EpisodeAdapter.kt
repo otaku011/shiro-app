@@ -357,39 +357,51 @@ class EpisodeAdapter(
         private fun castEpisode(data: FastAniApi.AnimePageData, episodeIndex: Int) {
             val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
             castContext.castOptions
-            val url = data.episodes?.get(episodeIndex)
             val key = data._id + episodeIndex//MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
-
-            val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
-            movieMetadata.putString(
-                MediaMetadata.KEY_TITLE,
-                "Episode ${episodeIndex + 1}"
-            )
-            movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
-            movieMetadata.addImage(WebImage(Uri.parse(getFullUrl(data.image))))
-            val mediaInfo = MediaInfo.Builder(url?.let { getVideoLink(it.slug) })
-                .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
-                .setContentType(MimeTypes.VIDEO_UNKNOWN)
-                .setMetadata(movieMetadata).build()
-
-            val mediaItems = arrayOf(MediaQueueItem.Builder(mediaInfo).build())
-            val castPlayer = CastPlayer(castContext)
-
-            castPlayer.loadItems(
-                mediaItems,
-                0,
-                DataStore.getKey<Long>(VIEW_POS_KEY, key, 0L)!!,
-                Player.REPEAT_MODE_OFF
-            )
-
-
-            /*castPlayer.setSessionAvailabilityListener(object : SessionAvailabilityListener {
-                override fun onCastSessionAvailable() {
-
+            thread {
+                val videoLink = data.episodes?.get(episodeIndex)?.videos?.getOrNull(0)?.video_id.let { it1 ->
+                    getVideoLink(
+                        it1!!
+                    )
                 }
+                println("LINK $videoLink")
+                if (videoLink != null) {
+                    activity!!.runOnUiThread {
 
-                override fun onCastSessionUnavailable() {}
-            })*/
+                        val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
+                        movieMetadata.putString(
+                            MediaMetadata.KEY_TITLE,
+                            "Episode ${episodeIndex + 1}"
+                        )
+                        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
+                        movieMetadata.addImage(WebImage(Uri.parse(getFullUrl(data.image))))
+
+                        val mediaInfo = MediaInfo.Builder(videoLink)
+                            .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                            .setContentType(MimeTypes.VIDEO_UNKNOWN)
+                            .setMetadata(movieMetadata).build()
+
+                        val mediaItems = arrayOf(MediaQueueItem.Builder(mediaInfo).build())
+                        val castPlayer = CastPlayer(castContext)
+
+                        castPlayer.loadItems(
+                            mediaItems,
+                            0,
+                            DataStore.getKey<Long>(VIEW_POS_KEY, key, 0L)!!,
+                            Player.REPEAT_MODE_OFF
+                        )
+                    }
+
+
+                    /*castPlayer.setSessionAvailabilityListener(object : SessionAvailabilityListener {
+                        override fun onCastSessionAvailable() {
+
+                        }
+
+                        override fun onCastSessionUnavailable() {}
+                    })*/
+                }
+            }
         }
     }
 

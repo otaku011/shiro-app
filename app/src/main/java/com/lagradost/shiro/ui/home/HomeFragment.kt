@@ -2,11 +2,16 @@ package com.lagradost.shiro.ui.home
 
 import android.os.Bundle
 import android.view.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.ChangeBounds
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
@@ -47,12 +52,12 @@ class HomeFragment : Fragment() {
     private fun homeLoaded(data: FastAniApi.ShiroHomePage?) {
         activity?.runOnUiThread {
 
-            trending_anime_scroll_view.removeAllViews()
+            /*trending_anime_scroll_view.removeAllViews()
             recently_updated_scroll_view.removeAllViews()
             favouriteScrollView.removeAllViews()
             recentlySeenScrollView.removeAllViews()
             scheduleScrollView.removeAllViews()
-
+*/
             //val cardInfo = data?.homeSlidesData?.shuffled()?.take(1)?.get(0)
             /*val glideUrl = GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
             context?.let {
@@ -228,7 +233,7 @@ class HomeFragment : Fragment() {
                 displayCardData(data.data.latest_animes, recently_updated_scroll_view)
                 displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
             }
-            /*displayCardData(data?.recentlyAddedData, recentScrollView)
+            //displayCardData(data?.recentlyAddedData, recentScrollView)
 
             // RELOAD ON NEW FAV!
             if (data?.favorites?.isNotEmpty() == true) {
@@ -239,7 +244,7 @@ class HomeFragment : Fragment() {
                 favouriteRoot.visibility = GONE
             }
 
-            if (data?.schedule?.isNotEmpty() == true) {
+            /*if (data?.schedule?.isNotEmpty() == true) {
                 scheduleRoot.visibility = VISIBLE
                 //println(data.favorites!!.map { it?.title?.english})
                 displayCardData(data.schedule, scheduleScrollView)

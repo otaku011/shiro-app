@@ -43,6 +43,7 @@
         />
 
         <ImageView
+                android:visibility="gone"
                 android:id="@+id/title_bookmark"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
@@ -52,6 +53,7 @@
                 android:layout_gravity="center|end"
                 android:contentDescription="@string/bookmark_btt_hint"/>
         <ImageView
+                android:visibility="gone"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_margin="10dp"

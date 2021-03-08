@@ -142,7 +142,8 @@ class ShiroResultFragment : Fragment() {
                 } else {
                     title_status.visibility = GONE
                 }
-
+                isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.slug)
+                toggleHeartVisual(isBookmarked)
                 title_episodes.text =
                     Html.fromHtml(
                         "<font color=#${textColor}>Episodes:</font><font color=#${textColorGrey}> ${data!!.episodeCount}</font>",
@@ -224,7 +225,7 @@ class ShiroResultFragment : Fragment() {
             }
         }
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
-        //isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.anilistId)
+
     }
     /*
     private fun ToggleViewState(_isViewState: Boolean) {
@@ -248,19 +249,18 @@ class ShiroResultFragment : Fragment() {
         this.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
         if (_isBookmarked) {
-            /*DataStore.setKey<BookmarkedTitle>(
+            DataStore.setKey<FastAniApi.AnimePageData>(
                 BOOKMARK_KEY,
-                data!!.url,
-                BookmarkedTitle(data!!.url, data!!.title, data!!.posterUrl)
-            )*/
+                data!!.slug,
+                data!!
+            )
         } else {
-            DataStore.removeKey(BOOKMARK_KEY, data!!._id)
+            DataStore.removeKey(BOOKMARK_KEY, data!!.slug)
         }
         thread {
             requestHome(true)
         }
     }
-
 
 
     private fun loadSeason() {
@@ -326,7 +326,7 @@ class ShiroResultFragment : Fragment() {
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
         DownloadManager.downloadStartEvent += ::onDownloadStarted
-        toggleHeartVisual(isBookmarked)
+
 
         title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
