@@ -1,4 +1,4 @@
-package com.lagradost.shiro.ui
+package com.lagradost.shiro.ui.search
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -14,14 +14,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.MainActivity.Companion.activity
+import com.lagradost.shiro.ui.AutofitRecyclerView
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
 import kotlinx.android.synthetic.main.search_result.view.imageView
 import kotlinx.android.synthetic.main.search_result_compact.view.*
-import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
 val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)

@@ -20,7 +20,6 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.FastAniApi
 import com.lagradost.shiro.MainActivity
 import com.lagradost.shiro.toPx
-import com.lagradost.shiro.ui.ResAdapter
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread
 

@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
@@ -95,8 +96,19 @@ class HomeFragment : Fragment() {
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
             }*/
 
-            fun displayCardData(data: List<FastAniApi.AnimePageData?>?, scrollView: LinearLayout) {
-                data?.forEach { cardInfo ->
+            fun displayCardData(data: List<FastAniApi.AnimePageData?>?, scrollView: RecyclerView) {
+                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
+                    CardAdapter(
+                        it,
+                        ArrayList<FastAniApi.AnimePageData>(),
+                        scrollView,
+                    )
+                }
+                println("HERE123")
+                scrollView.adapter = adapter
+                (scrollView.adapter as CardAdapter).cardList = data as ArrayList<FastAniApi.AnimePageData>
+                (scrollView.adapter as CardAdapter).notifyDataSetChanged()
+                /*data?.forEach { cardInfo ->
                     if (cardInfo != null) {
                         val card: View = layoutInflater.inflate(R.layout.home_card, null)
                         val glideUrl =
@@ -123,7 +135,7 @@ class HomeFragment : Fragment() {
                         }
                         scrollView.addView(card)
                     }
-                }
+                }*/
             }
 
             fun displayCardData(data: List<LastEpisodeInfo?>?, scrollView: LinearLayout) {
@@ -207,8 +219,8 @@ class HomeFragment : Fragment() {
 
                 // THESE WORK BUT WILL LAG
                 // TODO DYNAMIC LOADING with RecyclerView
-                //displayCardData(data.data.latest_animes, recently_updated_scroll_view)
-                //displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
+                displayCardData(data.data.latest_animes, recently_updated_scroll_view)
+                displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
 
             }
             /*displayCardData(data?.recentlyAddedData, recentScrollView)

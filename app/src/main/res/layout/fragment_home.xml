@@ -252,12 +252,12 @@
                             android:layout_height="200dp"
                             android:layout_marginBottom="20dp"
                     >
-                        <LinearLayout
+                        <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/favouriteScrollView"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content">
-                        </LinearLayout>
+                        </androidx.recyclerview.widget.RecyclerView>
                     </HorizontalScrollView>
                 </LinearLayout>
                 <!--
@@ -282,18 +282,20 @@
                         android:padding="10dp"
                 >
                 </TextView>
-                <HorizontalScrollView
+                <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="200dp"
                         android:layout_marginBottom="20dp"
                 >
-                    <LinearLayout
+
+                    <androidx.recyclerview.widget.RecyclerView
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             android:id="@+id/trending_anime_scroll_view"
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
-                    </LinearLayout>
-                </HorizontalScrollView>
+                    </androidx.recyclerview.widget.RecyclerView>
+                </RelativeLayout>
                 <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -305,18 +307,20 @@
                         android:padding="10dp"
                 >
                 </TextView>
-                <HorizontalScrollView
+                <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="200dp"
                         android:paddingBottom="20dp"
                 >
-                    <LinearLayout
+
+                    <androidx.recyclerview.widget.RecyclerView
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             android:id="@+id/recently_updated_scroll_view"
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
-                    </LinearLayout>
-                </HorizontalScrollView>
+                    </androidx.recyclerview.widget.RecyclerView>
+                </RelativeLayout>
 
 
                 <TextView
@@ -330,18 +334,20 @@
                         android:padding="10dp"
                 >
                 </TextView>
-                <HorizontalScrollView
+                <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="200dp"
                         android:paddingBottom="20dp"
                 >
-                    <LinearLayout
+
+                    <androidx.recyclerview.widget.RecyclerView
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             android:id="@+id/ongoing_anime_scroll_view"
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
-                    </LinearLayout>
-                </HorizontalScrollView>
+                    </androidx.recyclerview.widget.RecyclerView>
+                </RelativeLayout>
 
 
                 <LinearLayout
@@ -362,18 +368,20 @@
                             android:padding="10dp"
                     >
                     </TextView>
-                    <HorizontalScrollView
+                    <RelativeLayout
                             android:layout_width="wrap_content"
                             android:layout_height="250dp"
                             android:layout_marginBottom="20dp"
                     >
-                        <LinearLayout
+
+                        <androidx.recyclerview.widget.RecyclerView
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                                 android:id="@+id/scheduleScrollView"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content">
-                        </LinearLayout>
-                    </HorizontalScrollView>
+                        </androidx.recyclerview.widget.RecyclerView>
+                    </RelativeLayout>
                 </LinearLayout>
 
 
