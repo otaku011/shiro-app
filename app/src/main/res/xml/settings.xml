@@ -135,6 +135,7 @@
         />
     </PreferenceCategory>
     <PreferenceCategory
+            app:isPreferenceVisible="false"
             android:key="accounts"
             android:title="Accounts"
     >
@@ -172,12 +173,14 @@
                 android:icon="@drawable/ic_baseline_warning_24"
         />
         <SwitchPreference
+                app:isPreferenceVisible="false"
                 app:key="auto_update"
                 android:title="Automatically check for updates"
                 app:defaultValue="true"
                 android:icon="@drawable/ic_baseline_system_update_24"
         />
         <Preference
+                app:isPreferenceVisible="false"
                 android:title="Check for updates"
                 android:icon="@drawable/rdload"
                 app:key="check_updates"
@@ -188,6 +191,7 @@
                 android:icon="@drawable/ic_baseline_notes_24"
         />
         <Preference
+                app:isPreferenceVisible="false"
                 android:icon="@drawable/ic_baseline_payment_24"
                 android:title="Donate"
                 app:summary="In order to help us fund the servers and keep them running. Donors can download if authenticated with the Donor ID."
@@ -197,6 +201,7 @@
 
         </Preference>
         <Preference
+                app:isPreferenceVisible="false"
                 android:title="Discord"
                 android:icon="@drawable/ic_baseline_discord_24"
                 app:summary="Join FastAni's Community to check updates on the app and site, talk with developers and give suggestions"

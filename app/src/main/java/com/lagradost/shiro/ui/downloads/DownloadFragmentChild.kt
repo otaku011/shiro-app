@@ -18,13 +18,9 @@ import androidx.preference.PreferenceManager
 import com.lagradost.shiro.*
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.ui.PlayerData
-import com.lagradost.shiro.ui.result.ResultFragment
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.fixEpTitle
-import com.lagradost.shiro.ui.result.ResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.episode_result_downloaded.*
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
-import kotlinx.android.synthetic.main.fragment_results.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.player_custom_layout.*
@@ -32,6 +28,9 @@ import java.io.File
 
 import com.lagradost.shiro.MainActivity
 import com.lagradost.shiro.ui.PlayerFragment
+import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.fixEpTitle
+import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
+import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isViewState
 
 
 class DownloadFragmentChild() : Fragment() {
@@ -157,7 +156,7 @@ class DownloadFragmentChild() : Fragment() {
                 }
 
                 card.setOnLongClickListener {
-                    if (ResultFragment.isViewState) {
+                    if (isViewState) {
                         if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                             DataStore.removeKey(VIEWSTATE_KEY, key)
                         } else {

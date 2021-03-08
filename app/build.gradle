@@ -50,7 +50,7 @@ repositories {
     google()
 }
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -88,6 +88,6 @@ dependencies {
 
 
     // https://mvnrepository.com/artifact/org.mozilla/rhino
-    implementation group: 'org.mozilla', name: 'rhino', version: '1.7.6'
+    //implementation group: 'org.mozilla', name: 'rhino', version: '1.7.6'
 
 }

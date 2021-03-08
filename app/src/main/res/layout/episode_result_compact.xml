@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/outline_background"
+        android:nextFocusRight="@+id/cdi"
+        android:nextFocusLeft="@+id/cdi"
+        android:id="@+id/episode_result_root"
+>
+    <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="2dp"
+            android:elevation="10dp"
+            app:cardCornerRadius="4dp"
+            android:id="@+id/cardBg"
+            app:cardBackgroundColor="@color/darkBar">
+        <!-- USING CROP RATIO (182/268), centerCrop for fill -->
+
+
+
+        <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
+        <androidx.core.widget.ContentLoadingProgressBar
+                android:id="@+id/video_progress"
+                android:layout_width="match_parent"
+                android:indeterminate="false"
+                android:layout_gravity="start|bottom"
+
+                android:layout_marginBottom="-6.3dp"
+                style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                android:layout_height="wrap_content">
+        </androidx.core.widget.ContentLoadingProgressBar>
+        <TextView
+                android:id="@+id/cardTitle"
+                android:layout_margin="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:textSize="15sp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="160dp"
+                android:layout_marginEnd="50dp"
+        >
+        </TextView>
+
+
+        <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
+                   android:src="@drawable/exo_icon_stop"
+                   android:id="@+id/progressBarStop"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+                   app:tint="@color/white"
+                   android:visibility="gone"
+        />
+
+        <ImageView android:layout_width="40dp"
+                   android:layout_height="40dp"
+                   android:layout_margin="10dp"
+                   android:src="@drawable/netflix_download"
+                   android:id="@+id/cdi"
+                   android:nextFocusRight="@+id/episode_result_root"
+                   android:nextFocusLeft="@+id/episode_result_root"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+        />
+        <ProgressBar
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/progressBar"
+                android:indeterminate="false"
+                android:progressDrawable="@drawable/circular_progress_bar"
+                android:background="@drawable/circle_shape"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:max="100"
+                android:layout_margin="5dp"
+                android:layout_gravity="end|center_vertical"
+                android:progress="0"
+                android:visibility="gone"
+        />
+
+        <ImageView android:layout_width="30dp" android:layout_height="30dp" android:layout_margin="10dp"
+                   android:id="@+id/cardPauseIcon"
+                   android:src="@drawable/exo_icon_stop"
+                   app:tint="?attr/colorPrimary"
+                   android:visibility="gone"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+        />
+        <ImageView android:layout_width="30dp" android:layout_height="30dp" android:layout_margin="10dp"
+                   android:id="@+id/cardRemoveIcon"
+                   android:visibility="gone"
+                   android:src="@drawable/ic_baseline_delete_24"
+                   android:layout_gravity="end|center_vertical"
+                   android:background="?android:attr/selectableItemBackgroundBorderless"
+        />
+        <!--
+        <TextView
+                android:id="@+id/cardDescription"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="15sp"
+                android:layout_gravity="top"
+                android:layout_marginTop="20dp"
+                android:textFontWeight="200"
+                android:layout_marginStart="70dp"
+        >
+        </TextView>-->
+
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

@@ -11,9 +11,11 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
+import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.result.ShiroResultFragment
+import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
 import kotlinx.android.synthetic.main.home_card.view.imageText
@@ -58,39 +60,46 @@ class HomeFragment : Fragment() {
                     .load(glideUrl)
                     .into(main_backgroundImage)
             }*/
+            val random = data?.random?.data
+            if (random != null) {
 
-            /*val glideUrlMain =
-                GlideUrl("https://fastani.net/" + cardInfo?.bannerImage) { FastAniApi.currentHeaders }
-            context?.let {
-                GlideApp.with(it)
-                    .load(glideUrlMain)
-                    .into(main_poster)
-            }
-
-            main_name.text = cardInfo?.title?.english
-
-            main_genres.text = cardInfo?.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
-
-            main_watch_button.setOnClickListener {
-                //MainActivity.loadPage(cardInfo!!)
-                if (cardInfo != null) {
-                    val nextEpisode = getNextEpisode(cardInfo)
-                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, cardInfo)
+                val glideUrlMain =
+                    GlideUrl(getFullUrl(random.image)) { FastAniApi.currentHeaders }
+                context?.let {
+                    GlideApp.with(it)
+                        .load(glideUrlMain)
+                        .into(main_poster)
                 }
-            }
-            main_watch_button.setOnLongClickListener {
-                //MainActivity.loadPage(cardInfo!!)
-                if (cardInfo != null) {
-                    val nextEpisode = getNextEpisode(cardInfo)
-                    Toast.makeText(activity, "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}", Toast.LENGTH_LONG).show()
+
+                main_name.text = random.name
+
+                main_genres.text = random.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
+
+                /*main_watch_button.setOnClickListener {
+                    //MainActivity.loadPage(cardInfo!!)
+                    if (cardInfo != null) {
+                        val nextEpisode = getNextEpisode(cardInfo)
+                        loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, cardInfo)
+                    }
                 }
-                return@setOnLongClickListener true
+                main_watch_button.setOnLongClickListener {
+                    //MainActivity.loadPage(cardInfo!!)
+                    if (cardInfo != null) {
+                        val nextEpisode = getNextEpisode(cardInfo)
+                        Toast.makeText(
+                            activity,
+                            "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    return@setOnLongClickListener true
+                }*/
+                main_info_button.setOnClickListener {
+                    MainActivity.loadPage(random)
+                }
             }
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            main_info_button.setOnClickListener {
-                MainActivity.loadPage(cardInfo!!)
-            }
-*/
+
             /*main_poster.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
@@ -158,7 +167,7 @@ class HomeFragment : Fragment() {
                             "S${cardInfo.seasonIndex + 1}:E${cardInfo.episodeIndex + 1} ${cardInfo.title.english}"
                         card.infoButton.setOnClickListener {
                             if (FastAniApi.lastCards.containsKey(epId)) {
-                                MainActivity.loadPage(FastAniApi.lastCards[epId]!!)
+                                //MainActivity.loadPage(FastAniApi.lastCards[epId]!!)
                             } else {
                                 Toast.makeText(
                                     context,
@@ -216,12 +225,8 @@ class HomeFragment : Fragment() {
 
             if (data != null) {
                 displayCardData(data.data.trending_animes, trending_anime_scroll_view)
-
-                // THESE WORK BUT WILL LAG
-                // TODO DYNAMIC LOADING with RecyclerView
                 displayCardData(data.data.latest_animes, recently_updated_scroll_view)
                 displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
-
             }
             /*displayCardData(data?.recentlyAddedData, recentScrollView)
 
@@ -254,6 +259,7 @@ class HomeFragment : Fragment() {
 */
             main_load.alpha = 0f
             main_scroll.alpha = 1f
+
             // This somehow crashes, hope this null check helps ¯\_(ツ)_/¯
             if (main_reload_data_btt != null) {
                 main_reload_data_btt.alpha = 0f

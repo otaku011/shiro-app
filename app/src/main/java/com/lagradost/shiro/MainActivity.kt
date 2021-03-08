@@ -53,6 +53,7 @@ import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
 import com.lagradost.shiro.ui.downloads.DownloadFragment
 import com.lagradost.shiro.ui.result.ResultFragment
+import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.update_dialog.*
@@ -401,7 +402,9 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
-
+        /*fun loadPlayer(pageData: FastAniApi.AnimePageData, episodeIndex: Int, startAt: Long?) {
+            loadPlayer(PlayerData("${pageData.name} - Episode ${episodeIndex + 1}", null, episodeIndex, null, null, startAt, null, true))
+        }*/
         fun loadPlayer(title: String?, url: String, startAt: Long?) {
             loadPlayer(PlayerData(title, url, null, null, null, startAt, null))
         }
@@ -418,11 +421,11 @@ class MainActivity : AppCompatActivity() {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         }
 
-        fun loadPage(card: FastAniApi.Card) {
+        fun loadPage(card: FastAniApi.AnimePageData) {
 
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                ?.add(R.id.homeRoot, ResultFragment.newInstance(card))
+                ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(card))
                 ?.commit()
             /*
             activity?.runOnUiThread {
@@ -716,7 +719,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val layout = listOf(
-            R.id.navigation_home, R.id.navigation_search, R.id.navigation_downloads, R.id.navigation_settings
+            R.id.navigation_home, R.id.navigation_search, /*R.id.navigation_downloads,*/ R.id.navigation_settings
         )
         val appBarConfiguration = AppBarConfiguration(
             layout.toSet()

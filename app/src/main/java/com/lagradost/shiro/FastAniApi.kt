@@ -110,67 +110,68 @@ class FastAniApi {
     data class Donor(@JsonProperty("id") val id: String)
 
     data class ShiroSearchResponseShow(
-        val image: String,
-        val _id: String,
-        val slug: String,
-        val name: String,
+        @JsonProperty("image") val image: String,
+        @JsonProperty("_id") val _id: String,
+        @JsonProperty("slug") val slug: String,
+        @JsonProperty("name") val name: String,
     )
 
     data class ShiroHomePageData(
-        val trending_animes: List<AnimePageData>,
-        val ongoing_animes: List<AnimePageData>,
-        val latest_animes: List<AnimePageData>,
+        @JsonProperty("trending_animes") val trending_animes: List<AnimePageData>,
+        @JsonProperty("ongoing_animes") val ongoing_animes: List<AnimePageData>,
+        @JsonProperty("latest_animes") val latest_animes: List<AnimePageData>,
     )
 
     data class ShiroHomePage(
-        val status: String,
-        val data: ShiroHomePageData
+        @JsonProperty("status") val status: String,
+        @JsonProperty("data") val data: ShiroHomePageData,
+        @JsonProperty("random") var random: AnimePage?,
     )
 
 
     data class ShiroSearchResponse(
-        val data: List<ShiroSearchResponseShow>,
-        val status: String
+        @JsonProperty("data") val data: List<ShiroSearchResponseShow>,
+        @JsonProperty("status") val status: String
     )
 
     data class ShiroVideo(
-        val video_id: String,
-        val host: String,
+        @JsonProperty("video_id") val video_id: String,
+        @JsonProperty("host") val host: String,
     )
 
     data class ShiroEpisodes(
-        val anime_slug: String,
-        val create: String,
-        val dayOfTheWeek: String,
-        val episode_number: Int,
-        val slug: String,
-        val update: String,
-        val _id: String,
-        val videos: List<ShiroVideo>
+        @JsonProperty("anime_slug") val anime_slug: String,
+        @JsonProperty("create") val create: String,
+        @JsonProperty("dayOfTheWeek") val dayOfTheWeek: String,
+        @JsonProperty("episode_number") val episode_number: Int,
+        @JsonProperty("slug") val slug: String,
+        @JsonProperty("update") val update: String,
+        @JsonProperty("_id") val _id: String,
+        @JsonProperty("videos") val videos: List<ShiroVideo>
     )
 
     data class AnimePageData(
-        val banner: String?,
-        val canonicalTitle: String?,
-        val episodeCount: String,
-        val genres: List<String>?,
-        val image: String,
-        val japanese: String?,
-        val language: String,
-        val name: String,
-        val slug: String,
-        val synopsis: String,
-        val type: String?,
-        val views: Int?,
-        val year: String?,
-        val _id: String,
-        val episodes: List<ShiroEpisodes>?,
-        val status: String?,
+        @JsonProperty("banner") val banner: String?,
+        @JsonProperty("canonicalTitle") val canonicalTitle: String?,
+        @JsonProperty("episodeCount") val episodeCount: String,
+        @JsonProperty("genres") val genres: List<String>?,
+        @JsonProperty("image") val image: String,
+        @JsonProperty("japanese") val japanese: String?,
+        @JsonProperty("language") val language: String,
+        @JsonProperty("name") val name: String,
+        @JsonProperty("slug") val slug: String,
+        @JsonProperty("synopsis") val synopsis: String,
+        @JsonProperty("type") val type: String?,
+        @JsonProperty("views") val views: Int?,
+        @JsonProperty("year") val year: String?,
+        @JsonProperty("_id") val _id: String,
+        @JsonProperty("episodes") val episodes: List<ShiroEpisodes>?,
+        @JsonProperty("status") val status: String?,
     )
 
     data class AnimePage(
-        val data: AnimePageData,
-        val status: String
+        @JsonProperty("data") val data: AnimePageData,
+        @JsonProperty("status") val status: String
     )
 
     companion object {
@@ -260,14 +261,28 @@ class FastAniApi {
             return document.select("source").firstOrNull()?.attr("src")
         }
 
-
-        fun getAnimePage(show: ShiroSearchResponseShow): AnimePage? {
-            val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
+        fun getRandomAnimePage(): AnimePage? {
+            println("TOKEN ${currentToken?.token}")
+            val url = "https://ani.api-web.site/anime/random/TV?token=${currentToken?.token}"
             val response = khttp.get(url)
+            println(response.text)
             val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
             return if (mapped.status == "Found")
                 mapped
             else null
+        }
+
+        fun getAnimePage(show: ShiroSearchResponseShow): AnimePage? {
+            val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
+            return try {
+                val response = khttp.get(url)
+                val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                if (mapped.status == "Found")
+                    mapped
+                else null
+            } catch (e: Exception) {
+                null
+            }
         }
 
 
@@ -376,6 +391,11 @@ class FastAniApi {
                 val url = "https://ani.api-web.site/latest?token=${currentToken!!.token}"
                 val response = khttp.get(url)
                 res = response.text.let { mapper.readValue(it) }
+
+                if (res != null) {
+                    res.random = getRandomAnimePage()
+                }
+
                 //res?.schedule = getSchedule()
             }
             // Anything below here shouldn't do network requests (network on main thread)
