@@ -1,5 +1,5 @@
 <resources>
-    <string name="version_code">1.0.0 Private Release</string>
+    <string name="version_code">1.0.0 Public Release</string>
     <string name="changelog">\n
         - Working\n
     </string>
