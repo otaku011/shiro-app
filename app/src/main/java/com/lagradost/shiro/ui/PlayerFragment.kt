@@ -264,7 +264,7 @@ class PlayerFragment() : Fragment() {
         // data?.card!!.cdndata?.seasons.size == 1 && data?.card!!.cdndata?.seasons[0].episodes.size == 1
         var preTitle = ""
         if (!isMovie) {
-            preTitle = "S${data?.seasonIndex!! + 1}:E${data?.episodeIndex!! + 1} · "
+            preTitle = "Episode ${data?.episodeIndex!! + 1} · "
         }
         // Replaces with "" if it's null
         return preTitle + data?.card?.name
