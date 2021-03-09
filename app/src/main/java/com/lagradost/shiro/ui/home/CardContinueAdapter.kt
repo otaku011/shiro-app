@@ -72,7 +72,8 @@ class CardContinueAdapter(
                         .into(card.imageView)
                 }
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
-                itemView.imageText.text = "Episode ${cardInfo.episodeIndex + 1}"
+                itemView.imageText.text =
+                    if (cardInfo.id?.name?.endsWith("Dubbed") == true) "✦ Episode ${cardInfo.episodeIndex + 1}" else "Episode ${cardInfo.episodeIndex + 1}"
                 if (cardInfo.id != null) {
                     itemView.infoButton.visibility = VISIBLE
                     itemView.infoButton.setOnClickListener {
@@ -84,7 +85,6 @@ class CardContinueAdapter(
                     }
                 } else {
                     itemView.infoButton.visibility = GONE
-
                 }
                 itemView.home_card_root.setOnLongClickListener {
                     Toast.makeText(context, cardInfo.id?.name, Toast.LENGTH_SHORT).show()

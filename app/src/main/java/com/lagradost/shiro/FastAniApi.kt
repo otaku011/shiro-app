@@ -123,6 +123,8 @@ class FastAniApi {
         @JsonProperty("trending_animes") val trending_animes: List<AnimePageData>,
         @JsonProperty("ongoing_animes") val ongoing_animes: List<AnimePageData>,
         @JsonProperty("latest_animes") val latest_animes: List<AnimePageData>,
+        @JsonProperty("latest_episodes") val latest_episodes: List<ShiroEpisodes>,
+
     )
 
     data class ShiroHomePage(
@@ -162,6 +164,7 @@ class FastAniApi {
     )
 
     data class ShiroEpisodes(
+        @JsonProperty("anime") val anime: AnimePageData?,
         @JsonProperty("anime_slug") val anime_slug: String,
         @JsonProperty("create") val create: String,
         @JsonProperty("dayOfTheWeek") val dayOfTheWeek: String,
@@ -323,6 +326,7 @@ class FastAniApi {
                     mapped
                 else null
             } catch (e: Exception) {
+                println(e.message)
                 null
             }
         }

@@ -4,8 +4,12 @@ import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.view.marginTop
+import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
@@ -66,9 +70,8 @@ class HomeFragment : Fragment() {
                     .load(glideUrl)
                     .into(main_backgroundImage)
             }*/
-            val random = data?.random?.data
+            val random: FastAniApi.AnimePageData? = data?.random?.data
             if (random != null) {
-
                 val glideUrlMain =
                     GlideUrl(getFullUrl(random.image)) { FastAniApi.currentHeaders }
                 context?.let {
@@ -110,6 +113,16 @@ class HomeFragment : Fragment() {
                 main_info_button.setOnClickListener {
                     MainActivity.loadPage(random)
                 }
+            } else {
+                main_poster_holder.visibility = GONE
+                main_poster_text_holder.visibility = GONE
+                val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
+                    LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+                    LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
+                )
+
+                marginParams.setMargins(0)
+                main_layout.layoutParams = marginParams
             }
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
@@ -150,8 +163,10 @@ class HomeFragment : Fragment() {
 
             if (data != null) {
                 displayCardData(data.data.trending_animes, trending_anime_scroll_view)
-                displayCardData(data.data.latest_animes, recently_updated_scroll_view)
+                displayCardData(data.data.latest_episodes.map { it.anime }, recently_updated_scroll_view)
                 displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
+                displayCardData(data.data.latest_animes, latest_anime_scroll_view)
+
             }
             //displayCardData(data?.recentlyAddedData, recentScrollView)
 

@@ -40,8 +40,10 @@
         >
             <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:id="@+id/main_poster_holder"
 
+            >
                 <ImageView
                         android:id="@+id/main_poster"
                         android:layout_width="match_parent"
@@ -50,7 +52,6 @@
                         android:alpha="1"
                         android:foreground="?android:attr/selectableItemBackgroundBorderless"
                         android:focusable="true"
-                        android:src="@drawable/faded_bg"
                         android:contentDescription="@string/home_background_content_description"
                         android:nextFocusUp="@+id/nav_view"
                         android:nextFocusRight="@+id/main_info_button"
@@ -102,98 +103,106 @@
 
                 </androidx.cardview.widget.CardView>
                 -->
-                <TextView
-                        android:id="@+id/main_name"
+                <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="NAME PLACEHOLDER"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:textStyle="bold"
-                        android:paddingTop="5dp"
-                        android:textSize="30sp"
-                        android:textColor="@color/textColor"
+                        android:orientation="vertical"
+                        android:id="@+id/main_poster_text_holder"
                 >
-                </TextView>
 
-                <TextView
-                        android:visibility="gone"
-                        android:id="@+id/main_name_jap"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="NAME PLACEHOLDER"
-                        android:gravity="center_horizontal"
-                        android:textSize="16sp"
-                        android:textColor="@color/grayForeground"
-                        android:paddingTop="0dp"
-                        android:paddingBottom="10dp"
-                >
-                </TextView>
-
-                <TextView
-                        android:id="@+id/main_genres"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/textColor"
-
-                        android:text="">
-
-                </TextView>
-                <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_marginTop="20dp"
-                        android:layout_marginBottom="20dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                >
-                    <com.google.android.material.button.MaterialButton
-                            app:icon="@drawable/netflix_play"
-                            app:iconTint="@color/white"
-                            app:iconSize="24dp"
+                    <TextView
+                            android:id="@+id/main_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="NAME PLACEHOLDER"
                             android:layout_marginStart="20dp"
                             android:layout_marginEnd="20dp"
-                            android:layout_width="0dp"
-                            android:elevation="10dp"
-                            android:layout_height="40dp"
-                            android:layout_gravity="center_horizontal"
-                            android:background="@drawable/button_ripple"
-                            android:foreground="@drawable/button_outline"
+                            android:textStyle="bold"
+                            android:paddingTop="5dp"
+                            android:textSize="30sp"
                             android:textColor="@color/textColor"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:id="@+id/main_watch_button"
-                            android:text="@string/main_watch_button_text"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toStartOf="@+id/main_info_button"
-                            android:nextFocusRight="@+id/main_info_button"
                     >
-                    </com.google.android.material.button.MaterialButton>
+                    </TextView>
 
-                    <com.google.android.material.button.MaterialButton
-                            app:icon="@drawable/ic_baseline_info_24"
-                            app:iconTint="@android:color/black"
+                    <TextView
+                            android:visibility="gone"
+                            android:id="@+id/main_name_jap"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="NAME PLACEHOLDER"
+                            android:gravity="center_horizontal"
+                            android:textSize="16sp"
+                            android:textColor="@color/grayForeground"
+                            android:paddingTop="0dp"
+                            android:paddingBottom="10dp"
+                    >
+                    </TextView>
+
+                    <TextView
+                            android:id="@+id/main_genres"
                             android:layout_marginStart="20dp"
                             android:layout_marginEnd="20dp"
-                            android:layout_width="0dp"
-                            android:elevation="10dp"
-                            android:layout_height="40dp"
-                            android:layout_gravity="center_horizontal"
-                            android:background="@drawable/button_ripple"
-                            android:textColor="@android:color/primary_text_light"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="@drawable/button_outline"
-                            android:theme="@style/Button.White"
-                            android:id="@+id/main_info_button"
-                            android:text="@string/main_info_button_text"
-                            android:nextFocusLeft="@+id/main_watch_button"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toEndOf="@+id/main_watch_button">
-                    </com.google.android.material.button.MaterialButton>
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/textColor"
+
+                            android:text="">
+
+                    </TextView>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_marginTop="20dp"
+                            android:layout_marginBottom="20dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                    >
+                        <com.google.android.material.button.MaterialButton
+                                app:icon="@drawable/netflix_play"
+                                app:iconTint="@color/white"
+                                app:iconSize="24dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginEnd="20dp"
+                                android:layout_width="0dp"
+                                android:elevation="10dp"
+                                android:layout_height="40dp"
+                                android:layout_gravity="center_horizontal"
+                                android:background="@drawable/button_ripple"
+                                android:foreground="@drawable/button_outline"
+                                android:textColor="@color/textColor"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:id="@+id/main_watch_button"
+                                android:text="@string/main_watch_button_text"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toStartOf="@+id/main_info_button"
+                                android:nextFocusRight="@+id/main_info_button"
+                        >
+                        </com.google.android.material.button.MaterialButton>
+
+                        <com.google.android.material.button.MaterialButton
+                                app:icon="@drawable/ic_baseline_info_24"
+                                app:iconTint="@android:color/black"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginEnd="20dp"
+                                android:layout_width="0dp"
+                                android:elevation="10dp"
+                                android:layout_height="40dp"
+                                android:layout_gravity="center_horizontal"
+                                android:background="@drawable/button_ripple"
+                                android:textColor="@android:color/primary_text_light"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="@drawable/button_outline"
+                                android:theme="@style/Button.White"
+                                android:id="@+id/main_info_button"
+                                android:text="@string/main_info_button_text"
+                                android:nextFocusLeft="@+id/main_watch_button"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toEndOf="@+id/main_watch_button">
+                        </com.google.android.material.button.MaterialButton>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
 
 
                 <LinearLayout
@@ -344,6 +353,32 @@
                     <androidx.recyclerview.widget.RecyclerView
                             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             android:id="@+id/ongoing_anime_scroll_view"
+                            android:orientation="horizontal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content">
+                    </androidx.recyclerview.widget.RecyclerView>
+                </RelativeLayout>
+
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textColor"
+                        android:gravity="center_horizontal"
+                        android:text="@string/latest_anime"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:padding="10dp"
+                >
+                </TextView>
+                <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:paddingBottom="20dp"
+                >
+
+                    <androidx.recyclerview.widget.RecyclerView
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            android:id="@+id/latest_anime_scroll_view"
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content">
