@@ -40,6 +40,7 @@ import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
+import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
@@ -111,8 +112,12 @@ class ShiroResultFragment : Fragment() {
 
     private fun onLoadEvent(isSucc: Boolean) {
         if (isSucc) {
-
             activity?.runOnUiThread {
+                if (data == null){
+                    Toast.makeText(activity, "Error loading anime page!", Toast.LENGTH_LONG).show()
+                    popCurrentPage()
+                    return@runOnUiThread
+                }
                 val fadeAnimation = AlphaAnimation(1f, 0f)
 
                 fadeAnimation.duration = 300
@@ -123,7 +128,7 @@ class ShiroResultFragment : Fragment() {
 
                 val glideUrl =
                     GlideUrl(
-                        getFullUrl(getFullUrl(data!!.image))
+                        data?.image?.let { getFullUrl(it) }?.let { getFullUrl(it) }
                     )
                 context?.let {
                     GlideApp.with(it)
@@ -213,13 +218,9 @@ class ShiroResultFragment : Fragment() {
         arguments?.getString("AnimePageData")?.let {
             thread {
                 val pageData = mapper.readValue(it, FastAniApi.AnimePageData::class.java)
+                println("DATA $pageData")
                 data = getAnimePage(
-                    FastAniApi.ShiroSearchResponseShow(
-                        pageData.image,
-                        pageData._id,
-                        pageData.slug,
-                        pageData.name
-                    )
+                    pageData.slug
                 )?.data
                 onLoaded.invoke(true)
             }

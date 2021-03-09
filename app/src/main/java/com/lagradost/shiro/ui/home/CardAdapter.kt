@@ -64,7 +64,13 @@ class CardAdapter(
                         .into(card.imageView)
                 }
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
-                itemView.imageText.text = cardInfo.name
+                itemView.imageText.text =
+                    if (cardInfo.name.endsWith("Dubbed")) "✦ ${
+                        cardInfo.name.substring(
+                            0,
+                            cardInfo.name.length - 6
+                        )
+                    }" else cardInfo.name
 
                 itemView.home_card_root.setOnLongClickListener {
                     Toast.makeText(context, cardInfo.name, Toast.LENGTH_SHORT).show()
