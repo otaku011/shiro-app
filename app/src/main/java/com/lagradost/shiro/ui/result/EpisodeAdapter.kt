@@ -103,7 +103,7 @@ class EpisodeAdapter(
             }
 
             card.cardBg.setOnClickListener {
-                Toast.makeText(activity, "Loading link (Don't press shit!)", Toast.LENGTH_LONG).show()
+                //Toast.makeText(activity, "Loading link (Don't press shit!)", Toast.LENGTH_LONG).show()
                 val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
                 println("SSTATE: " + castContext.castState + "<<")
                 if (save) {
@@ -115,14 +115,16 @@ class EpisodeAdapter(
                 } else {
                     thread {
                         //MainActivity.loadPlayer(data, position, 0L)
-                        val videoUrl = data.episodes?.get(position)?.videos?.getOrNull(0)?.video_id.let { it1 ->
+                        /*val videoUrl = data.episodes?.get(position)?.videos?.getOrNull(0)?.video_id.let { it1 ->
                             getVideoLink(
                                 it1!!
                             )
                         }
                         if (videoUrl != null) {
                             MainActivity.loadPlayer("${data.name} - Episode ${position + 1}", videoUrl, 0L)
-                        }
+                        }*/
+                       // println("LAOD PLAYER!")
+                        MainActivity.loadPlayer(position, 0L, data)
                     }
                 }
             }
@@ -166,7 +168,7 @@ class EpisodeAdapter(
             }
 
             if (MainActivity.isDonor) {
-                val internalId = (data!!._id + "E${position}").hashCode()
+                val internalId = (data._id + "E${position}").hashCode()
                 val child = DataStore.getKey<DownloadManager.DownloadFileMetadata>(
                     DOWNLOAD_CHILD_KEY,
                     internalId.toString()

@@ -99,7 +99,10 @@ class FastAniApi {
         @JsonProperty("success") val success: Boolean
     )
 
-    data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("nextEpisode") val nextEpisode: Int)
+    data class EpisodeResponse(
+        @JsonProperty("anime") val anime: Card,
+        @JsonProperty("nextEpisode") val nextEpisode: Int
+    )
 
     data class Update(
         @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
@@ -126,12 +129,30 @@ class FastAniApi {
         @JsonProperty("status") val status: String,
         @JsonProperty("data") val data: ShiroHomePageData,
         @JsonProperty("random") var random: AnimePage?,
-        @JsonProperty("favorites") var favorites: List<AnimePageData?>?
+        @JsonProperty("favorites") var favorites: List<AnimePageData?>?,
+        @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?
     )
 
 
     data class ShiroSearchResponse(
         @JsonProperty("data") val data: List<ShiroSearchResponseShow>,
+        @JsonProperty("status") val status: String
+    )
+
+    data class ShiroFullSearchResponseCurrentPage(
+        @JsonProperty("items") val items: List<ShiroSearchResponseShow>
+    )
+
+    data class ShiroFullSearchResponseNavItems(
+        @JsonProperty("currentPage") val currentPage: ShiroFullSearchResponseCurrentPage
+    )
+
+    data class ShiroFullSearchResponseNav(
+        @JsonProperty("nav") val nav: ShiroFullSearchResponseNavItems
+    )
+
+    data class ShiroFullSearchResponse(
+        @JsonProperty("data") val data: ShiroFullSearchResponseNav,
         @JsonProperty("status") val status: String
     )
 
@@ -234,14 +255,14 @@ class FastAniApi {
         fun getDonorStatus(): String {
             val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
             try {
+                val androidId: String =
+                    Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
                 // Change cache with this
                 // , headers = mapOf("Cache-Control" to "max-age=60")
                 val response = khttp.get(url).text
                 val users = mapper.readValue<List<Donor>>(response)
                 users.forEach {
                     try {
-                        val androidId: String =
-                            Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
                         if (androidId.md5() == it.id || it.id == "all") {
                             return androidId.md5()
                         }
@@ -257,9 +278,15 @@ class FastAniApi {
 
 
         fun getVideoLink(id: String): String? {
-            val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id").text
-            val document = Jsoup.parse(res)
-            return document.select("source").firstOrNull()?.attr("src")
+            return try {
+                val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id").text
+                val document = Jsoup.parse(res)
+                val url = document.select("source").firstOrNull()?.attr("src")
+                url
+            } catch (e: Exception) {
+                println("Failed to load video URL")
+                null
+            }
         }
 
         fun getRandomAnimePage(): AnimePage? {
@@ -286,26 +313,63 @@ class FastAniApi {
             }
         }
 
+        // TODO MAKE THIS ONCE FUNCTION
+        fun getAnimePage(slug: String): AnimePage? {
+            val url = "https://ani.api-web.site/anime/slug/${slug}?token=${currentToken?.token}"
+            return try {
+                val response = khttp.get(url)
+                val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                if (mapped.status == "Found")
+                    mapped
+                else null
+            } catch (e: Exception) {
+                null
+            }
+        }
 
         //search via http get request, NOT INSTANT
         // ONLY PAGE 1
-        fun search(query: String, page: Int = 1): ShiroSearchResponse? {
-            // Tags and years can be added
-            println("TOKEN!!!!!!!!!!!! ${currentToken?.token}")
-            val url = "https://ani.api-web.site/anime/auto-complete/${
-                URLEncoder.encode(
-                    query,
-                    "UTF-8"
-                )
-            }?token=${currentToken?.token}"
-            // Security headers
-            val headers = currentToken?.headers
-            val response = headers?.let { khttp.get(url) }
-            val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
-            return if (mapped?.status == "Found")
-                mapped
-            else null
+        fun quickSearch(query: String): List<ShiroSearchResponseShow>? {
+            try {
+                // Tags and years can be added
+                val url = "https://ani.api-web.site/anime/auto-complete/${
+                    URLEncoder.encode(
+                        query,
+                        "UTF-8"
+                    )
+                }?token=${currentToken?.token}".replace("+", "%20")
+                println(url)
+                // Security headers
+                val headers = currentToken?.headers
+                val response = headers?.let { khttp.get(url) }
+                val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
+                return if (mapped?.status == "Found")
+                    mapped.data
+                else null
+            } catch (e: Exception) {
+                return null
+            }
             //return response?.text?.let { mapper.readValue(it) }
+        }
+
+        fun search(query: String): List<ShiroSearchResponseShow>? {
+            try {
+                val url = "https://ani.api-web.site/advanced?search=${
+                    URLEncoder.encode(
+                        query,
+                        "UTF-8"
+                    )
+                }&token=${currentToken?.token}".replace("+", "%20")
+                val headers = currentToken?.headers
+                val response = headers?.let { khttp.get(url) }
+                println(response?.text)
+                val mapped = response?.let { mapper.readValue<ShiroFullSearchResponse>(it.text) }
+                return if (mapped?.status == "Found")
+                    mapped.data.nav.currentPage.items
+                else null
+            } catch (e: Exception) {
+                return null
+            }
         }
 
         fun getFullUrl(url: String): String {
@@ -314,7 +378,7 @@ class FastAniApi {
             } else url
         }
 
-        val lastCards = hashMapOf<String, Card>()
+        /*val lastCards = hashMapOf<String, Card>()
         fun getCardById(id: String, canBeCached: Boolean = true): EpisodeResponse? {
             if (canBeCached && lastCards.containsKey(id)) {
                 return EpisodeResponse(lastCards[id]!!, 0)
@@ -327,7 +391,7 @@ class FastAniApi {
                 lastCards[id] = resp.anime
             }
             return resp
-        }
+        }*/
 
         var cachedHome: ShiroHomePage? = null
 
@@ -346,9 +410,10 @@ class FastAniApi {
 
         private fun getLastWatch(): List<LastEpisodeInfo?> {
             val keys = DataStore.getKeys(VIEW_LST_KEY)
+            println("KEYS: $keys")
             thread {
                 keys.pmap {
-                    DataStore.getKey<LastEpisodeInfo>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+                    DataStore.getKey<LastEpisodeInfo>(it)?.id
                 }
             }
             return (DataStore.getKeys(VIEW_LST_KEY).map {
@@ -408,8 +473,7 @@ class FastAniApi {
                 return null
             }
             res.favorites = getFav()
-            //res.recentlySeen = getLastWatch()
-
+            res.recentlySeen = getLastWatch()
             cachedHome = res
             onHomeFetched.invoke(res)
             return res

@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.home_card.view.*
 
 class CardAdapter(
     context: Context,
-    animeList: ArrayList<FastAniApi.AnimePageData>,
+    animeList: ArrayList<FastAniApi.AnimePageData?>,
     resView: RecyclerView
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {

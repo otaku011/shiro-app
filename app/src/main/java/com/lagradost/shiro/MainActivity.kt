@@ -22,14 +22,11 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.TypedValue
 import android.view.*
 import android.view.KeyEvent
-import android.view.KeyEvent.ACTION_DOWN
-import android.view.View.FOCUS_UP
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -43,19 +40,14 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.material.bottomappbar.BottomAppBar
 import com.lagradost.shiro.FastAniApi.Companion.getAppUpdate
-import com.lagradost.shiro.FastAniApi.Companion.getCardById
 import com.lagradost.shiro.FastAniApi.Companion.getDonorStatus
 import com.lagradost.shiro.ui.PlayerData
 import com.lagradost.shiro.ui.PlayerEventType
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
-import com.lagradost.shiro.ui.downloads.DownloadFragment
-import com.lagradost.shiro.ui.result.ResultFragment
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.update_dialog.*
 import java.lang.Exception
 import java.net.URL
@@ -75,14 +67,14 @@ data class LastEpisodeInfo(
     @JsonProperty("pos") val pos: Long,
     @JsonProperty("dur") val dur: Long,
     @JsonProperty("seenAt") val seenAt: Long,
-    @JsonProperty("id") val id: String,
+    @JsonProperty("id") val id: FastAniApi.AnimePageData?,
     @JsonProperty("aniListId") val aniListId: String,
     @JsonProperty("episodeIndex") val episodeIndex: Int,
     @JsonProperty("seasonIndex") val seasonIndex: Int,
     @JsonProperty("isMovie") val isMovie: Boolean,
-    @JsonProperty("episode") val episode: FastAniApi.FullEpisode,
-    @JsonProperty("coverImage") val coverImage: FastAniApi.CoverImage,
-    @JsonProperty("title") val title: FastAniApi.Title,
+    @JsonProperty("episode") val episode: FastAniApi.ShiroEpisodes?,
+    @JsonProperty("coverImage") val coverImage: String,
+    @JsonProperty("title") val title: String,
     @JsonProperty("bannerImage") val bannerImage: String,
 )
 
@@ -134,7 +126,7 @@ class MainActivity : AppCompatActivity() {
 
         fun getViewKey(data: PlayerData): String {
             return getViewKey(
-                if (data.card != null) data.card.anilistId else data.anilistId!!,
+                if (data.card != null) data.card.slug else data.anilistId!!,
                 data.seasonIndex!!,
                 data.episodeIndex!!
             )
@@ -201,43 +193,41 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        fun canPlayNextEpisode(card: FastAniApi.Card, seasonIndex: Int, episodeIndex: Int): NextEpisode {
-            val canNext = card.cdnData.seasons[seasonIndex].episodes.size > (episodeIndex + 1)
+        fun canPlayNextEpisode(card: FastAniApi.AnimePageData?, seasonIndex: Int, episodeIndex: Int): NextEpisode {
+            val canNext = card!!.episodes!!.size > episodeIndex + 1
 
-            return if (!canNext) {
-                if (card.cdnData.seasons.size > (seasonIndex + 1)) {
-                    NextEpisode(true, 0, seasonIndex + 1)
-                } else {
-                    NextEpisode(false, 0, 0)
-                }
+
+            return if (canNext) {
+                NextEpisode(true, episodeIndex + 1, 0)
             } else {
-                NextEpisode(true, episodeIndex + 1, seasonIndex)
+                NextEpisode(false, episodeIndex + 1, 0)
             }
+
         }
 
-        fun getNextEpisode(data: FastAniApi.Card): NextEpisode {
+        fun getNextEpisode(data: FastAniApi.AnimePageData): NextEpisode {
             // HANDLES THE LOGIC FOR NEXT EPISODE
             var episodeIndex = 0
             var seasonIndex = 0
             val maxValue = 90
-            val firstPos = getViewPosDur(data.anilistId, 0, 0)
+            val firstPos = getViewPosDur(data.slug, 0, 0)
             // Hacky but works :)
             if (((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) && !firstPos.viewstate) {
-                val found = data.cdnData.seasons.getOrNull(seasonIndex)?.episodes?.getOrNull(episodeIndex) != null
+                val found = data.episodes?.getOrNull(episodeIndex) != null
                 return NextEpisode(found, episodeIndex, seasonIndex)
             }
 
             while (true) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
                 val next = canPlayNextEpisode(data, seasonIndex, episodeIndex)
                 if (next.isFound) {
-                    val nextPro = getViewPosDur(data.anilistId, next.seasonIndex, next.episodeIndex)
+                    val nextPro = getViewPosDur(data.slug, next.seasonIndex, next.episodeIndex)
                     seasonIndex = next.seasonIndex
                     episodeIndex = next.episodeIndex
                     if (((nextPro.pos * 100) / nextPro.dur <= maxValue || nextPro.pos == -1L) && !nextPro.viewstate) {
                         return NextEpisode(true, episodeIndex, seasonIndex)
                     }
                 } else {
-                    val found = data.cdnData.seasons.getOrNull(seasonIndex)?.episodes?.getOrNull(episodeIndex) != null
+                    val found = data.episodes?.getOrNull(episodeIndex) != null
                     return NextEpisode(found, episodeIndex, seasonIndex)
                 }
             }
@@ -268,7 +258,7 @@ class MainActivity : AppCompatActivity() {
             while (canContinue) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
                 val next = canPlayNextEpisode(card, seasonIndex, episodeIndex)
                 if (next.isFound) {
-                    val nextPro = getViewPosDur(card.anilistId, next.seasonIndex, next.episodeIndex)
+                    val nextPro = getViewPosDur(card.slug, next.seasonIndex, next.episodeIndex)
                     seasonIndex = next.seasonIndex
                     episodeIndex = next.episodeIndex
                     if ((nextPro.pos * 100) / dur <= maxValue) {
@@ -288,20 +278,20 @@ class MainActivity : AppCompatActivity() {
             if (settingsManager.getBoolean("save_history", true)) {
                 DataStore.setKey(
                     VIEW_LST_KEY,
-                    data.card.anilistId,
+                    data.card.slug,
                     LastEpisodeInfo(
                         _pos,
                         _dur,
                         System.currentTimeMillis(),
-                        card.id,
-                        card.anilistId,
+                        card,
+                        card.slug,
                         episodeIndex,
                         seasonIndex,
-                        data.card.episodes == 1 && data.card.status == "FINISHED",
-                        card.cdnData.seasons[seasonIndex].episodes[episodeIndex],
-                        card.coverImage,
-                        card.title,
-                        card.bannerImage,
+                        data.card.episodes!!.size == 1 && data.card.status == "finished",
+                        card.episodes?.get(episodeIndex),
+                        card.image,
+                        card.name,
+                        card.banner.toString(),
                     )
                 )
 
@@ -390,18 +380,19 @@ class MainActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
         }
 
-        fun loadPlayer(episodeIndex: Int, seasonIndex: Int, card: FastAniApi.Card) {
+        fun loadPlayer(episodeIndex: Int, startAt: Long, card: FastAniApi.AnimePageData) {
             loadPlayer(
                 PlayerData(
                     null, null,
                     episodeIndex,
-                    seasonIndex,
+                    0,
                     card,
-                    null,
+                    startAt,
                     null
                 )
             )
         }
+
         /*fun loadPlayer(pageData: FastAniApi.AnimePageData, episodeIndex: Int, startAt: Long?) {
             loadPlayer(PlayerData("${pageData.name} - Episode ${episodeIndex + 1}", null, episodeIndex, null, null, startAt, null, true))
         }*/
@@ -477,6 +468,7 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
+
     private fun getStatusBarHeight(): Int {
         var result = 0
         val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
@@ -793,12 +785,12 @@ class MainActivity : AppCompatActivity() {
                 if (found != null) {
                     val (id, season, episode) = found.destructured
                     println("$id $season $episode")
-                    val card = getCardById(id)
+                    /*val card = getCardById(id)
                     if (card?.anime?.cdnData?.seasons?.getOrNull(season.toInt() - 1) != null) {
                         if (card.anime.cdnData.seasons[season.toInt() - 1].episodes.getOrNull(episode.toInt() - 1) != null) {
-                            loadPlayer(episode.toInt() - 1, season.toInt() - 1, card.anime)
+                            //loadPlayer(episode.toInt() - 1, season.toInt() - 1, card)
                         }
-                    }
+                    }*/
                 }
             }
         } else {

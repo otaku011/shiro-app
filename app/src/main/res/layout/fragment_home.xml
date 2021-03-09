@@ -148,7 +148,6 @@
                         android:layout_height="wrap_content"
                 >
                     <com.google.android.material.button.MaterialButton
-                            android:enabled="false"
                             app:icon="@drawable/netflix_play"
                             app:iconTint="@color/white"
                             app:iconSize="24dp"
@@ -202,7 +201,6 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:id="@+id/recentlySeenRoot"
-                        android:visibility="gone"
                 >
 
                     <TextView
@@ -217,18 +215,19 @@
                     >
                     </TextView>
 
-                    <HorizontalScrollView
+                    <RelativeLayout
                             android:layout_width="wrap_content"
-                            android:layout_height="135dp"
+                            android:layout_height="200dp"
                             android:layout_marginBottom="20dp"
                     >
-                        <LinearLayout
+                        <androidx.recyclerview.widget.RecyclerView
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                                 android:id="@+id/recentlySeenScrollView"
                                 android:orientation="horizontal"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content">
-                        </LinearLayout>
-                    </HorizontalScrollView>
+                        </androidx.recyclerview.widget.RecyclerView>
+                    </RelativeLayout>
                 </LinearLayout>
                 <LinearLayout
                         android:layout_width="match_parent"

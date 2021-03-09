@@ -20,6 +20,7 @@ import com.lagradost.shiro.R
 import com.lagradost.shiro.FastAniApi
 import com.lagradost.shiro.MainActivity
 import com.lagradost.shiro.toPx
+import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlin.concurrent.thread
 
@@ -63,9 +64,7 @@ class SearchFragment : Fragment() {
                 (cardSpace.adapter as ResAdapter).cardList.clear()
 
                 thread {
-                    // TODO DO FULL SEARCH TOO!
                     val data = FastAniApi.search(query)
-                    println(data)
                     activity?.runOnUiThread {
                         if (data == null) {
                             Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
@@ -73,7 +72,7 @@ class SearchFragment : Fragment() {
                         } else {
                             progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                             (cardSpace.adapter as ResAdapter).cardList =
-                                data.data as ArrayList<FastAniApi.ShiroSearchResponseShow>
+                                data as ArrayList<FastAniApi.ShiroSearchResponseShow>
                             (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                         }
                     }
@@ -82,7 +81,26 @@ class SearchFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                //println(newText)
+
+                (cardSpace.adapter as ResAdapter).cardList.clear()
+                if (newText != "") {
+                    progress_bar.visibility = View.VISIBLE
+                    thread {
+                        val data = FastAniApi.quickSearch(newText)
+                        activity?.runOnUiThread {
+                            if (data == null) {
+                                Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
+                                progress_bar.visibility = View.GONE
+                            } else {
+                                progress_bar.visibility =
+                                    View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
+                                (cardSpace.adapter as ResAdapter).cardList =
+                                    data as ArrayList<FastAniApi.ShiroSearchResponseShow>
+                                (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
+                            }
+                        }
+                    }
+                }
                 return true
             }
         })
@@ -111,7 +129,7 @@ class SearchFragment : Fragment() {
     ): View? {
         searchViewModel =
             ViewModelProviders.of(this).get(SearchViewModel::class.java)
-        if (this.isVisible) {
+        if (!isInResults && this.isVisible) {
             activity?.window?.setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
             )
