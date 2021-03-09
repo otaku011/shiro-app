@@ -99,7 +99,10 @@ class FastAniApi {
         @JsonProperty("success") val success: Boolean
     )
 
-    data class EpisodeResponse(@JsonProperty("anime") val anime: Card, @JsonProperty("nextEpisode") val nextEpisode: Int)
+    data class EpisodeResponse(
+        @JsonProperty("anime") val anime: Card,
+        @JsonProperty("nextEpisode") val nextEpisode: Int
+    )
 
     data class Update(
         @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
@@ -126,7 +129,8 @@ class FastAniApi {
         @JsonProperty("status") val status: String,
         @JsonProperty("data") val data: ShiroHomePageData,
         @JsonProperty("random") var random: AnimePage?,
-        @JsonProperty("favorites") var favorites: List<AnimePageData?>?
+        @JsonProperty("favorites") var favorites: List<AnimePageData?>?,
+        @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?
     )
 
 
@@ -257,9 +261,15 @@ class FastAniApi {
 
 
         fun getVideoLink(id: String): String? {
-            val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id").text
-            val document = Jsoup.parse(res)
-            return document.select("source").firstOrNull()?.attr("src")
+            return try {
+                val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id").text
+                val document = Jsoup.parse(res)
+                val url = document.select("source").firstOrNull()?.attr("src")
+                url
+            } catch (e: Exception) {
+                println("Failed to load video URL")
+                null
+            }
         }
 
         fun getRandomAnimePage(): AnimePage? {
@@ -314,7 +324,7 @@ class FastAniApi {
             } else url
         }
 
-        val lastCards = hashMapOf<String, Card>()
+        /*val lastCards = hashMapOf<String, Card>()
         fun getCardById(id: String, canBeCached: Boolean = true): EpisodeResponse? {
             if (canBeCached && lastCards.containsKey(id)) {
                 return EpisodeResponse(lastCards[id]!!, 0)
@@ -327,7 +337,7 @@ class FastAniApi {
                 lastCards[id] = resp.anime
             }
             return resp
-        }
+        }*/
 
         var cachedHome: ShiroHomePage? = null
 
@@ -346,9 +356,10 @@ class FastAniApi {
 
         private fun getLastWatch(): List<LastEpisodeInfo?> {
             val keys = DataStore.getKeys(VIEW_LST_KEY)
+            println("KEYS: $keys")
             thread {
                 keys.pmap {
-                    DataStore.getKey<LastEpisodeInfo>(it)?.id?.let { it1 -> getCardById(it1)?.anime }
+                    DataStore.getKey<LastEpisodeInfo>(it)?.id
                 }
             }
             return (DataStore.getKeys(VIEW_LST_KEY).map {
@@ -408,8 +419,7 @@ class FastAniApi {
                 return null
             }
             res.favorites = getFav()
-            //res.recentlySeen = getLastWatch()
-
+            res.recentlySeen = getLastWatch()
             cachedHome = res
             onHomeFetched.invoke(res)
             return res

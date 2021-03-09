@@ -53,9 +53,9 @@ class HomeFragment : Fragment() {
         activity?.runOnUiThread {
 
             /*trending_anime_scroll_view.removeAllViews()
+            recentlySeenScrollView.removeAllViews()
             recently_updated_scroll_view.removeAllViews()
             favouriteScrollView.removeAllViews()
-            recentlySeenScrollView.removeAllViews()
             scheduleScrollView.removeAllViews()
 */
             //val cardInfo = data?.homeSlidesData?.shuffled()?.take(1)?.get(0)
@@ -114,119 +114,31 @@ class HomeFragment : Fragment() {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                     CardAdapter(
                         it,
-                        ArrayList<FastAniApi.AnimePageData>(),
+                        ArrayList<FastAniApi.AnimePageData?>(),
                         scrollView,
                     )
                 }
 
                 scrollView.adapter = adapter
-                (scrollView.adapter as CardAdapter).cardList = data as ArrayList<FastAniApi.AnimePageData>
+                (scrollView.adapter as CardAdapter).cardList = data as ArrayList<FastAniApi.AnimePageData?>
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
-                /*data?.forEach { cardInfo ->
-                    if (cardInfo != null) {
-                        val card: View = layoutInflater.inflate(R.layout.home_card, null)
-                        val glideUrl =
-                            GlideUrl(getFullUrl(cardInfo.image))
-                        //  activity?.runOnUiThread {
-                        context?.let {
-                            GlideApp.with(it)
-                                .load(glideUrl)
-                                .into(card.imageView)
-                        }
-
-                        card.imageText.text = cardInfo.name
-
-                        card.home_card_root.setOnLongClickListener {
-                            Toast.makeText(context, cardInfo?.name, Toast.LENGTH_SHORT).show()
-                            return@setOnLongClickListener true
-                        }
-                        card.home_card_root.setOnClickListener {
-                            activity?.supportFragmentManager?.beginTransaction()
-                                ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                                ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(cardInfo))
-                                ?.commit()
-
-                        }
-                        scrollView.addView(card)
-                    }
-                }*/
             }
 
-            fun displayCardData(data: List<LastEpisodeInfo?>?, scrollView: LinearLayout) {
-                data?.forEach { cardInfo ->
-                    if (cardInfo != null) {
-                        val card: View = layoutInflater.inflate(R.layout.home_recently_seen, null)
-                        val epId = cardInfo.id
+            fun displayCardData(data: List<LastEpisodeInfo?>?, scrollView: RecyclerView) {
+                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
+                    CardContinueAdapter(
+                        it,
+                        listOf<LastEpisodeInfo?>(),
+                        scrollView,
+                    )
+                }
 
-                        if (cardInfo.episode.thumb != null) {
-                            val glideUrl =
-                                GlideUrl(cardInfo.episode.thumb) { FastAniApi.currentHeaders }
-                            //  activity?.runOnUiThread {
-                            context?.let {
-                                GlideApp.with(it)
-                                    .load(glideUrl)
-                                    .into(card.imageView)
-                            }
-                        }
-                        card.cardDescription.text =
-                            "S${cardInfo.seasonIndex + 1}:E${cardInfo.episodeIndex + 1} ${cardInfo.title.english}"
-                        card.infoButton.setOnClickListener {
-                            if (FastAniApi.lastCards.containsKey(epId)) {
-                                //MainActivity.loadPage(FastAniApi.lastCards[epId]!!)
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Loading...",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                        card.imageView.setOnLongClickListener {
-                            Toast.makeText(
-                                context,
-                                cardInfo.title.english +
-                                        if (!cardInfo.isMovie) "\nSeason ${cardInfo.seasonIndex + 1} Episode ${cardInfo.episodeIndex + 1}" else "",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@setOnLongClickListener true
-                        }
-
-                        card.imageView.setOnClickListener {
-                            when {
-                                FastAniApi.lastCards.containsKey(epId) -> {
-                                    loadPlayer(
-                                        cardInfo.episodeIndex,
-                                        cardInfo.seasonIndex,
-                                        FastAniApi.lastCards[epId]!!
-                                    )
-                                }
-                                else -> {
-                                    loadPlayer(cardInfo.episode.title, cardInfo.episode.file, cardInfo.pos)
-                                }
-                            }
-                        }
-
-                        card.removeButton.setOnClickListener {
-                            DataStore.removeKey(VIEW_LST_KEY, cardInfo.aniListId)
-                            requestHome(true)
-                        }
-
-                        if (cardInfo.dur > 0 && cardInfo.pos > 0) {
-                            var progress: Int = (cardInfo.pos * 100L / cardInfo.dur).toInt()
-                            if (progress < 5) {
-                                progress = 5
-                            } else if (progress > 95) {
-                                progress = 100
-                            }
-                            card.video_progress.progress = progress
-                        } else {
-                            card.video_progress.alpha = 0f
-                        }
-                        scrollView.addView(card)
-                    }
+                scrollView.adapter = adapter
+                if (data != null) {
+                    (scrollView.adapter as CardContinueAdapter).cardList = data
+                    (scrollView.adapter as CardContinueAdapter).notifyDataSetChanged()
                 }
             }
-
 
             if (data != null) {
                 displayCardData(data.data.trending_animes, trending_anime_scroll_view)
@@ -244,7 +156,8 @@ class HomeFragment : Fragment() {
                 favouriteRoot.visibility = GONE
             }
 
-            /*if (data?.schedule?.isNotEmpty() == true) {
+            /*
+            if (data?.schedule?.isNotEmpty() == true) {
                 scheduleRoot.visibility = VISIBLE
                 //println(data.favorites!!.map { it?.title?.english})
                 displayCardData(data.schedule, scheduleScrollView)
@@ -252,16 +165,17 @@ class HomeFragment : Fragment() {
                 scheduleRoot.visibility = GONE
             }
 
+*/
             val transition: Transition = ChangeBounds()
             transition.duration = 100
             if (data?.recentlySeen?.isNotEmpty() == true) {
                 recentlySeenRoot.visibility = VISIBLE
+                println(data.recentlySeen)
                 displayCardData(data.recentlySeen, recentlySeenScrollView)
             } else {
                 recentlySeenRoot.visibility = GONE
             }
             TransitionManager.beginDelayedTransition(main_scroll, transition)
-*/
             main_load.alpha = 0f
             main_scroll.alpha = 1f
 

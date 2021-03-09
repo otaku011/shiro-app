@@ -267,7 +267,7 @@ class ShiroResultFragment : Fragment() {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
         val save = settingsManager.getBoolean("save_history", true)
 
-        if (data!!.episodes?.isNotEmpty() == true) {
+        if (data?.episodes?.isNotEmpty() == true) {
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                 EpisodeAdapter(
                     it,

@@ -279,10 +279,10 @@ class ResultFragment : Fragment() {
                             loadSeason(index)
                             return@setOnClickListener
                         } else {
-                            MainActivity.loadPlayer(epIndex, index, data!!)
+                            //MainActivity.loadPlayer(epIndex, index, data!!)
                         }
                     } else {
-                        MainActivity.loadPlayer(epIndex, index, data!!)
+                        //MainActivity.loadPlayer(epIndex, index, data!!)
                     }
                 }
 
@@ -812,9 +812,9 @@ class ResultFragment : Fragment() {
         currentAniListId = data!!.anilistId.toInt()
 
         hideKeyboard()
-        if (!FastAniApi.lastCards.containsKey(data!!.id)) {
+        /*if (!FastAniApi.lastCards.containsKey(data!!.id)) {
             FastAniApi.lastCards[data!!.id] = data!!
-        }
+        }*/
         title_duration.text = data!!.duration.toString() + "min"
 
         thread {
@@ -854,20 +854,20 @@ class ResultFragment : Fragment() {
             })
             fab_play_button.setOnClickListener {
                 if (data != null) {
-                    val nextEpisode = getNextEpisode(data!!)
+                    /*val nextEpisode = getNextEpisode(data!!)
                     if (castContext.castState == CastState.CONNECTED) {
                         castEpsiode(nextEpisode.seasonIndex, nextEpisode.episodeIndex)
                         loadSeason(nextEpisode.seasonIndex)
                     } else {
-                        loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
-                    }
+                       // loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
+                    }*/
                 }
             }
         } else {
             fab_play_button.setOnClickListener {
                 if (data != null) {
-                    val nextEpisode = getNextEpisode(data!!)
-                    loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
+                    //val nextEpisode = getNextEpisode(data!!)
+                    //loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, data!!)
                 }
             }
         }
@@ -888,20 +888,20 @@ class ResultFragment : Fragment() {
             //toggleHeart(!isBookmarked)
         }
         if (data != null) {
-            val nextEpisode = getNextEpisode(data!!)
-            if (nextEpisode.isFound) {
+           // val nextEpisode = getNextEpisode(data!!)
+            /*if (nextEpisode.isFound) {
                 fab_play_button.visibility = VISIBLE
-            }
+            }*/
         }
         fab_play_button.setOnLongClickListener {
             //MainActivity.loadPage(cardInfo!!)
             if (data != null) {
-                val nextEpisode = getNextEpisode(data!!)
+                /*val nextEpisode = getNextEpisode(data!!)
                 Toast.makeText(
                     activity,
                     "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}",
                     Toast.LENGTH_LONG
-                ).show()
+                ).show()*/
             }
             return@setOnLongClickListener true
         }
