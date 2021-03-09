@@ -148,7 +148,6 @@
                         android:layout_height="wrap_content"
                 >
                     <com.google.android.material.button.MaterialButton
-                            android:enabled="false"
                             app:icon="@drawable/netflix_play"
                             app:iconTint="@color/white"
                             app:iconSize="24dp"

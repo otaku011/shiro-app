@@ -139,6 +139,23 @@ class FastAniApi {
         @JsonProperty("status") val status: String
     )
 
+    data class ShiroFullSearchResponseCurrentPage(
+        @JsonProperty("items") val items: List<ShiroSearchResponseShow>
+    )
+
+    data class ShiroFullSearchResponseNavItems(
+        @JsonProperty("currentPage") val currentPage: ShiroFullSearchResponseCurrentPage
+    )
+
+    data class ShiroFullSearchResponseNav(
+        @JsonProperty("nav") val nav: ShiroFullSearchResponseNavItems
+    )
+
+    data class ShiroFullSearchResponse(
+        @JsonProperty("data") val data: ShiroFullSearchResponseNav,
+        @JsonProperty("status") val status: String
+    )
+
     data class ShiroVideo(
         @JsonProperty("video_id") val video_id: String,
         @JsonProperty("host") val host: String,
@@ -238,14 +255,14 @@ class FastAniApi {
         fun getDonorStatus(): String {
             val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
             try {
+                val androidId: String =
+                    Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
                 // Change cache with this
                 // , headers = mapOf("Cache-Control" to "max-age=60")
                 val response = khttp.get(url).text
                 val users = mapper.readValue<List<Donor>>(response)
                 users.forEach {
                     try {
-                        val androidId: String =
-                            Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
                         if (androidId.md5() == it.id || it.id == "all") {
                             return androidId.md5()
                         }
@@ -296,26 +313,63 @@ class FastAniApi {
             }
         }
 
+        // TODO MAKE THIS ONCE FUNCTION
+        fun getAnimePage(slug: String): AnimePage? {
+            val url = "https://ani.api-web.site/anime/slug/${slug}?token=${currentToken?.token}"
+            return try {
+                val response = khttp.get(url)
+                val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                if (mapped.status == "Found")
+                    mapped
+                else null
+            } catch (e: Exception) {
+                null
+            }
+        }
 
         //search via http get request, NOT INSTANT
         // ONLY PAGE 1
-        fun search(query: String, page: Int = 1): ShiroSearchResponse? {
-            // Tags and years can be added
-            println("TOKEN!!!!!!!!!!!! ${currentToken?.token}")
-            val url = "https://ani.api-web.site/anime/auto-complete/${
-                URLEncoder.encode(
-                    query,
-                    "UTF-8"
-                )
-            }?token=${currentToken?.token}"
-            // Security headers
-            val headers = currentToken?.headers
-            val response = headers?.let { khttp.get(url) }
-            val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
-            return if (mapped?.status == "Found")
-                mapped
-            else null
+        fun quickSearch(query: String): List<ShiroSearchResponseShow>? {
+            try {
+                // Tags and years can be added
+                val url = "https://ani.api-web.site/anime/auto-complete/${
+                    URLEncoder.encode(
+                        query,
+                        "UTF-8"
+                    )
+                }?token=${currentToken?.token}".replace("+", "%20")
+                println(url)
+                // Security headers
+                val headers = currentToken?.headers
+                val response = headers?.let { khttp.get(url) }
+                val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
+                return if (mapped?.status == "Found")
+                    mapped.data
+                else null
+            } catch (e: Exception) {
+                return null
+            }
             //return response?.text?.let { mapper.readValue(it) }
+        }
+
+        fun search(query: String): List<ShiroSearchResponseShow>? {
+            try {
+                val url = "https://ani.api-web.site/advanced?search=${
+                    URLEncoder.encode(
+                        query,
+                        "UTF-8"
+                    )
+                }&token=${currentToken?.token}".replace("+", "%20")
+                val headers = currentToken?.headers
+                val response = headers?.let { khttp.get(url) }
+                println(response?.text)
+                val mapped = response?.let { mapper.readValue<ShiroFullSearchResponse>(it.text) }
+                return if (mapped?.status == "Found")
+                    mapped.data.nav.currentPage.items
+                else null
+            } catch (e: Exception) {
+                return null
+            }
         }
 
         fun getFullUrl(url: String): String {

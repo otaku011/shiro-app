@@ -700,7 +700,9 @@ class PlayerFragment() : Fragment() {
         video_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
         }
-
+        video_go_back_holder.setOnClickListener {
+            MainActivity.popCurrentPage()
+        }
         exo_rew_text.text = fastForwardTime.toString()
         exo_ffwd_text.text = fastForwardTime.toString()
         exo_rew.setOnClickListener {
@@ -761,6 +763,11 @@ class PlayerFragment() : Fragment() {
     }
 
     private fun releasePlayer() {
+        val alphaAnimation = AlphaAnimation(0f, 1f)
+        alphaAnimation.duration = 100
+        alphaAnimation.fillAfter = true
+        loading_overlay.startAnimation(alphaAnimation)
+        video_go_back_holder.visibility = VISIBLE
         if (this::exoPlayer.isInitialized) {
             isPlayerPlaying = exoPlayer.playWhenReady
             playbackPosition = exoPlayer.currentPosition
@@ -888,6 +895,13 @@ class PlayerFragment() : Fragment() {
                     setMediaItem(mediaItem, false)
                     prepare()
                 }
+
+                val alphaAnimation = AlphaAnimation(1f, 0f)
+                alphaAnimation.duration = 300
+                alphaAnimation.fillAfter = true
+                loading_overlay.startAnimation(alphaAnimation)
+                video_go_back_holder.visibility = GONE
+
                 exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
                 player_view.player = exoPlayer
                 // Sets the speed
@@ -951,9 +965,12 @@ class PlayerFragment() : Fragment() {
                 playbackPosition = pro.pos
             }
         }
-        if (Util.SDK_INT > 23) {
-            initPlayer()
-            if (player_view != null) player_view.onResume()
+        thread {
+
+            if (Util.SDK_INT > 23) {
+                initPlayer()
+                if (player_view != null) player_view.onResume()
+            }
         }
     }
 

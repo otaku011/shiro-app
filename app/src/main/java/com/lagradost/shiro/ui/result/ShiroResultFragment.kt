@@ -328,8 +328,8 @@ class ShiroResultFragment : Fragment() {
         DownloadManager.downloadStartEvent += ::onDownloadStarted
 
 
-        title_go_back_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
-        media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
+        results_root.setPadding(0, MainActivity.statusHeight, 0, 0)
+        //media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
             MainActivity.popCurrentPage()

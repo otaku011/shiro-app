@@ -12,7 +12,7 @@
         android:scaleX="0.9"
         android:scaleY="0.9"
 >
-    <!-- card get scaled to 1.0 during runtime in CardAdapter -->
+    <!-- card gets scaled to 1.0 during runtime in CardAdapter -->
 
     <androidx.cardview.widget.CardView
             android:layout_margin="2dp"
@@ -73,6 +73,7 @@
                     android:layout_alignParentBottom="true"
             />
         </RelativeLayout>
+        <!-- giant padding for bigger hitboxes -->
         <ImageView
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:id="@+id/infoButton"

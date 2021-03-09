@@ -14,6 +14,7 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
+import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
@@ -77,28 +78,35 @@ class HomeFragment : Fragment() {
                 }
 
                 main_name.text = random.name
-
                 main_genres.text = random.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
-
-                /*main_watch_button.setOnClickListener {
+                main_watch_button.setOnClickListener {
                     //MainActivity.loadPage(cardInfo!!)
-                    if (cardInfo != null) {
-                        val nextEpisode = getNextEpisode(cardInfo)
-                        loadPlayer(nextEpisode.episodeIndex, nextEpisode.seasonIndex, cardInfo)
+                    Toast.makeText(activity, "Loading link", Toast.LENGTH_SHORT).show()
+                    thread {
+                        // LETTING USER PRESS STUF WHEN THIS LOADS CAN CAUSE BUGS
+                        val page = getAnimePage(random.slug)
+                        if (page != null) {
+                            val nextEpisode = getNextEpisode(page.data)
+                            loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
+                        } else {
+                            activity?.runOnUiThread {
+                                Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
                 main_watch_button.setOnLongClickListener {
                     //MainActivity.loadPage(cardInfo!!)
                     if (cardInfo != null) {
-                        val nextEpisode = getNextEpisode(cardInfo)
+                        val nextEpisode = getNextEpisode(random)
                         Toast.makeText(
                             activity,
-                            "Season ${nextEpisode.seasonIndex + 1} Episode ${nextEpisode.episodeIndex + 1}",
+                            "Episode ${nextEpisode.episodeIndex + 1}",
                             Toast.LENGTH_LONG
                         ).show()
                     }
                     return@setOnLongClickListener true
-                }*/
+                }
                 main_info_button.setOnClickListener {
                     MainActivity.loadPage(random)
                 }
