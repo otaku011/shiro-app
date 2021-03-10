@@ -209,7 +209,7 @@
         <Preference
                 android:title="Discord"
                 android:icon="@drawable/ic_baseline_discord_24"
-                app:summary="Join the Shiro community to check updates on the app and site, talk with developers and give suggestions"
+                app:summary="Join the Shiro community "
         >
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://discord.gg/shiro"/>

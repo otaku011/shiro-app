@@ -331,18 +331,17 @@ class MainActivity : AppCompatActivity() {
                 activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
 
-
             // No fucked animations leaving the player :)
             if (isInPlayer) {
                 activity?.supportFragmentManager!!.beginTransaction()
                     //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                     .remove(currentFragment)
-                    .commit()
+                    .commitAllowingStateLoss()
             } else {
                 activity?.supportFragmentManager!!.beginTransaction()
                     .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                     .remove(currentFragment)
-                    .commit()
+                    .commitAllowingStateLoss()
             }
         }
 
