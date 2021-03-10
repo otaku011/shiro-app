@@ -107,7 +107,8 @@ class FastAniApi {
     data class Update(
         @JsonProperty("shouldUpdate") val shouldUpdate: Boolean,
         @JsonProperty("updateURL") val updateURL: String?,
-        @JsonProperty("updateVersion") val updateVersion: String?
+        @JsonProperty("updateVersion") val updateVersion: String?,
+        @JsonProperty("changelog") val changelog: String?
     )
 
     data class Donor(@JsonProperty("id") val id: String)
@@ -125,7 +126,7 @@ class FastAniApi {
         @JsonProperty("latest_animes") val latest_animes: List<AnimePageData>,
         @JsonProperty("latest_episodes") val latest_episodes: List<ShiroEpisodes>,
 
-    )
+        )
 
     data class ShiroHomePage(
         @JsonProperty("status") val status: String,
@@ -199,6 +200,21 @@ class FastAniApi {
         @JsonProperty("status") val status: String
     )
 
+    data class GithubAsset(
+        @JsonProperty("name") val name: String,
+        @JsonProperty("size") val size: Int, // Size bytes
+        @JsonProperty("browser_download_url") val browser_download_url: String, // download link
+        @JsonProperty("content_type") val content_type: String // application/vnd.android.package-archive
+    )
+
+    data class GithubRelease(
+        @JsonProperty("tag_name") val tag_name: String, // Version code
+        @JsonProperty("body") val body: String, // Desc
+        @JsonProperty("assets") val assets: List<GithubAsset>,
+        @JsonProperty("target_commitish") val target_commitish: String // branch
+    )
+
+
     companion object {
         const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0"
         private val mapper = JsonMapper.builder().addModule(KotlinModule())
@@ -232,31 +248,55 @@ class FastAniApi {
 
         fun getAppUpdate(): Update {
             try {
-                val url = "https://cdn1.fastani.net/apk/"
-                val response = khttp.get(url)
-                val versionRegex = Regex("""href="(.*?((\d)\.(\d)\.(\d)).*\.apk)"""")
+                val url = "https://api.github.com/repos/blatzar/shiro-app/releases"
+                val headers = mapOf("Accept" to "application/vnd.github.v3+json")
+                val response =
+                    mapper.readValue<List<GithubRelease>>(khttp.get(url, headers = headers).text)
+
+                val versionRegex = Regex("""(.*?((\d)\.(\d)\.(\d)).*\.apk)""")
+
+                /*
+                val releases = response.map { it.assets }.flatten()
+                    .filter { it.content_type == "application/vnd.android.package-archive" }
                 val found =
-                    versionRegex.findAll(response.text).sortedWith(compareBy {
-                        it.groupValues[2]
+                    releases.sortedWith(compareBy {
+                        versionRegex.find(it.name)?.groupValues?.get(2)
+                    }).toList().lastOrNull()*/
+                val found =
+                    response.sortedWith(compareBy { release ->
+                        release.assets.filter { it.content_type == "application/vnd.android.package-archive" }
+                            .getOrNull(0)?.name?.let { it1 ->
+                                versionRegex.find(
+                                    it1
+                                )?.groupValues?.get(2)
+                            }
                     }).toList().lastOrNull()
+                val foundAsset = found?.assets?.getOrNull(0)
                 val currentVersion = activity?.packageName?.let { activity?.packageManager?.getPackageInfo(it, 0) }
+
                 //println(found.groupValues)
                 //println(currentVersion?.versionName)
-
+                val foundVersion = foundAsset?.name?.let { versionRegex.find(it) }
                 val shouldUpdate =
-                    if (found != null) currentVersion?.versionName?.compareTo(found.groupValues[2])!! < 0 else false
-                return Update(shouldUpdate, url + found?.groupValues?.get(1), found?.groupValues?.get(2))
+                    if (found != null && foundAsset?.browser_download_url != "" && foundVersion != null) currentVersion?.versionName?.compareTo(
+                        foundVersion.groupValues[2]
+                    )!! < 0 else false
+                return if (foundVersion != null) {
+                    Update(shouldUpdate, foundAsset.browser_download_url, foundVersion.groupValues[2], found.body)
+                } else {
+                    Update(false, null, null, null)
+                }
 
             } catch (e: Exception) {
                 println(e)
-                return Update(false, "", "")
+                return Update(false, null, null, null)
             }
         }
 
         @SuppressLint("HardwareIds")
-        // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
         fun getDonorStatus(): String {
-            val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
+            return ""
+            /*val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
             try {
                 val androidId: String =
                     Settings.Secure.getString(activity?.contentResolver, Settings.Secure.ANDROID_ID)
@@ -276,7 +316,7 @@ class FastAniApi {
                 return ""
             } catch (e: Exception) {
                 return ""
-            }
+            }*/
         }
 
 

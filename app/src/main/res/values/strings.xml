@@ -1,7 +1,7 @@
 <resources>
-    <string name="version_code">1.0.0 Public Release</string>
+    <string name="version_code">1.0.1 Public Release</string>
     <string name="changelog">\n
-        - Working\n
+        - In app update\n
     </string>
     <string name="app_name">Shiro</string>
     <string name="title_home">Home</string>

@@ -10,6 +10,8 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -23,10 +25,13 @@ import android.util.TypedValue
 import android.view.*
 import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -608,8 +613,7 @@ class MainActivity : AppCompatActivity() {
 
                     activity!!.runOnUiThread {
                         val dialog = Dialog(activity!!)
-                        //dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                        dialog.setTitle("New update found")
+                        //dialog.window?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(activity!!, R.color.colorPrimary)))
 
                         dialog.setContentView(R.layout.update_dialog)
                         dialog.update_dialog_header.text = "New update found!\n${update.updateVersion}\n"
@@ -617,7 +621,29 @@ class MainActivity : AppCompatActivity() {
                         dialog.update_later.setOnClickListener {
                             dialog.dismiss()
                         }
+                        dialog.update_changelog.setOnClickListener {
+                            val alertDialog: AlertDialog? = activity?.let {
 
+                                val builder = AlertDialog.Builder(it)
+                                builder.apply {
+                                    setPositiveButton("OK") { _, _ -> }
+                                }
+                                // Set other dialog properties
+                                builder.setTitle(update.updateVersion)
+                                builder.setMessage(update.changelog)
+                                // Create the AlertDialog
+                                builder.create()
+                            }
+                            alertDialog?.window?.setBackgroundDrawable(
+                                ColorDrawable(
+                                    ContextCompat.getColor(
+                                        activity!!,
+                                        R.color.grayBackground
+                                    )
+                                )
+                            )
+                            alertDialog?.show()
+                        }
                         dialog.update_never.setOnClickListener {
                             settingsManager.edit().putBoolean("auto_update", false).apply()
                             dialog.dismiss()
