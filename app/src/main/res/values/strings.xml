@@ -1,7 +1,7 @@
 <resources>
-    <string name="version_code">1.0.2 Public Release</string>
+    <string name="version_code">1.0.3 Public Release</string>
     <string name="changelog">\n
-        - In app update\n
+        - Increased timeout and removed one crash\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>
