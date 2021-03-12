@@ -161,6 +161,23 @@ class HomeFragment : Fragment() {
                 }
             }
 
+            /*Overloaded function create a scrollview of the bookmarks*/
+            fun displayCardData(data: List<BookmarkedTitle?>?, scrollView: RecyclerView) {
+                val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
+                    CardBookmarkAdapter(
+                        it,
+                        listOf<BookmarkedTitle?>(),
+                        scrollView,
+                    )
+                }
+
+                scrollView.adapter = adapter
+                if (data != null) {
+                    (scrollView.adapter as CardBookmarkAdapter).cardList = data
+                    (scrollView.adapter as CardBookmarkAdapter).notifyDataSetChanged()
+                }
+            }
+
             if (data != null) {
                 displayCardData(data.data.trending_animes, trending_anime_scroll_view)
                 displayCardData(data.data.latest_episodes.map { it.anime }, recently_updated_scroll_view)

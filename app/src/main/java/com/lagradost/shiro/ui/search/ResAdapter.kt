@@ -15,12 +15,14 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
+import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
 import kotlinx.android.synthetic.main.search_result.view.imageView
 import kotlinx.android.synthetic.main.search_result_compact.view.*
+import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
 val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
@@ -67,7 +69,7 @@ class ResAdapter(
         fun bind(card: FastAniApi.ShiroSearchResponseShow) {
             if (compactView) {
                 // COPIED -----------------------------------------
-                var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, card._id)
+                var isBookmarked = DataStore.containsKey(BOOKMARK_KEY, card.slug)
                 fun toggleHeartVisual(_isBookmarked: Boolean) {
                     if (_isBookmarked) {
                         itemView.title_bookmark.setImageResource(R.drawable.filled_heart)
@@ -77,26 +79,26 @@ class ResAdapter(
                 }
 
                 fun toggleHeart(_isBookmarked: Boolean) {
-                    /*isBookmarked = _isBookmarked
+                    isBookmarked = _isBookmarked
                     toggleHeartVisual(_isBookmarked)
+                    /*Saving the new bookmark in the database*/
                     if (_isBookmarked) {
                         DataStore.setKey<BookmarkedTitle>(
                             BOOKMARK_KEY,
-                            card._id,
+                            card.slug,
                             BookmarkedTitle(
-                                card._id,
-                                card._id,
+                                card.name,
                                 "card.description",
-                                card.title,
-                                card.coverImage
+                                card.image,
+                                card.slug
                             )
                         )
                     } else {
-                        DataStore.removeKey(BOOKMARK_KEY, card.anilistId)
+                        DataStore.removeKey(BOOKMARK_KEY, card.slug)
                     }
                     thread {
                         requestHome(true)
-                    }*/
+                    }
                 }
                 toggleHeartVisual(isBookmarked)
                 itemView.bookmark_holder.setOnClickListener {
@@ -125,7 +127,6 @@ class ResAdapter(
                 return@setOnLongClickListener true
             }
             cardView.setOnClickListener {
-
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                     ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(card))

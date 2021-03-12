@@ -13,6 +13,7 @@ import android.content.res.Resources
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -84,12 +85,12 @@ data class NextEpisode(
     @JsonProperty("seasonIndex") val seasonIndex: Int,
 )
 
+/*Class for storing bookmarks*/
 data class BookmarkedTitle(
-    @JsonProperty("id") val id: String,
-    @JsonProperty("anilistId") val anilistId: String,
+    @JsonProperty("name") val name: String,
     @JsonProperty("description") val description: String,
-    @JsonProperty("title") val title: FastAniApi.Title,
-    @JsonProperty("coverImage") val coverImage: FastAniApi.CoverImage,
+    @JsonProperty("image") val image: String,
+    @JsonProperty("slug") val slug: String
 )
 
 class MainActivity : AppCompatActivity() {

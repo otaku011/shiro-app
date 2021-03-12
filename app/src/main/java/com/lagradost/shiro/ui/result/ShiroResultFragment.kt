@@ -95,6 +95,15 @@ class ShiroResultFragment : Fragment() {
                     putString("AnimePageData", mapper.writeValueAsString(data))
                 }
             }
+
+        /*Creating a new Instance of the given data*/
+        fun newInstance(data: BookmarkedTitle) =
+            ShiroResultFragment().apply {
+                arguments = Bundle().apply {
+                    //println(data)
+                    putString("BookmarkedTitle", mapper.writeValueAsString(data))
+                }
+            }
     }
 
 
@@ -225,6 +234,14 @@ class ShiroResultFragment : Fragment() {
                 onLoaded.invoke(true)
             }
         }
+
+        /*Calling the getAnimePage function to get the page*/
+        arguments?.getString("BookmarkedTitle")?.let {
+            thread {
+                data = getAnimePage(mapper.readValue(it, BookmarkedTitle::class.java))?.data
+                onLoaded.invoke(true)
+            }
+        }
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
 
     }
@@ -249,11 +266,17 @@ class ShiroResultFragment : Fragment() {
     private fun toggleHeart(_isBookmarked: Boolean) {
         this.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
+        /*Saving the new bookmark in the database*/
         if (_isBookmarked) {
-            DataStore.setKey<FastAniApi.AnimePageData>(
+            DataStore.setKey<BookmarkedTitle>(
                 BOOKMARK_KEY,
                 data!!.slug,
-                data!!
+                BookmarkedTitle(
+                    data!!.name,
+                    "data.description",
+                    data!!.image,
+                    data!!.slug
+                )
             )
         } else {
             DataStore.removeKey(BOOKMARK_KEY, data!!.slug)
