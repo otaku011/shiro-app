@@ -1,7 +1,10 @@
 <resources>
-    <string name="version_code">1.0.3 Public Release</string>
+    <string name="version_code">1.0.4 Public Release</string>
     <string name="changelog">\n
-        - Increased timeout and removed one crash\n
+        - Fixed support for RTL\n
+        - Added discord link\n
+        - Added tons of bottom padding in episode list\n
+        - Removed duplicate episodes\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

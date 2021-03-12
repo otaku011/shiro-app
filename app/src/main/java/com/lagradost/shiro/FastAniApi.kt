@@ -191,7 +191,7 @@ class FastAniApi {
         @JsonProperty("views") val views: Int?,
         @JsonProperty("year") val year: String?,
         @JsonProperty("_id") val _id: String,
-        @JsonProperty("episodes") val episodes: List<ShiroEpisodes>?,
+        @JsonProperty("episodes") var episodes: List<ShiroEpisodes>?,
         @JsonProperty("status") val status: String?,
     )
 
@@ -346,6 +346,7 @@ class FastAniApi {
             return try {
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
                 if (mapped.status == "Found")
                     mapped
                 else null
@@ -360,6 +361,7 @@ class FastAniApi {
             return try {
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
                 if (mapped.status == "Found")
                     mapped
                 else null
@@ -500,7 +502,7 @@ class FastAniApi {
                 try {
                     val response = khttp.get(url, timeout = 120.0)
                     res = response.text.let { mapper.readValue(it) }
-                } catch (e: Exception){
+                } catch (e: Exception) {
                     println(e.message)
                 }
 
