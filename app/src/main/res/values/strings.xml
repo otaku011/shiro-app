@@ -1,9 +1,12 @@
 <resources>
-    <string name="version_code">1.0.0 Public Release</string>
+    <string name="version_code">1.0.4 Public Release</string>
     <string name="changelog">\n
-        - Working\n
+        - Fixed support for RTL\n
+        - Added discord link\n
+        - Added tons of bottom padding in episode list\n
+        - Removed duplicate episodes\n
     </string>
-    <string name="app_name">Shiro</string>
+    <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>
     <string name="title_search">Search</string>
     <string name="title_settings">Settings</string>

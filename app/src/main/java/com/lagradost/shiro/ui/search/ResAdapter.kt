@@ -121,7 +121,12 @@ class ResAdapter(
                     coverHeight
                 )
             }
-            itemView.imageText.text = card.name
+            itemView.imageText.text = if (card.name.endsWith("Dubbed")) "✦ ${
+                card.name.substring(
+                    0,
+                    card.name.length - 6
+                )
+            }" else card.name
             cardView.setOnLongClickListener {
                 Toast.makeText(context, card.name, Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true

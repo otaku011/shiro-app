@@ -10,10 +10,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginTop
-import androidx.core.view.updateMarginsRelative
+import androidx.core.view.*
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.cast.CastPlayer
@@ -31,7 +28,10 @@ import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isViewState
+import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
+import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
+import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
 import kotlinx.android.synthetic.main.home_card.view.*
 import java.io.File
 import kotlin.concurrent.thread
@@ -75,32 +75,28 @@ class EpisodeAdapter(
         fun bind(data: FastAniApi.AnimePageData?, position: Int) {
             val key = data!!._id + position//MainActivity.getViewKey(data!!.url, index, epIndex)
 
-            if (false) {
-                card.cdi.setOnClickListener {
-                    /*DownloadManager.downloadEpisode(
-                                DownloadManager.DownloadInfo(
-                                    index,
-                                    epIndex,
-                                    data!!.title,
-                                    isMovie,
-                                    data!!.anilistId,
-                                    data!!.id,
-                                    data!!.cdnData.seasons[index].episodes[epIndex],
-                                    data!!.coverImage.large
-                                )
-                            )*/
-                }
-            } else {
-                card.cdi.visibility = View.GONE
-                val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
-                param.updateMarginsRelative(
-                    card.cardTitle.marginLeft,
-                    card.cardTitle.marginTop,
-                    10.toPx,
-                    card.cardTitle.marginBottom
-                )
-                card.cardTitle.layoutParams = param
-            }
+            /*DownloadManager.downloadEpisode(
+                        DownloadManager.DownloadInfo(
+                            index,
+                            epIndex,
+                            data!!.title,
+                            isMovie,
+                            data!!.anilistId,
+                            data!!.id,
+                            data!!.cdnData.seasons[index].episodes[epIndex],
+                            data!!.coverImage.large
+                        )
+                    )*/
+
+            card.cdi.visibility = View.GONE
+            val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
+            param.updateMarginsRelative(
+                card.cardTitle.marginLeft,
+                card.cardTitle.marginTop,
+                10.toPx,
+                card.cardTitle.marginBottom
+            )
+            card.cardTitle.layoutParams = param
 
             card.cardBg.setOnClickListener {
                 //Toast.makeText(activity, "Loading link (Don't press shit!)", Toast.LENGTH_LONG).show()
@@ -123,7 +119,7 @@ class EpisodeAdapter(
                         if (videoUrl != null) {
                             MainActivity.loadPlayer("${data.name} - Episode ${position + 1}", videoUrl, 0L)
                         }*/
-                       // println("LAOD PLAYER!")
+                        // println("LAOD PLAYER!")
                         MainActivity.loadPlayer(position, 0L, data)
                     }
                 }
