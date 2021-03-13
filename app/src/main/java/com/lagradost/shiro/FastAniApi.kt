@@ -458,8 +458,39 @@ class FastAniApi {
 
         var cachedHome: ShiroHomePage? = null
 
+
+        // OTHERWISE CRASH AT BOOT FROM HAVING OLD FAVORITES SYSTEM
+        fun convertOldFavorites() {
+            try {
+                val keys = DataStore.getKeys(BOOKMARK_KEY)
+                thread {
+                    keys.pmap {
+                        DataStore.getKey<AnimePageData>(it)
+                    }
+                    keys.forEach {
+                        val data = DataStore.getKey<AnimePageData>(it)
+                        if (data != null) {
+                            DataStore.setKey(BOOKMARK_KEY, it, BookmarkedTitle(data.name, data.image, data.slug))
+                        } else {
+                            DataStore.removeKey(BOOKMARK_KEY, it)
+                        }
+                    }
+                    DataStore.setKey<Boolean>(LEGACY_BOOKMARKS, false)
+                }
+            } catch (e: Exception) {
+                return
+            }
+
+        }
+
+
         private fun getFav(): List<BookmarkedTitle?> {
+            val legacyBookmarks = DataStore.getKey<Boolean>(LEGACY_BOOKMARKS, true)
+            if (legacyBookmarks == true) {
+                convertOldFavorites()
+            }
             val keys = DataStore.getKeys(BOOKMARK_KEY)
+
             thread {
                 keys.pmap {
                     DataStore.getKey<BookmarkedTitle>(it)
@@ -521,7 +552,7 @@ class FastAniApi {
                 try {
                     val response = khttp.get(url, timeout = 120.0)
                     res = response.text.let { mapper.readValue(it) }
-                } catch (e: Exception){
+                } catch (e: Exception) {
                     println(e.message)
                 }
 

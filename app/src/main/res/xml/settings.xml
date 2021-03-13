@@ -215,11 +215,14 @@
                     android:data="https://discord.gg/shiro"/>
 
         </Preference>
+
         <Preference
+                app:isPreferenceVisible="false"
                 android:title="App discord"
                 android:icon="@drawable/ic_baseline_discord_24"
                 app:summary="Talk with app developers, give suggestions and report bugs"
         >
+            <!-- INVISIBLE as app might get official support -->
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://discord.gg/GEqWYkRZf2"/>
 

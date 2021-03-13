@@ -13,7 +13,7 @@ android {
         targetSdkVersion 30
         // Don't forget to update versionCode too :)
         versionCode 5
-        versionName "1.0.4"
+        versionName "1.1.0"
 
         testInstrumentationRunner "androidx.mal_logo.runner.AndroidJUnitRunner"
     }
