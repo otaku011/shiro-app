@@ -40,6 +40,7 @@ import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
+import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
 import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
@@ -122,7 +123,7 @@ class ShiroResultFragment : Fragment() {
     private fun onLoadEvent(isSucc: Boolean) {
         if (isSucc) {
             activity?.runOnUiThread {
-                if (data == null){
+                if (data == null) {
                     Toast.makeText(activity, "Error loading anime page!", Toast.LENGTH_LONG).show()
                     popCurrentPage()
                     return@runOnUiThread
@@ -332,20 +333,21 @@ class ShiroResultFragment : Fragment() {
 
         hideKeyboard()
         //title_duration.text = data!!.duration.toString() + "min"
+        if (isCastApiAvailable()) {
+            val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
-        val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
+            CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
+            val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
 
-        CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
-        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-
-        if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
-        castContext.addCastStateListener(CastStateListener { state ->
-            if (media_route_button != null) {
-                if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
-                    if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+            if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
+            castContext.addCastStateListener(CastStateListener { state ->
+                if (media_route_button != null) {
+                    if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
+                        if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+                    }
                 }
-            }
-        })
+            })
+        }
         //isViewState = false
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
         DownloadManager.downloadStartEvent += ::onDownloadStarted

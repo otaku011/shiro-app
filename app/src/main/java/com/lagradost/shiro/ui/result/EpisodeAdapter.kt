@@ -26,6 +26,7 @@ import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
 import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
+import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isViewState
 import kotlinx.android.synthetic.main.download_card.view.*
@@ -100,14 +101,16 @@ class EpisodeAdapter(
 
             card.cardBg.setOnClickListener {
                 //Toast.makeText(activity, "Loading link (Don't press shit!)", Toast.LENGTH_LONG).show()
-                val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-                println("SSTATE: " + castContext.castState + "<<")
                 if (save) {
                     DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
 
-                if (castContext.castState == CastState.CONNECTED) {
-                    castEpisode(data, position)
+                if (isCastApiAvailable()) {
+                    val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+                    println("SSTATE: " + castContext.castState + "<<")
+                    if (castContext.castState == CastState.CONNECTED) {
+                        castEpisode(data, position)
+                    }
                 } else {
                     thread {
                         //MainActivity.loadPlayer(data, position, 0L)

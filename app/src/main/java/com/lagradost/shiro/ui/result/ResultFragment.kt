@@ -50,6 +50,7 @@ import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
 import com.lagradost.shiro.MainActivity.Companion.openBrowser
 import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
+import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
@@ -147,63 +148,65 @@ class ResultFragment : Fragment() {
         }
     }
 
-   /* private fun toggleHeart(_isBookmarked: Boolean) {
-        this.isBookmarked = _isBookmarked
-        toggleHeartVisual(_isBookmarked)
-        if (_isBookmarked) {
-            DataStore.setKey<BookmarkedTitle>(
-                BOOKMARK_KEY,
-                data!!.anilistId,
-                BookmarkedTitle(data!!.id, data!!.anilistId, data!!.description, data!!.title, data!!.coverImage)
-            )
-        } else {
-            DataStore.removeKey(BOOKMARK_KEY, data!!.anilistId)
-        }
-        thread {
-            requestHome(true)
-        }
-    }*/
+    /* private fun toggleHeart(_isBookmarked: Boolean) {
+         this.isBookmarked = _isBookmarked
+         toggleHeartVisual(_isBookmarked)
+         if (_isBookmarked) {
+             DataStore.setKey<BookmarkedTitle>(
+                 BOOKMARK_KEY,
+                 data!!.anilistId,
+                 BookmarkedTitle(data!!.id, data!!.anilistId, data!!.description, data!!.title, data!!.coverImage)
+             )
+         } else {
+             DataStore.removeKey(BOOKMARK_KEY, data!!.anilistId)
+         }
+         thread {
+             requestHome(true)
+         }
+     }*/
 
     private fun castEpsiode(seasonIndex: Int, episodeIndex: Int) {
-        val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
-        castContext.castOptions
-        val ep = data!!.cdnData.seasons[seasonIndex].episodes[episodeIndex]
-        val poster = ep.thumb
-        val url = ep.file
-        val key = MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
+        if (isCastApiAvailable()) {
+            val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+            castContext.castOptions
+            val ep = data!!.cdnData.seasons[seasonIndex].episodes[episodeIndex]
+            val poster = ep.thumb
+            val url = ep.file
+            val key = MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
 
-        val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
-        movieMetadata.putString(
-            MediaMetadata.KEY_TITLE,
-            fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, isMovie, true)
-        )
-        movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.title.english)
-        if (poster != null) {
-            movieMetadata.addImage(WebImage(Uri.parse(poster)))
-        }
-        val mediaInfo = MediaInfo.Builder(url)
-            .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
-            .setContentType(MimeTypes.VIDEO_UNKNOWN)
-            .setMetadata(movieMetadata).build()
-
-        val mediaItems = arrayOf(MediaQueueItem.Builder(mediaInfo).build())
-        val castPlayer = CastPlayer(castContext)
-
-        castPlayer.loadItems(
-            mediaItems,
-            0,
-            DataStore.getKey<Long>(VIEW_POS_KEY, key, 0L)!!,
-            Player.REPEAT_MODE_OFF
-        )
-
-
-        /*castPlayer.setSessionAvailabilityListener(object : SessionAvailabilityListener {
-            override fun onCastSessionAvailable() {
-
+            val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_MOVIE)
+            movieMetadata.putString(
+                MediaMetadata.KEY_TITLE,
+                fixEpTitle(ep.title, episodeIndex + 1, seasonIndex + 1, isMovie, true)
+            )
+            movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data!!.title.english)
+            if (poster != null) {
+                movieMetadata.addImage(WebImage(Uri.parse(poster)))
             }
+            val mediaInfo = MediaInfo.Builder(url)
+                .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                .setContentType(MimeTypes.VIDEO_UNKNOWN)
+                .setMetadata(movieMetadata).build()
 
-            override fun onCastSessionUnavailable() {}
-        })*/
+            val mediaItems = arrayOf(MediaQueueItem.Builder(mediaInfo).build())
+            val castPlayer = CastPlayer(castContext)
+
+            castPlayer.loadItems(
+                mediaItems,
+                0,
+                DataStore.getKey<Long>(VIEW_POS_KEY, key, 0L)!!,
+                Player.REPEAT_MODE_OFF
+            )
+
+
+            /*castPlayer.setSessionAvailabilityListener(object : SessionAvailabilityListener {
+                override fun onCastSessionAvailable() {
+
+                }
+
+                override fun onCastSessionUnavailable() {}
+            })*/
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -888,7 +891,7 @@ class ResultFragment : Fragment() {
             //toggleHeart(!isBookmarked)
         }
         if (data != null) {
-           // val nextEpisode = getNextEpisode(data!!)
+            // val nextEpisode = getNextEpisode(data!!)
             /*if (nextEpisode.isFound) {
                 fab_play_button.visibility = VISIBLE
             }*/
