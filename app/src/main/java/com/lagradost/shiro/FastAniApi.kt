@@ -118,7 +118,7 @@ class FastAniApi {
         @JsonProperty("_id") val _id: String,
         @JsonProperty("slug") val slug: String,
         @JsonProperty("name") val name: String,
-        )
+    )
 
     data class ShiroHomePageData(
         @JsonProperty("trending_animes") val trending_animes: List<AnimePageData>,
@@ -222,7 +222,7 @@ class FastAniApi {
         private fun getToken(): Token? {
             try {
                 val headers = mapOf("User-Agent" to USER_AGENT)
-                val shiro = khttp.get("https://shiro.is", headers = headers)
+                val shiro = khttp.get("https://shiro.is", headers = headers, timeout = 120.0)
 
                 val jsMatch = Regex("""src="(/static/js/main.*?)"""").find(shiro.text)
                 val (destructed) = jsMatch!!.destructured
@@ -244,7 +244,7 @@ class FastAniApi {
             }
         }
 
-  fun getAppUpdate(): Update {
+        fun getAppUpdate(): Update {
             try {
                 val url = "https://api.github.com/repos/blatzar/shiro-app/releases"
                 val headers = mapOf("Accept" to "application/vnd.github.v3+json")
@@ -290,6 +290,7 @@ class FastAniApi {
                 return Update(false, null, null, null)
             }
         }
+
         @SuppressLint("HardwareIds")
         // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
         fun getDonorStatus(): String {
@@ -332,21 +333,24 @@ class FastAniApi {
         }
 
         fun getRandomAnimePage(): AnimePage? {
-            println("TOKEN ${currentToken?.token}")
-            val url = "https://ani.api-web.site/anime/random/TV?token=${currentToken?.token}"
-            val response = khttp.get(url)
-            println(response.text)
-            val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
-            return if (mapped.status == "Found")
-                mapped
-            else null
+            return try {
+                val url = "https://ani.api-web.site/anime/random/TV?token=${currentToken?.token}"
+                val response = khttp.get(url, timeout = 120.0)
+                val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                if (mapped.status == "Found")
+                    mapped
+                else null
+            } catch (e: Exception) {
+                null
+            }
         }
 
         fun getAnimePage(show: ShiroSearchResponseShow): AnimePage? {
             val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
             return try {
-                val response = khttp.get(url)
+                val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
                 if (mapped.status == "Found")
                     mapped
                 else null
@@ -359,8 +363,9 @@ class FastAniApi {
         fun getAnimePage(show: BookmarkedTitle): AnimePage? {
             val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
             return try {
-                val response = khttp.get(url)
+                val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
                 if (mapped.status == "Found")
                     mapped
                 else null
@@ -369,12 +374,13 @@ class FastAniApi {
             }
         }
 
-        // TODO MAKE THIS ONCE FUNCTION
+        // TODO MAKE THIS ONE FUNCTION
         fun getAnimePage(slug: String): AnimePage? {
             val url = "https://ani.api-web.site/anime/slug/${slug}?token=${currentToken?.token}"
             return try {
-                val response = khttp.get(url)
+                val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
+                mapped.data.episodes = mapped.data.episodes?.distinctBy { it.episode_number }
                 if (mapped.status == "Found")
                     mapped
                 else null
@@ -398,7 +404,7 @@ class FastAniApi {
                 println(url)
                 // Security headers
                 val headers = currentToken?.headers
-                val response = headers?.let { khttp.get(url) }
+                val response = headers?.let { khttp.get(url, timeout = 120.0) }
                 val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
                 return if (mapped?.status == "Found")
                     mapped.data
@@ -418,7 +424,7 @@ class FastAniApi {
                     )
                 }&token=${currentToken?.token}".replace("+", "%20")
                 val headers = currentToken?.headers
-                val response = headers?.let { khttp.get(url) }
+                val response = headers?.let { khttp.get(url, timeout = 120.0) }
                 println(response?.text)
                 val mapped = response?.let { mapper.readValue<ShiroFullSearchResponse>(it.text) }
                 return if (mapped?.status == "Found")
@@ -512,8 +518,12 @@ class FastAniApi {
                 res = cachedHome
             } else {
                 val url = "https://ani.api-web.site/latest?token=${currentToken!!.token}"
-                val response = khttp.get(url)
-                res = response.text.let { mapper.readValue(it) }
+                try {
+                    val response = khttp.get(url, timeout = 120.0)
+                    res = response.text.let { mapper.readValue(it) }
+                } catch (e: Exception){
+                    println(e.message)
+                }
 
                 if (res != null) {
                     res.random = getRandomAnimePage()
