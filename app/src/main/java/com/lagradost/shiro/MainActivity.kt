@@ -93,7 +93,6 @@ data class NextEpisode(
 /*Class for storing bookmarks*/
 data class BookmarkedTitle(
     @JsonProperty("name") val name: String,
-    @JsonProperty("description") val description: String,
     @JsonProperty("image") val image: String,
     @JsonProperty("slug") val slug: String
 )

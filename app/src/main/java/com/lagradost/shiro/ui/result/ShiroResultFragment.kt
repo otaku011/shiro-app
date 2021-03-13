@@ -273,7 +273,6 @@ class ShiroResultFragment : Fragment() {
                 data!!.slug,
                 BookmarkedTitle(
                     data!!.name,
-                    "data.description",
                     data!!.image,
                     data!!.slug
                 )

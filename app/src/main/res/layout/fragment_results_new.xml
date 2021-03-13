@@ -145,7 +145,7 @@
                                     android:gravity="start"
                                     android:text="The Promised Neverland"
                                     android:id="@+id/title_name"
-                                    android:textColor="?attr/colorPrimaryDark"
+                                    android:textColor="@color/white"
                                     android:textStyle="bold"
                                     android:textSize="17sp"
                                     android:layout_marginBottom="10dp"

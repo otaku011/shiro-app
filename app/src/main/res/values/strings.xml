@@ -5,6 +5,7 @@
         - Added discord link\n
         - Added tons of bottom padding in episode list\n
         - Removed duplicate episodes\n
+        - Added favorites to search\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

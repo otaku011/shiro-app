@@ -88,7 +88,6 @@ class ResAdapter(
                             card.slug,
                             BookmarkedTitle(
                                 card.name,
-                                "card.description",
                                 card.image,
                                 card.slug
                             )
