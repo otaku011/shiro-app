@@ -117,7 +117,7 @@ class FastAniApi {
         @JsonProperty("_id") val _id: String,
         @JsonProperty("slug") val slug: String,
         @JsonProperty("name") val name: String,
-        )
+    )
 
     data class ShiroHomePageData(
         @JsonProperty("trending_animes") val trending_animes: List<AnimePageData>,
@@ -131,7 +131,7 @@ class FastAniApi {
         @JsonProperty("status") val status: String,
         @JsonProperty("data") val data: ShiroHomePageData,
         @JsonProperty("random") var random: AnimePage?,
-        @JsonProperty("favorites") var favorites: List<BookmarkedTitle?>?,
+        @JsonProperty("favorites") var favorites: List<AnimePageData?>?,
         @JsonProperty("recentlySeen") var recentlySeen: List<LastEpisodeInfo?>?
     )
 
@@ -316,20 +316,6 @@ class FastAniApi {
             }
         }
 
-        /*Overloaded function getting data from api using slug of the input*/
-        fun getAnimePage(show: BookmarkedTitle): AnimePage? {
-            val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
-            return try {
-                val response = khttp.get(url)
-                val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
-                if (mapped.status == "Found")
-                    mapped
-                else null
-            } catch (e: Exception) {
-                null
-            }
-        }
-
         // TODO MAKE THIS ONCE FUNCTION
         fun getAnimePage(slug: String): AnimePage? {
             val url = "https://ani.api-web.site/anime/slug/${slug}?token=${currentToken?.token}"
@@ -413,16 +399,16 @@ class FastAniApi {
 
         var cachedHome: ShiroHomePage? = null
 
-        private fun getFav(): List<BookmarkedTitle?> {
+        private fun getFav(): List<AnimePageData?> {
             val keys = DataStore.getKeys(BOOKMARK_KEY)
             thread {
                 keys.pmap {
-                    DataStore.getKey<BookmarkedTitle>(it)
+                    DataStore.getKey<AnimePageData>(it)
                 }
             }
 
             return keys.map {
-                DataStore.getKey<BookmarkedTitle>(it)
+                DataStore.getKey<AnimePageData>(it)
             }
         }
 

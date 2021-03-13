@@ -173,14 +173,12 @@
                 android:icon="@drawable/ic_baseline_warning_24"
         />
         <SwitchPreference
-                app:isPreferenceVisible="false"
                 app:key="auto_update"
                 android:title="Automatically check for updates"
                 app:defaultValue="true"
                 android:icon="@drawable/ic_baseline_system_update_24"
         />
         <Preference
-                app:isPreferenceVisible="false"
                 android:title="Check for updates"
                 android:icon="@drawable/rdload"
                 app:key="check_updates"
@@ -209,12 +207,21 @@
 
         </Preference>
         <Preference
-                android:title="Discord"
+                android:title="Shiro.is discord"
                 android:icon="@drawable/ic_baseline_discord_24"
-                app:summary="Join the Shiro community to check updates on the app and site, talk with developers and give suggestions"
+                app:summary="Join the Shiro community"
         >
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://discord.gg/shiro"/>
+
+        </Preference>
+        <Preference
+                android:title="App discord"
+                android:icon="@drawable/ic_baseline_discord_24"
+                app:summary="Talk with app developers, give suggestions and report bugs"
+        >
+            <intent android:action="android.intent.action.VIEW"
+                    android:data="https://discord.gg/GEqWYkRZf2"/>
 
         </Preference>
         <Preference
