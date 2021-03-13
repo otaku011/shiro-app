@@ -39,6 +39,12 @@ class ResAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val compactView = settingsManager.getBoolean("compact_search_enabled", true)
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
+        if (hideDubbed) {
+            cardList = cardList.filter { !it.name.endsWith("Dubbed") } as ArrayList<FastAniApi.ShiroSearchResponseShow>
+        }
+
         val layout = if (compactView) R.layout.search_result_compact else R.layout.search_result
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(layout, parent, false),

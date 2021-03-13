@@ -30,7 +30,12 @@
                 android:title="Compact search results"
                 app:defaultValue="true"
         />
-
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_language_24"
+                app:key="hide_dubbed"
+                android:title="Hide all dubbed shows"
+                app:defaultValue="false"
+        />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"

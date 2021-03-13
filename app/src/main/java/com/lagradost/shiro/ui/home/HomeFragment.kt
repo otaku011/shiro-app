@@ -12,6 +12,7 @@ import androidx.core.view.marginTop
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.ChangeBounds
 import androidx.transition.Transition
@@ -139,9 +140,11 @@ class HomeFragment : Fragment() {
                         scrollView,
                     )
                 }
-
-                scrollView.adapter = adapter
-                (scrollView.adapter as CardAdapter).cardList = data as ArrayList<FastAniApi.AnimePageData?>
+                val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+                val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
+                val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
+                    scrollView.adapter = adapter
+                (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<FastAniApi.AnimePageData?>
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
             }
 
@@ -183,7 +186,6 @@ class HomeFragment : Fragment() {
                 displayCardData(data.data.latest_episodes.map { it.anime }, recently_updated_scroll_view)
                 displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
                 displayCardData(data.data.latest_animes, latest_anime_scroll_view)
-
             }
             //displayCardData(data?.recentlyAddedData, recentScrollView)
 

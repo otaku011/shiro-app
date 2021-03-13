@@ -57,7 +57,8 @@ class SearchFragment : Fragment() {
             )
         }
         cardSpace.adapter = adapter
-
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
         main_search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
                 progress_bar.visibility = View.VISIBLE
@@ -70,9 +71,11 @@ class SearchFragment : Fragment() {
                             Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
                             progress_bar.visibility = View.GONE
                         } else {
+                            val filteredData =
+                                if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
                             progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                             (cardSpace.adapter as ResAdapter).cardList =
-                                data as ArrayList<FastAniApi.ShiroSearchResponseShow>
+                                filteredData as ArrayList<FastAniApi.ShiroSearchResponseShow>
                             (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                         }
                     }
@@ -94,8 +97,10 @@ class SearchFragment : Fragment() {
                             } else {
                                 progress_bar.visibility =
                                     View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
+                                val filteredData =
+                                    if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
                                 (cardSpace.adapter as ResAdapter).cardList =
-                                    data as ArrayList<FastAniApi.ShiroSearchResponseShow>
+                                    filteredData as ArrayList<FastAniApi.ShiroSearchResponseShow>
                                 (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                             }
                         }

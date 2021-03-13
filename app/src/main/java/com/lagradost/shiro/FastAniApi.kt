@@ -3,6 +3,7 @@ package com.lagradost.shiro
 import android.annotation.SuppressLint
 import android.provider.Settings
 import android.util.Base64.*
+import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -401,11 +402,11 @@ class FastAniApi {
                         "UTF-8"
                     )
                 }?token=${currentToken?.token}".replace("+", "%20")
-                println(url)
                 // Security headers
                 val headers = currentToken?.headers
                 val response = headers?.let { khttp.get(url, timeout = 120.0) }
                 val mapped = response?.let { mapper.readValue<ShiroSearchResponse>(it.text) }
+
                 return if (mapped?.status == "Found")
                     mapped.data
                 else null
@@ -470,9 +471,11 @@ class FastAniApi {
                     keys.forEach {
                         val data = DataStore.getKey<AnimePageData>(it)
                         if (data != null) {
-                            DataStore.setKey(BOOKMARK_KEY, it, BookmarkedTitle(data.name, data.image, data.slug))
+                            // NEEDS REMOVAL TO PREVENT DUPLICATES
+                            DataStore.removeKey(it)
+                            DataStore.setKey(it, BookmarkedTitle(data.name, data.image, data.slug))
                         } else {
-                            DataStore.removeKey(BOOKMARK_KEY, it)
+                            DataStore.removeKey(it)
                         }
                     }
                     DataStore.setKey<Boolean>(LEGACY_BOOKMARKS, false)
@@ -498,6 +501,7 @@ class FastAniApi {
             }
 
             return keys.map {
+                println(it)
                 DataStore.getKey<BookmarkedTitle>(it)
             }
         }
