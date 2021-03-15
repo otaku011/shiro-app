@@ -149,10 +149,11 @@ class ShiroResultFragment : Fragment() {
                 val textColor = resources.getString(R.color.textColor).substring(3)
                 val textColorGrey = resources.getString(R.color.textColorGray).substring(3)
                 if (data!!.status != null) {
+                    // fromHtml is depreciated, but works on android 6 as opposed to the new
                     title_status.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${data!!.status}</font>",
-                            FROM_HTML_MODE_COMPACT
+                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${data!!.status}</font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
                     title_status.visibility = GONE
@@ -161,15 +162,15 @@ class ShiroResultFragment : Fragment() {
                 toggleHeartVisual(isBookmarked)
                 title_episodes.text =
                     Html.fromHtml(
-                        "<font color=#${textColor}>Episodes:</font><font color=#${textColorGrey}> ${data!!.episodeCount}</font>",
-                        FROM_HTML_MODE_COMPACT
+                        "<font color=#${textColor}>Episodes:</font><font color=#${textColorGrey}> ${data!!.episodeCount}</font>"/*,
+                        FROM_HTML_MODE_COMPACT*/
                     )
 
                 if (data!!.year != null) {
                     title_year.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Year:</font><font color=#${textColorGrey}> ${data!!.year}</font>",
-                            FROM_HTML_MODE_COMPACT
+                            "<font color=#${textColor}>Year:</font><font color=#${textColorGrey}> ${data!!.year}</font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
                     title_year.visibility = GONE
@@ -182,8 +183,8 @@ class ShiroResultFragment : Fragment() {
                                 data!!.genres?.joinToString(
                                     ", "
                                 )
-                            }</font>",
-                            FROM_HTML_MODE_COMPACT
+                            }</font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
                     title_genres.visibility = GONE

@@ -69,8 +69,9 @@ class EpisodeAdapter(
     }
 
     class CardViewHolder
-    constructor(itemView: View, _context: Context, resView: RecyclerView, private val save: Boolean) :
+    constructor(itemView: View, _context: Context, resView: RecyclerView, val save: Boolean) :
         RecyclerView.ViewHolder(itemView) {
+
         val context = _context
         val card: LinearLayout = itemView.episode_result_root
         fun bind(data: FastAniApi.AnimePageData?, position: Int) {
@@ -99,7 +100,7 @@ class EpisodeAdapter(
             )
             card.cardTitle.layoutParams = param
 
-            card.cardBg.setOnClickListener {
+            itemView.cardBg.setOnClickListener {
                 //Toast.makeText(activity, "Loading link (Don't press shit!)", Toast.LENGTH_LONG).show()
                 if (save) {
                     DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
@@ -110,25 +111,19 @@ class EpisodeAdapter(
                     println("SSTATE: " + castContext.castState + "<<")
                     if (castContext.castState == CastState.CONNECTED) {
                         castEpisode(data, position)
+                    } else {
+                        thread {
+                            MainActivity.loadPlayer(position, 0L, data)
+                        }
                     }
                 } else {
                     thread {
-                        //MainActivity.loadPlayer(data, position, 0L)
-                        /*val videoUrl = data.episodes?.get(position)?.videos?.getOrNull(0)?.video_id.let { it1 ->
-                            getVideoLink(
-                                it1!!
-                            )
-                        }
-                        if (videoUrl != null) {
-                            MainActivity.loadPlayer("${data.name} - Episode ${position + 1}", videoUrl, 0L)
-                        }*/
-                        // println("LAOD PLAYER!")
                         MainActivity.loadPlayer(position, 0L, data)
                     }
                 }
             }
 
-            card.setOnLongClickListener {
+            /*card.cardBg.setOnLongClickListener {
                 if (isViewState) {
                     if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
                         DataStore.removeKey(VIEWSTATE_KEY, key)
@@ -137,7 +132,7 @@ class EpisodeAdapter(
                     }
                 }
                 return@setOnLongClickListener true
-            }
+            }*/
 
             val title = "Episode ${position + 1}"
 
@@ -355,7 +350,7 @@ class EpisodeAdapter(
 
         }
 
-        private fun castEpisode(data: FastAniApi.AnimePageData, episodeIndex: Int) {
+        fun castEpisode(data: FastAniApi.AnimePageData, episodeIndex: Int) {
             val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
             castContext.castOptions
             val key = data._id + episodeIndex//MainActivity.getViewKey(data!!.anilistId, seasonIndex, episodeIndex)
