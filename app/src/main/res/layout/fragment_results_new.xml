@@ -143,7 +143,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="start"
-                                    android:text="The Promised Neverland"
+                                    tools:text="The Promised Neverland"
                                     android:id="@+id/title_name"
                                     android:textColor="@color/white"
                                     android:textStyle="bold"
@@ -156,7 +156,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textColor="@color/textColorGrayWhite"
-                                    android:text="Status: Finished"
+                                    tools:text="Status: Finished"
                                     android:textSize="12sp"
                                     android:layout_marginBottom="10dp"
                             >
@@ -166,7 +166,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textColor="@color/textColorGrayWhite"
-                                    android:text="Genres: Sci-Fi, Mystery, Horror"
+                                    tools:text="Genres: Sci-Fi, Mystery, Horror"
                                     android:textSize="12sp"
                                     android:layout_marginBottom="10dp"
                             >
@@ -176,7 +176,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textColor="@color/textColorGrayWhite"
-                                    android:text="Episodes: 12"
+                                    tools:text="Episodes: 12"
                                     android:textSize="12sp"
                                     android:layout_marginBottom="10dp"
                             >
@@ -186,7 +186,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textColor="@color/textColorGrayWhite"
-                                    android:text="Year: 2020"
+                                    tools:text="Year: 2020"
                                     android:textSize="12sp"
                                     android:layout_marginBottom="10dp"
                             >
@@ -204,7 +204,8 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:textColor="@color/textColor"
-                                android:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)">
+                                tools:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)"
+                        >
 
                         </TextView>
                     </LinearLayout>

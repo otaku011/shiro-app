@@ -5,10 +5,8 @@ import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.core.view.marginTop
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -20,17 +18,14 @@ import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
 import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
 import com.lagradost.shiro.ui.GlideApp
-import com.lagradost.shiro.ui.result.ShiroResultFragment
 import kotlinx.android.synthetic.main.download_card.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.home_card.view.imageText
-import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.home_card_schedule.view.*
 import kotlinx.android.synthetic.main.home_recently_seen.view.*
 import kotlin.concurrent.thread
@@ -74,7 +69,7 @@ class HomeFragment : Fragment() {
             val random: FastAniApi.AnimePageData? = data?.random?.data
             if (random != null) {
                 val glideUrlMain =
-                    GlideUrl(getFullUrl(random.image)) { FastAniApi.currentHeaders }
+                    GlideUrl(getFullUrlCdn(random.image)) { FastAniApi.currentHeaders }
                 context?.let {
                     GlideApp.with(it)
                         .load(glideUrlMain)

@@ -11,7 +11,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
 import kotlinx.android.synthetic.main.home_card.view.*
@@ -55,7 +55,7 @@ class CardAdapter(
         fun bind(cardInfo: FastAniApi.AnimePageData?) {
             if (cardInfo != null) {
                 val glideUrl =
-                    GlideUrl(getFullUrl(cardInfo.image))
+                    GlideUrl(getFullUrlCdn(cardInfo.image))
                 //  activity?.runOnUiThread {
                 context.let {
                     GlideApp.with(it)

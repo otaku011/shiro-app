@@ -2,10 +2,8 @@ package com.lagradost.shiro.ui.result
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.text.Html
-import android.text.Html.FROM_HTML_MODE_COMPACT
 import android.transition.ChangeBounds
 import android.transition.Transition
 import android.transition.TransitionManager
@@ -22,22 +20,14 @@ import androidx.mediarouter.app.MediaRouteButton
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.ext.cast.CastPlayer
-import com.google.android.exoplayer2.util.MimeTypes
-import com.google.android.gms.cast.MediaInfo
-import com.google.android.gms.cast.MediaMetadata
-import com.google.android.gms.cast.MediaQueueItem
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.CastStateListener
-import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.mapper
 import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
-import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
 import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
@@ -138,7 +128,7 @@ class ShiroResultFragment : Fragment() {
 
                 val glideUrl =
                     GlideUrl(
-                        data?.image?.let { getFullUrl(it) }?.let { getFullUrl(it) }
+                        data?.image?.let { getFullUrlCdn(it) }?.let { getFullUrlCdn(it) }
                     )
                 context?.let {
                     GlideApp.with(it)

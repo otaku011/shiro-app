@@ -22,13 +22,12 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.common.images.WebImage
 import com.lagradost.shiro.*
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
 import com.lagradost.shiro.ui.AutofitRecyclerView
-import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isViewState
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
@@ -370,7 +369,7 @@ class EpisodeAdapter(
                             "Episode ${episodeIndex + 1}"
                         )
                         movieMetadata.putString(MediaMetadata.KEY_ALBUM_ARTIST, data.name)
-                        movieMetadata.addImage(WebImage(Uri.parse(getFullUrl(data.image))))
+                        movieMetadata.addImage(WebImage(Uri.parse(getFullUrlCdn(data.image))))
 
                         val mediaInfo = MediaInfo.Builder(videoLink)
                             .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)

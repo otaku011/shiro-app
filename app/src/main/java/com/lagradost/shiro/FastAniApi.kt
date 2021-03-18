@@ -323,9 +323,11 @@ class FastAniApi {
 
         fun getVideoLink(id: String): String? {
             return try {
-                val res = khttp.get("https://ani.googledrive.stream/vidstreaming/vid-ad/$id", timeout = 120.0).text
+                println(id)
+                val res = khttp.get("https://cherry.subsplea.se/$id", timeout = 120.0).text
+                println(res)
                 val document = Jsoup.parse(res)
-                val url = document.select("source").firstOrNull()?.attr("src")
+                val url = document.select("source").firstOrNull()?.attr("src")?.replace("&amp;", "?")
                 url
             } catch (e: Exception) {
                 println("Failed to load video URL")
@@ -335,7 +337,7 @@ class FastAniApi {
 
         fun getRandomAnimePage(): AnimePage? {
             return try {
-                val url = "https://ani.api-web.site/anime/random/TV?token=${currentToken?.token}"
+                val url = "https://tapi.shiro.is/anime/random/TV?token=${currentToken?.token}"
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
                 if (mapped.status == "Found")
@@ -347,7 +349,7 @@ class FastAniApi {
         }
 
         fun getAnimePage(show: ShiroSearchResponseShow): AnimePage? {
-            val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
+            val url = "https://tapi.shiro.is/anime/slug/${show.slug}?token=${currentToken?.token}"
             return try {
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
@@ -362,7 +364,7 @@ class FastAniApi {
 
         /*Overloaded function to get animepage for the bookmarked title*/
         fun getAnimePage(show: BookmarkedTitle): AnimePage? {
-            val url = "https://ani.api-web.site/anime/slug/${show.slug}?token=${currentToken?.token}"
+            val url = "https://tapi.shiro.is/anime/slug/${show.slug}?token=${currentToken?.token}"
             return try {
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
@@ -377,7 +379,7 @@ class FastAniApi {
 
         // TODO MAKE THIS ONE FUNCTION
         fun getAnimePage(slug: String): AnimePage? {
-            val url = "https://ani.api-web.site/anime/slug/${slug}?token=${currentToken?.token}"
+            val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${currentToken?.token}"
             return try {
                 val response = khttp.get(url, timeout = 120.0)
                 val mapped = response.let { mapper.readValue<AnimePage>(it.text) }
@@ -396,7 +398,7 @@ class FastAniApi {
         fun quickSearch(query: String): List<ShiroSearchResponseShow>? {
             try {
                 // Tags and years can be added
-                val url = "https://ani.api-web.site/anime/auto-complete/${
+                val url = "https://tapi.shiro.is/anime/auto-complete/${
                     URLEncoder.encode(
                         query,
                         "UTF-8"
@@ -418,7 +420,7 @@ class FastAniApi {
 
         fun search(query: String): List<ShiroSearchResponseShow>? {
             try {
-                val url = "https://ani.api-web.site/advanced?search=${
+                val url = "https://tapi.shiro.is/advanced?search=${
                     URLEncoder.encode(
                         query,
                         "UTF-8"
@@ -436,9 +438,9 @@ class FastAniApi {
             }
         }
 
-        fun getFullUrl(url: String): String {
+        fun getFullUrlCdn(url: String): String {
             return if (!url.startsWith("http")) {
-                "https://ani-cdn.api-web.site/$url"
+                "https://cdn.shiro.is/$url"
             } else url
         }
 
@@ -552,7 +554,7 @@ class FastAniApi {
             if (canBeCached && cachedHome != null) {
                 res = cachedHome
             } else {
-                val url = "https://ani.api-web.site/latest?token=${currentToken!!.token}"
+                val url = "https://tapi.shiro.is/latest?token=${currentToken!!.token}"
                 try {
                     val response = khttp.get(url, timeout = 120.0)
                     res = response.text.let { mapper.readValue(it) }

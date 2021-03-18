@@ -14,7 +14,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.AutofitRecyclerView
@@ -147,7 +147,7 @@ class ResAdapter(
             }
 
             val glideUrl =
-                GlideUrl(getFullUrl(card.image)) { FastAniApi.currentHeaders }
+                GlideUrl(getFullUrlCdn(card.image)) { FastAniApi.currentHeaders }
             context.let {
                 Glide.with(it)
                     .load(glideUrl)

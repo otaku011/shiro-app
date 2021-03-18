@@ -52,6 +52,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.lagradost.shiro.FastAniApi.Companion.USER_AGENT
 import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
@@ -807,13 +808,14 @@ class PlayerFragment() : Fragment() {
                 class CustomFactory : DataSource.Factory {
                     override fun createDataSource(): DataSource {
                         return if (isOnline) {
-                            val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
-                            FastAniApi.currentHeaders?.forEach {
+                            val dataSource = DefaultHttpDataSourceFactory(USER_AGENT).createDataSource()
+                            /*FastAniApi.currentHeaders?.forEach {
                                 dataSource.setRequestProperty(it.key, it.value)
-                            }
+                            }*/
+                            dataSource.setRequestProperty("Referer", "https://cherry.subsplea.se/")
                             dataSource
                         } else {
-                            DefaultDataSourceFactory(requireContext(), "ua").createDataSource()
+                            DefaultDataSourceFactory(requireContext(), USER_AGENT).createDataSource()
                         }
                     }
                 }
@@ -885,9 +887,7 @@ class PlayerFragment() : Fragment() {
                     SimpleExoPlayer.Builder(this.requireContext())
                         .setTrackSelector(trackSelector)
 
-                if (!isOnline) {
-                    _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
-                }
+                _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
 
                 exoPlayer = _exoPlayer.build().apply {
                     playWhenReady = isPlayerPlaying
