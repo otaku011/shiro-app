@@ -153,7 +153,6 @@ class AniListApi {
             try {
                 println("ID::::: " + id)
                 val data = postApi("https://graphql.anilist.co", q)
-                println(data)
                 var d: GetDataRoot? = null
                 try {
                     d = mapper.readValue<GetDataRoot>(data)

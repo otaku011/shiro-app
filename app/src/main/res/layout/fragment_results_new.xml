@@ -211,6 +211,7 @@
                     </LinearLayout>
                     <com.lagradost.shiro.ui.AutofitRecyclerView
                             android:clipToPadding="false"
+                            android:descendantFocusability="afterDescendants"
                             android:paddingBottom="100dp"
                             android:layout_marginEnd="10dp"
                             android:layout_marginStart="10dp"

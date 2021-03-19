@@ -207,7 +207,7 @@ class HomeFragment : Fragment() {
             transition.duration = 100
             if (data?.recentlySeen?.isNotEmpty() == true) {
                 recentlySeenRoot.visibility = VISIBLE
-                println(data.recentlySeen)
+                //println(data.recentlySeen)
                 displayCardData(data.recentlySeen, recentlySeenScrollView)
             } else {
                 recentlySeenRoot.visibility = GONE

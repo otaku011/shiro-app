@@ -1,12 +1,8 @@
 <resources>
-    <string name="version_code">1.1.0 Public Release</string>
+    <string name="version_code">1.1.2 Public Release</string>
     <string name="changelog">\n
-        - Fixed support for RTL\n
-        - Added discord link\n
-        - Added tons of bottom padding in episode list\n
-        - Removed duplicate episodes\n
-        - Added favorites to search\n
-        - Added toggle to hide all dubbed shows\n
+        - Fixed video loading\n
+        - Fixed back button before video loads\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

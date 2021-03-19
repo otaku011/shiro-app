@@ -323,9 +323,9 @@ class FastAniApi {
 
         fun getVideoLink(id: String): String? {
             return try {
-                println(id)
-                val res = khttp.get("https://cherry.subsplea.se/$id", timeout = 120.0).text
-                println(res)
+                println("Getting video link for $id")
+                val headers = mapOf("Referer" to "https://shiro.is/")
+                val res = khttp.get("https://cherry.subsplea.se/$id", timeout = 120.0, headers = headers).text
                 val document = Jsoup.parse(res)
                 val url = document.select("source").firstOrNull()?.attr("src")?.replace("&amp;", "?")
                 url

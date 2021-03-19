@@ -34,6 +34,7 @@ import kotlinx.android.synthetic.main.episode_result_compact.view.cardBg
 import kotlinx.android.synthetic.main.episode_result_compact.view.cardTitle
 import kotlinx.android.synthetic.main.home_card.view.*
 import java.io.File
+import java.lang.Math.abs
 import kotlin.concurrent.thread
 
 
@@ -45,6 +46,7 @@ class EpisodeAdapter(
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var episodes = data.episodes
+    var prevFocus: Int? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return CardViewHolder(
@@ -56,6 +58,17 @@ class EpisodeAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        holder.itemView.setOnFocusChangeListener { focusedView, hasFocus ->
+            if (prevFocus != null) {
+                if (kotlin.math.abs(position - prevFocus!!) > 3 * 2) {
+                    this.resView.layoutManager?.scrollToPosition(0)
+                }
+
+            }
+            prevFocus = position
+            //updateFocusPositions(holder, hasFocus, position)
+        }
+
         when (holder) {
             is CardViewHolder -> {
                 holder.bind(data, position)
