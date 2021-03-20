@@ -290,7 +290,10 @@
                         android:textColor="@color/textColor"
                         android:textSize="16sp"
                         android:padding="10dp"
+                        android:id="@+id/trending_text"
+                        app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                 >
+
                 </TextView>
                 <RelativeLayout
                         android:layout_width="wrap_content"
@@ -315,6 +318,8 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:padding="10dp"
+                        android:id="@+id/recently_updated_text"
+                        app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                 >
                 </TextView>
                 <RelativeLayout
@@ -342,6 +347,8 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:padding="10dp"
+                        android:id="@+id/ongoing_anime_text"
+                        app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                 >
                 </TextView>
                 <RelativeLayout
@@ -368,6 +375,8 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:padding="10dp"
+                        android:id="@+id/latest_anime_text"
+                        app:drawableEndCompat="@drawable/ic_baseline_keyboard_arrow_right_24"
                 >
                 </TextView>
                 <RelativeLayout

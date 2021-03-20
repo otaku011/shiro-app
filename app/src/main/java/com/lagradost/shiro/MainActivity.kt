@@ -52,6 +52,7 @@ import com.lagradost.shiro.ui.PlayerData
 import com.lagradost.shiro.ui.PlayerEventType
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.update_dialog.*
@@ -464,9 +465,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        println("BACK PRESSED!!!! $isInResults")
+        println("BACK PRESSED!!!! $isInResults $isInPlayer $isInExpandedView")
 
-        if (isInResults || isInPlayer) {
+        if (isInResults || isInPlayer || isInExpandedView) {
             popCurrentPage()
         } else {
             super.onBackPressed()

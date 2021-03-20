@@ -5,6 +5,7 @@ import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.setMargins
@@ -17,6 +18,7 @@ import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
+import com.lagradost.shiro.DataStore.mapper
 import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
@@ -127,7 +129,7 @@ class HomeFragment : Fragment() {
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
             }*/
 
-            fun displayCardData(data: List<FastAniApi.AnimePageData?>?, scrollView: RecyclerView) {
+            fun displayCardData(data: List<FastAniApi.AnimePageData?>?, scrollView: RecyclerView, textView: TextView) {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                     CardAdapter(
                         it,
@@ -138,9 +140,24 @@ class HomeFragment : Fragment() {
                 val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
                 val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
                 val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
-                    scrollView.adapter = adapter
+                scrollView.adapter = adapter
                 (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<FastAniApi.AnimePageData?>
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
+
+
+                textView.setOnClickListener {
+                    MainActivity.activity?.supportFragmentManager?.beginTransaction()
+                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        ?.add(
+                            R.id.homeRoot,
+                            ExpandedHomeFragment.newInstance(
+                                mapper.writeValueAsString(data),
+                                textView.text.toString()
+                            )
+                        )
+                        ?.commit()
+                }
+
             }
 
             fun displayCardData(data: List<LastEpisodeInfo?>?, scrollView: RecyclerView) {
@@ -177,10 +194,10 @@ class HomeFragment : Fragment() {
             }
 
             if (data != null) {
-                displayCardData(data.data.trending_animes, trending_anime_scroll_view)
-                displayCardData(data.data.latest_episodes.map { it.anime }, recently_updated_scroll_view)
-                displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view)
-                displayCardData(data.data.latest_animes, latest_anime_scroll_view)
+                displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
+                displayCardData(data.data.latest_episodes.map { it.anime }, recently_updated_scroll_view, recently_updated_text)
+                displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view, ongoing_anime_text)
+                displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
             }
             //displayCardData(data?.recentlyAddedData, recentScrollView)
 
