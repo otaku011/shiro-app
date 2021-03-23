@@ -180,6 +180,18 @@ class ShiroResultFragment : Fragment() {
                     title_genres.visibility = GONE
                 }
 
+                if (data!!.schedule != null && data?.status != "finished") {
+                    title_day_of_week.text =
+                        Html.fromHtml(
+                            "<font color=#${textColor}>Schedule:</font><font color=#${textColorGrey}> ${
+                                data!!.schedule
+                            }</font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
+                        )
+                } else {
+                    title_day_of_week.visibility = GONE
+                }
+
                 title_name.text = data!!.name
                 val descript = data!!.synopsis
                     .replace("<br>", "")
@@ -187,15 +199,23 @@ class ShiroResultFragment : Fragment() {
                     .replace("</i>", "")
                     .replace("\n", " ")
 
-                title_descript.text = descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..."
+                title_descript.text = if (descript.length > 200) Html.fromHtml(
+                    descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..." +
+                            "<font color=#${textColorGrey}><i> Read more...</i></font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
+                ) else descript
                 title_descript.setOnClickListener {
                     val transition: Transition = ChangeBounds()
                     transition.duration = 100
-                    if (title_descript.text.length == 200) {
+                    if (title_descript.text.length <= 200 + 13) {
                         title_descript.text = descript
                     } else {
                         title_descript.text =
-                            descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..."
+                            Html.fromHtml(
+                                descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..." +
+                                        "<font color=#${textColorGrey}><i> Read more...</i></font>"/*,
+                            FROM_HTML_MODE_COMPACT*/
+                            )
                     }
                     TransitionManager.beginDelayedTransition(description_holder, transition)
                 }

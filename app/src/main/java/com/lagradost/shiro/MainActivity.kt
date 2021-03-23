@@ -333,16 +333,25 @@ class MainActivity : AppCompatActivity() {
             }
 
             // No fucked animations leaving the player :)
-            if (isInPlayer) {
-                activity?.supportFragmentManager!!.beginTransaction()
-                    //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment)
-                    .commitAllowingStateLoss()
-            } else {
-                activity?.supportFragmentManager!!.beginTransaction()
-                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment)
-                    .commitAllowingStateLoss()
+            when {
+                isInPlayer -> {
+                    activity?.supportFragmentManager!!.beginTransaction()
+                        //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
+                isInExpandedView -> {
+                    activity?.supportFragmentManager!!.beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
+                else -> {
+                    activity?.supportFragmentManager!!.beginTransaction()
+                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
             }
         }
 

@@ -193,6 +193,7 @@ class FastAniApi {
         @JsonProperty("_id") val _id: String,
         @JsonProperty("episodes") var episodes: List<ShiroEpisodes>?,
         @JsonProperty("status") val status: String?,
+        @JsonProperty("schedule") val schedule: String?,
     )
 
     data class AnimePage(

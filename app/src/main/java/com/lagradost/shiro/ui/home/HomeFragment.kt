@@ -147,7 +147,7 @@ class HomeFragment : Fragment() {
 
                 textView.setOnClickListener {
                     MainActivity.activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        ?.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_right)
                         ?.add(
                             R.id.homeRoot,
                             ExpandedHomeFragment.newInstance(
