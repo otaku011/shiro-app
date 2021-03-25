@@ -337,6 +337,7 @@ class FastAniApi {
         }
 
         fun getRandomAnimePage(): AnimePage? {
+            println("Called random")
             return try {
                 val url = "https://tapi.shiro.is/anime/random/TV?token=${currentToken?.token}"
                 val response = khttp.get(url, timeout = 120.0)

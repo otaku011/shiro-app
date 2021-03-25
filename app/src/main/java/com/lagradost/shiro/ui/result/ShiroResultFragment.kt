@@ -34,6 +34,7 @@ import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
 import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
+import com.lagradost.shiro.ui.search.SearchFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_results_new.*
 import kotlin.concurrent.thread
@@ -200,8 +201,8 @@ class ShiroResultFragment : Fragment() {
                     .replace("\n", " ")
 
                 title_descript.text = if (descript.length > 200) Html.fromHtml(
-                    descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..." +
-                            "<font color=#${textColorGrey}><i> Read more...</i></font>"/*,
+                    descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) +
+                            "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                 ) else descript
                 title_descript.setOnClickListener {
@@ -212,8 +213,8 @@ class ShiroResultFragment : Fragment() {
                     } else {
                         title_descript.text =
                             Html.fromHtml(
-                                descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) + "..." +
-                                        "<font color=#${textColorGrey}><i> Read more...</i></font>"/*,
+                                descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) +
+                                        "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                             )
                     }

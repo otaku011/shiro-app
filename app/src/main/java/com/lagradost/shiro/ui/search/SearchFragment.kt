@@ -26,7 +26,7 @@ import kotlin.concurrent.thread
 
 class SearchFragment : Fragment() {
     private lateinit var searchViewModel: SearchViewModel
-    val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
+    private val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
     private val compactView = settingsManager.getBoolean("compact_search_enabled", true)
     private val spanCountLandscape = if (compactView) 2 else 6
     private val spanCountPortrait = if (compactView) 1 else 3
@@ -35,6 +35,11 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         super.onViewCreated(view, savedInstanceState)
+        if (!isInResults && this.isVisible) {
+            activity?.window?.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+            )
+        }
         val orientation = resources.configuration.orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             cardSpace.spanCount = spanCountLandscape
@@ -134,11 +139,7 @@ class SearchFragment : Fragment() {
     ): View? {
         searchViewModel =
             ViewModelProviders.of(this).get(SearchViewModel::class.java)
-        if (!isInResults && this.isVisible) {
-            activity?.window?.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
-            )
-        }
+
         return inflater.inflate(R.layout.fragment_search, container, false)
     }
 

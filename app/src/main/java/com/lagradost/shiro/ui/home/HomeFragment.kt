@@ -19,8 +19,10 @@ import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.mapper
+import com.lagradost.shiro.FastAniApi.Companion.cachedHome
 import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
 import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.FastAniApi.Companion.getRandomAnimePage
 import com.lagradost.shiro.FastAniApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
@@ -46,9 +48,7 @@ class HomeFragment : Fragment() {
     ): View? {
         homeViewModel =
             activity?.let { ViewModelProviders.of(it).get(HomeViewModel::class.java) }!!
-        thread {
-            requestHome(true)
-        }
+
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
@@ -68,66 +68,20 @@ class HomeFragment : Fragment() {
                     .load(glideUrl)
                     .into(main_backgroundImage)
             }*/
-            val random: FastAniApi.AnimePageData? = data?.random?.data
-            if (random != null) {
-                val glideUrlMain =
-                    GlideUrl(getFullUrlCdn(random.image)) { FastAniApi.currentHeaders }
-                context?.let {
-                    GlideApp.with(it)
-                        .load(glideUrlMain)
-                        .into(main_poster)
-                }
 
-                main_name.text = random.name
-                main_genres.text = random.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
-                main_watch_button.setOnClickListener {
-                    //MainActivity.loadPage(cardInfo!!)
-                    Toast.makeText(activity, "Loading link", Toast.LENGTH_SHORT).show()
-                    thread {
-                        // LETTING USER PRESS STUF WHEN THIS LOADS CAN CAUSE BUGS
-                        val page = getAnimePage(random.slug)
-                        if (page != null) {
-                            val nextEpisode = getNextEpisode(page.data)
-                            loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
-                        } else {
-                            activity?.runOnUiThread {
-                                Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                }
-                main_watch_button.setOnLongClickListener {
-                    //MainActivity.loadPage(cardInfo!!)
-                    if (cardInfo != null) {
-                        val nextEpisode = getNextEpisode(random)
-                        Toast.makeText(
-                            activity,
-                            "Episode ${nextEpisode.episodeIndex + 1}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    return@setOnLongClickListener true
-                }
-                main_info_button.setOnClickListener {
-                    MainActivity.loadPage(random)
-                }
-            } else {
-                main_poster_holder.visibility = GONE
-                main_poster_text_holder.visibility = GONE
-                val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
-                    LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
-                    LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
-                )
 
-                marginParams.setMargins(0)
-                main_layout.layoutParams = marginParams
-            }
             //"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
             /*main_poster.setOnClickListener {
                 MainActivity.loadPage(cardInfo!!)
                 // MainActivity.loadPlayer(0, 0, cardInfo!!)
             }*/
+            home_swipe_refresh.setOnRefreshListener {
+                generateRandom()
+                home_swipe_refresh.isRefreshing = false
+            }
+
+            generateRandom(data?.random)
 
             fun displayCardData(data: List<FastAniApi.AnimePageData?>?, scrollView: RecyclerView, textView: TextView) {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
@@ -147,7 +101,12 @@ class HomeFragment : Fragment() {
 
                 textView.setOnClickListener {
                     MainActivity.activity?.supportFragmentManager?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_right)
+                        ?.setCustomAnimations(
+                            R.anim.enter_from_right,
+                            R.anim.exit_to_right,
+                            R.anim.enter_from_right,
+                            R.anim.exit_to_right
+                        )
                         ?.add(
                             R.id.homeRoot,
                             ExpandedHomeFragment.newInstance(
@@ -195,7 +154,11 @@ class HomeFragment : Fragment() {
 
             if (data != null) {
                 displayCardData(data.data.trending_animes, trending_anime_scroll_view, trending_text)
-                displayCardData(data.data.latest_episodes.map { it.anime }, recently_updated_scroll_view, recently_updated_text)
+                displayCardData(
+                    data.data.latest_episodes.map { it.anime },
+                    recently_updated_scroll_view,
+                    recently_updated_text
+                )
                 displayCardData(data.data.ongoing_animes, ongoing_anime_scroll_view, ongoing_anime_text)
                 displayCardData(data.data.latest_animes, latest_anime_scroll_view, latest_anime_text)
             }
@@ -242,6 +205,87 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun generateRandom(randomPage: FastAniApi.AnimePage? = null) {
+
+        thread {
+            val random: FastAniApi.AnimePage? = randomPage ?: getRandomAnimePage()
+            cachedHome?.random = random
+            val randomData = random?.data
+            requireActivity().runOnUiThread {
+                if (randomData != null) {
+                    val transition: Transition = ChangeBounds()
+                    transition.duration = 100 // DURATION OF ANIMATION IN MS
+
+                    TransitionManager.beginDelayedTransition(main_layout, transition)
+
+                    main_poster_holder.visibility = VISIBLE
+                    main_poster_text_holder.visibility = VISIBLE
+                    val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
+                        LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+                        LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
+                    )
+
+                    marginParams.setMargins(0, 250.toPx, 0, 0)
+                    main_layout.layoutParams = marginParams
+
+                    val glideUrlMain =
+                        GlideUrl(getFullUrlCdn(randomData.image)) { FastAniApi.currentHeaders }
+                    context?.let {
+                        GlideApp.with(it)
+                            .load(glideUrlMain)
+                            .into(main_poster)
+                    }
+
+                    main_name.text = randomData.name
+                    main_genres.text = randomData.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
+                    main_watch_button.setOnClickListener {
+                        //MainActivity.loadPage(cardInfo!!)
+                        Toast.makeText(activity, "Loading link", Toast.LENGTH_SHORT).show()
+                        thread {
+                            // LETTING USER PRESS STUFF WHEN THIS LOADS CAN CAUSE BUGS
+                            val page = getAnimePage(randomData.slug)
+                            if (page != null) {
+                                val nextEpisode = getNextEpisode(page.data)
+                                loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
+                            } else {
+                                activity?.runOnUiThread {
+                                    Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    }
+                    main_watch_button.setOnLongClickListener {
+                        //MainActivity.loadPage(cardInfo!!)
+                        if (cardInfo != null) {
+                            val nextEpisode = getNextEpisode(randomData)
+                            Toast.makeText(
+                                activity,
+                                "Episode ${nextEpisode.episodeIndex + 1}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        return@setOnLongClickListener true
+                    }
+                    main_info_button.setOnClickListener {
+                        MainActivity.loadPage(randomData)
+                    }
+                } else {
+                    main_poster_holder.visibility = GONE
+                    main_poster_text_holder.visibility = GONE
+                    val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
+                        LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+                        LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
+                    )
+
+                    marginParams.setMargins(0)
+                    main_layout.layoutParams = marginParams
+                }
+            }
+        }
+
+
+    }
+
     private fun onHomeErrorCatch(fullRe: Boolean) {
         // Null check because somehow this can crash
         activity?.runOnUiThread {
@@ -257,7 +301,7 @@ class HomeFragment : Fragment() {
                         if (fullRe) {
                             FastAniApi.init()
                         } else {
-                            FastAniApi.requestHome(false)
+                            requestHome(false)
                         }
                     }
                 }
@@ -280,7 +324,6 @@ class HomeFragment : Fragment() {
             //   main_backgroundImage.alpha = maxOf(0f, MAXIMUM_FADE * fade) // DONT DUE TO ALPHA FADING HINDERING FORGOUND GRADIENT
         }*/
         homeViewModel.apiData.observe(viewLifecycleOwner) {
-            println("OBSERVED")
             homeLoaded(it)
         }
     }
