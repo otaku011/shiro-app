@@ -294,10 +294,7 @@ class FastAniApi {
         }
 
         @SuppressLint("HardwareIds")
-        // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
         fun getDonorStatus(): String {
-            return ""
-            /*
             val url = "https://raw.githubusercontent.com/Blatzar/donors/master/donors.json"
             try {
                 val androidId: String =
@@ -318,7 +315,7 @@ class FastAniApi {
                 return ""
             } catch (e: Exception) {
                 return ""
-            }*/
+            }
         }
 
 

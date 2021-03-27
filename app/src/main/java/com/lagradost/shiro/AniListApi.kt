@@ -9,7 +9,6 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.shiro.MainActivity.Companion.activity
 import java.net.URL
-import java.net.URLDecoder
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
@@ -68,7 +67,7 @@ class AniListApi {
                 val expiresIn = sanitizer["expires_in"]!!
                 println("DATA: " + token + "|" + expiresIn)
 
-                val endTime = MainActivity.UnixTime() + expiresIn.toLong()
+                val endTime = MainActivity.unixTime() + expiresIn.toLong()
 
                 DataStore.setKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, endTime)
                 DataStore.setKey(ANILIST_TOKEN_KEY, ANILIST_ACCOUNT_ID, token)
@@ -83,7 +82,7 @@ class AniListApi {
         }
 
         fun checkToken(): Boolean {
-            if (MainActivity.UnixTime() > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
+            if (MainActivity.unixTime() > DataStore.getKey(ANILIST_UNIXTIME_KEY, ANILIST_ACCOUNT_ID, 0L)!!) {
                 activity!!.runOnUiThread {
                     val alertDialog: AlertDialog? = activity?.let {
                         val builder = AlertDialog.Builder(it)

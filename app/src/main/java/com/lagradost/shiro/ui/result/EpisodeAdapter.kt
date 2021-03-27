@@ -27,6 +27,7 @@ import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
+import com.lagradost.shiro.MainActivity.Companion.isDonor
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import kotlinx.android.synthetic.main.download_card.view.*
 import kotlinx.android.synthetic.main.episode_result_compact.view.*
@@ -49,7 +50,7 @@ class EpisodeAdapter(
     var prevFocus: Int? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        resView.spanCount = 2
+        resView.spanCount = if (isDonor) 2 else 3
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.episode_result_compact, parent, false),
             context,
@@ -91,7 +92,8 @@ class EpisodeAdapter(
             val key = data!!._id + position//MainActivity.getViewKey(data!!.url, index, epIndex)
 
 
-            if (true) {
+            if (isDonor) {
+                card.cdi.visibility = View.VISIBLE
                 card.cdi.setOnClickListener {
                     DownloadManager.downloadEpisode(
                         DownloadManager.DownloadInfo(

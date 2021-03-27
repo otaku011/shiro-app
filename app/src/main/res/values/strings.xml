@@ -27,7 +27,7 @@
     <string name="home_recently_updated">Recently Updated</string>
     <string name="home_background_content_description">Background</string>
     <string name="resultpage1">Download something to make it show up here</string>
-    <string name="resultpage2">Donate to download shows</string>
+    <string name="resultpage2">Downloads unavailable</string>
     <string name="error_connecting_reload">Error Connecting, Reload</string>
     <string name="acra_report_toast">Sorry, the application crashed. An anonymous bug report will be sent to the
         developers :)

@@ -89,13 +89,14 @@ class DownloadFragmentChild() : Fragment() {
                 }
 
                 val card: View = layoutInflater.inflate(R.layout.episode_result_downloaded, null)
-                if (child.thumbPath != null) {
+                /*if (child.thumbPath != null) {
                     card.imageView.setImageURI(Uri.parse(child.thumbPath))
                 }
 
-                val key = MainActivity.getViewKey(anilistId!!, 0, child.episodeIndex)
 
-                card.imageView.setOnClickListener {
+                */
+                val key = MainActivity.getViewKey(anilistId!!, 0, child.episodeIndex)
+                card.cardBg.setOnClickListener {
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                     }
@@ -110,8 +111,8 @@ class DownloadFragmentChild() : Fragment() {
                             anilistId
                         )
                     )
-                    //MainActivity.loadPlayer(epIndex, index, data)
                 }
+                //MainActivity.loadPlayer(epIndex, index, data)
                 val title = fixEpTitle(
                     child.videoTitle, child.episodeIndex + 1,
                     parent?.isMovie == true, true

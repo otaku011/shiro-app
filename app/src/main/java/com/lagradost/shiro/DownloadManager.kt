@@ -63,7 +63,7 @@ object DownloadManager {
     val downloadPauseEvent = Event<Int>()
     val downloadDeleteEvent = Event<Int>()
     val downloadStartEvent = Event<String>()
-    val txt = "This is for donors only."
+    val txt = "Not authorized."
     fun init(_context: Context) {
         localContext = _context
         createNotificationChannel()
@@ -257,7 +257,7 @@ object DownloadManager {
             Toast.makeText(activity, txt, Toast.LENGTH_SHORT).show()
             return
         }
-        val id = (info.animeData?.slug + "E${info.episodeIndex}").hashCode()
+        val id = (info.animeData.slug + "E${info.episodeIndex}").hashCode()
 
         if (downloadStatus.containsKey(id)) { // PREVENT DUPLICATE DOWNLOADS
             if (downloadStatus[id] == DownloadStatusType.IsPaused) {

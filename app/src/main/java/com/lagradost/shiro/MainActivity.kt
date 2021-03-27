@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
         var focusRequest: AudioFocusRequest? = null
 
-        fun UnixTime(): Long {
+        fun unixTime(): Long {
             return System.currentTimeMillis() / 1000L
         }
 
@@ -612,8 +612,7 @@ class MainActivity : AppCompatActivity() {
             FastAniApi.init()
         }
         thread {
-            // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
-            isDonor = true//getDonorStatus() == androidId
+            isDonor = getDonorStatus() == androidId
         }
         if (settingsManager.getBoolean("auto_update", true)) {
             thread {
