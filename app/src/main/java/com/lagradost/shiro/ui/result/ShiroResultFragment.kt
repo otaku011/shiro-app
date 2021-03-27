@@ -54,7 +54,6 @@ class ShiroResultFragment : Fragment() {
         fun fixEpTitle(
             _title: String?,
             epNum: Int,
-            seNum: Int,
             isMovie: Boolean,
             formatBefore: Boolean = false,
         ): String {
@@ -64,7 +63,7 @@ class ShiroResultFragment : Fragment() {
             }
             if (!isMovie) {
                 if (formatBefore) {
-                    title = "S$seNum:E$epNum $title" //•
+                    title = "E$epNum $title" //•
                 } else {
                     title = "$epNum. $title"
                 }

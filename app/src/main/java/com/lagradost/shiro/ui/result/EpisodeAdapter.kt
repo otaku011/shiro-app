@@ -49,6 +49,7 @@ class EpisodeAdapter(
     var prevFocus: Int? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        resView.spanCount = 2
         return CardViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.episode_result_compact, parent, false),
             context,
@@ -89,28 +90,29 @@ class EpisodeAdapter(
         fun bind(data: FastAniApi.AnimePageData?, position: Int) {
             val key = data!!._id + position//MainActivity.getViewKey(data!!.url, index, epIndex)
 
-            /*DownloadManager.downloadEpisode(
-                        DownloadManager.DownloadInfo(
-                            index,
-                            epIndex,
-                            data!!.title,
-                            isMovie,
-                            data!!.anilistId,
-                            data!!.id,
-                            data!!.cdnData.seasons[index].episodes[epIndex],
-                            data!!.coverImage.large
-                        )
-                    )*/
 
-            card.cdi.visibility = View.GONE
-            val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
-            param.updateMarginsRelative(
-                card.cardTitle.marginLeft,
-                card.cardTitle.marginTop,
-                10.toPx,
-                card.cardTitle.marginBottom
-            )
-            card.cardTitle.layoutParams = param
+            if (true) {
+                card.cdi.setOnClickListener {
+                    DownloadManager.downloadEpisode(
+                        DownloadManager.DownloadInfo(
+                            position,
+                            data
+                        )
+                    )
+                }
+            } else {
+
+                card.cdi.visibility = View.GONE
+                val param = card.cardTitle.layoutParams as ViewGroup.MarginLayoutParams
+                param.updateMarginsRelative(
+                    card.cardTitle.marginLeft,
+                    card.cardTitle.marginTop,
+                    10.toPx,
+                    card.cardTitle.marginBottom
+                )
+                card.cardTitle.layoutParams = param
+            }
+
 
             itemView.cardBg.setOnClickListener {
                 //Toast.makeText(activity, "Loading link (Don't press shit!)", Toast.LENGTH_LONG).show()
@@ -217,7 +219,7 @@ class EpisodeAdapter(
                                 DataStore.removeKey(DOWNLOAD_CHILD_KEY, key)
                                 Toast.makeText(
                                     context,
-                                    "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
+                                    "${child.videoTitle} E${child.episodeIndex + 1} deleted",
                                     Toast.LENGTH_LONG
                                 ).show()
                                 updateIcon(0)
@@ -238,7 +240,7 @@ class EpisodeAdapter(
                                         })
                                 }
                                 // Set other dialog properties
-                                builder.setTitle("Delete ${child.videoTitle} - S${child.seasonIndex + 1}:E${child.episodeIndex + 1}")
+                                builder.setTitle("Delete ${child.videoTitle} - E${child.episodeIndex + 1}")
 
                                 // Create the AlertDialog
                                 builder.create()
@@ -253,14 +255,8 @@ class EpisodeAdapter(
 
                         fun getDownload(): DownloadManager.DownloadInfo {
                             return DownloadManager.DownloadInfo(
-                                child.seasonIndex,
                                 child.episodeIndex,
-                                FastAniApi.Title(data.name, data.name, data.name),
-                                false,
-                                child.anilistId,
-                                child.fastAniId,
-                                FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
-                                null
+                                data
                             )
                         }
 

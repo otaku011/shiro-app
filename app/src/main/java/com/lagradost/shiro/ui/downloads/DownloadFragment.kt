@@ -56,13 +56,13 @@ class DownloadFragment : Fragment() {
                         }
                         DataStore.removeKey(k)
                     } else {
-                        if (childMetadataKeys.containsKey(child.anilistId)) {
-                            childMetadataKeys[child.anilistId]?.add(k)
+                        if (childMetadataKeys.containsKey(child.slug)) {
+                            childMetadataKeys[child.slug]?.add(k)
                         } else {
-                            childMetadataKeys[child.anilistId] = mutableListOf<String>(k)
+                            childMetadataKeys[child.slug] = mutableListOf<String>(k)
                         }
 
-                        val id = child.anilistId
+                        val id = child.slug
                         println("EPINDEX: " + child.episodeIndex)
                         val isDownloading =
                             DownloadManager.downloadStatus.containsKey(child.internalId) &&
@@ -87,13 +87,13 @@ class DownloadFragment : Fragment() {
                 val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(k)
                 if (parent != null) {
                     println("KEY::: " + k)
-                    if (epData.containsKey(parent.anilistId)) {
+                    if (epData.containsKey(parent.slug)) {
                         val cardView = inflator.inflate(R.layout.download_card, null)
 
-                        cardView.cardTitle.text = parent.title.english
+                        cardView.cardTitle.text = parent.title
                         cardView.imageView.setImageURI(Uri.parse(parent.coverImagePath))
 
-                        val childData = epData[parent.anilistId]!!
+                        val childData = epData[parent.slug]!!
                         val megaBytes = DownloadManager.convertBytesToAny(childData.countBytes, 0, 2.0).toInt()
                         cardView.cardInfo.text =
                             if (parent.isMovie) "$megaBytes MB" else
@@ -104,7 +104,7 @@ class DownloadFragment : Fragment() {
                                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                                 ?.add(
                                     R.id.homeRoot, DownloadFragmentChild.newInstance(
-                                        parent.anilistId
+                                        parent.slug
                                     )
                                 )
                                 ?.commit()

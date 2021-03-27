@@ -14,6 +14,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.isDonor
@@ -85,20 +87,14 @@ object DownloadManager {
     }
 
     data class DownloadEvent(
-        @JsonProperty("animeData") val id: Int,
-        @JsonProperty("animeData") val bytes: Long,
+        @JsonProperty("id") val id: Int,
+        @JsonProperty("bytes") val bytes: Long,
     )
 
     data class DownloadInfo(
         //val card: FastAniApi.Card?,
-        @JsonProperty("animeData") val seasonIndex: Int,
-        @JsonProperty("animeData") val episodeIndex: Int,
-        @JsonProperty("animeData") val title: FastAniApi.Title,
-        @JsonProperty("animeData") val isMovie: Boolean,
-        @JsonProperty("animeData") val anilistId: String,
-        @JsonProperty("animeData") val id: String,
-        @JsonProperty("animeData") val ep: FastAniApi.FullEpisode,
-        @JsonProperty("animeData") val coverImage: String?,
+        @JsonProperty("episodeIndex") val episodeIndex: Int,
+        @JsonProperty("animeData") val animeData: FastAniApi.AnimePageData,
     )
 
     enum class DownloadType {
@@ -122,23 +118,21 @@ object DownloadManager {
     }
 
     data class DownloadParentFileMetadata(
-        @JsonProperty("fastAniId") val fastAniId: String,
-        @JsonProperty("anilistId") val anilistId: String, // ID
-        @JsonProperty("title") val title: FastAniApi.Title,
+        @JsonProperty("title") val title: String,
         @JsonProperty("coverImagePath") val coverImagePath: String,
         @JsonProperty("isMovie") val isMovie: Boolean,
+        @JsonProperty("slug") val slug: String,
     )
 
     data class DownloadFileMetadata(
         @JsonProperty("internalId") val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
-        @JsonProperty("fastAniId") val fastAniId: String,
-        @JsonProperty("anilistId") val anilistId: String, // USED AS PARENT ID
+        @JsonProperty("slug") val slug: String,
+        @JsonProperty("animeData") val animeData: FastAniApi.AnimePageData,
 
         @JsonProperty("thumbPath") val thumbPath: String?,
         @JsonProperty("videoPath") val videoPath: String,
 
         @JsonProperty("videoTitle") val videoTitle: String?,
-        @JsonProperty("seasonIndex") val seasonIndex: Int,
         @JsonProperty("episodeIndex") val episodeIndex: Int,
 
         @JsonProperty("downloadAt") val downloadAt: Long,
@@ -263,7 +257,7 @@ object DownloadManager {
             Toast.makeText(activity, txt, Toast.LENGTH_SHORT).show()
             return
         }
-        val id = (info.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
+        val id = (info.animeData?.slug + "E${info.episodeIndex}").hashCode()
 
         if (downloadStatus.containsKey(id)) { // PREVENT DUPLICATE DOWNLOADS
             if (downloadStatus[id] == DownloadStatusType.IsPaused) {
@@ -284,35 +278,34 @@ object DownloadManager {
             var fullResume = false // IF FULL RESUME
 
             try {
-                val isMovie: Boolean = info.isMovie//info.card.episodes == 1 && info.card.status == "FINISHED"
-                val mainTitle = info.title
-                val ep = info.ep //info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
-                var title = ep.title
-                if (title?.replace(" ", "") == "") {
+                val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
+                val mainTitle = info.animeData.name
+                val ep =
+                    info.animeData.episodes?.get(info.episodeIndex) //info.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
+                var title = mainTitle
+                if (title.replace(" ", "") == "") {
                     title = "Episode " + info.episodeIndex + 1
                 }
 
                 // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
                 val path = activity!!.filesDir.toString() +
                         "/Download/Anime/" +
-                        censorFilename(mainTitle.english) +
+                        censorFilename(mainTitle) +
                         if (isMovie)
                             ".mp4"
                         else
-                            "/" + censorFilename("S${info.seasonIndex + 1}:E${info.episodeIndex + 1} $title") + ".mp4"
+                            "/" + censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
                 val posterPath = path.replace("/Anime/", "/Posters/").replace(".mp4", ".jpg")
-                if (ep.thumb != null) {
-                    downloadPoster(posterPath, ep.thumb)
-                }
+                downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
                 val mainPosterPath =
                     //android.os.Environment.getExternalStorageDirectory().path +
                     activity!!.filesDir.toString() +
                             "/Download/MainPosters/" +
-                            censorFilename(info.title.english) + ".jpg"
-                if (info.coverImage != null) {
-                    downloadPoster(mainPosterPath, info.coverImage)
-                }
+                            censorFilename(info.animeData.name) + ".jpg"
+
+                downloadPoster(mainPosterPath, getFullUrlCdn(info.animeData.image))
+
 
                 // =================== MAKE DIRS ===================
                 val rFile: File = File(path)
@@ -321,7 +314,7 @@ object DownloadManager {
                 } catch (_ex: Exception) {
                     println("FAILED:::$_ex")
                 }
-                val url = ep.file.replace(" ", "%20")
+                val url = ep?.videos?.get(0)?.let { getVideoLink(it.video_id) }
 
                 val _url = URL(url)
 
@@ -393,33 +386,33 @@ object DownloadManager {
                 // =================== SET KEYS ===================
                 DataStore.setKey(
                     DOWNLOAD_CHILD_KEY, id.toString(), // MUST HAVE ID TO NOT OVERRIDE
-                    DownloadFileMetadata(
-                        id,
-                        info.id,
-                        info.anilistId,
-                        if (ep.thumb == null) null else posterPath,
-                        path,
-                        ep.title,
-                        info.seasonIndex,
-                        info.episodeIndex,
-                        System.currentTimeMillis(),
-                        bytesTotal,
-                        url
-                    )
+                    url?.let {
+                        DownloadFileMetadata(
+                            id,
+                            info.animeData.slug,
+                            info.animeData,
+                            posterPath,
+                            path,
+                            title,
+                            info.episodeIndex,
+                            System.currentTimeMillis(),
+                            bytesTotal,
+                            it
+                        )
+                    }
                 )
 
                 DataStore.setKey(
-                    DOWNLOAD_PARENT_KEY, info.anilistId,
+                    DOWNLOAD_PARENT_KEY, info.animeData.slug,
                     DownloadParentFileMetadata(
-                        info.id,
-                        info.anilistId,
-                        info.title,
+                        info.animeData.name,
                         mainPosterPath,
-                        isMovie
+                        isMovie,
+                        info.animeData.slug
                     )
                 )
 
-                downloadStartEvent.invoke(info.anilistId)
+                downloadStartEvent.invoke(info.animeData.slug)
 
                 // =================== DOWNLOAD ===================
                 while (true) {
@@ -518,7 +511,7 @@ object DownloadManager {
     }
 
     private fun showNot(progress: Long, total: Long, progressPerSec: Long, type: DownloadType, info: DownloadInfo) {
-        val isMovie: Boolean = info.isMovie//info.card.episodes == 1 && info.card.status == "FINISHED"
+        val isMovie: Boolean = info.animeData.episodes?.size ?: 0 == 1 && info.animeData.status == "finished"
 
         // Create an explicit intent for an Activity in your app
         val intent = Intent(localContext, MainActivity::class.java).apply {
@@ -528,17 +521,18 @@ object DownloadManager {
 
         val progressPro = minOf(maxOf((progress * 100 / maxOf(total, 1)).toInt(), 0), 100)
 
-        val ep = info.ep//.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
-        val id = (info.anilistId + "S${info.seasonIndex}E${info.episodeIndex}").hashCode()
+        val ep =
+            info.animeData.episodes?.get(info.episodeIndex)//.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
+        val id = (info.animeData?.slug + "E${info.episodeIndex}").hashCode()
 
-        var title = ep.title
-        if (title?.replace(" ", "") == "") {
+        var title = info.animeData.name
+        if (title.replace(" ", "") == "") {
             title = "Episode " + info.episodeIndex + 1
         }
         var body = ""
         if (type == DownloadType.IsDownloading || type == DownloadType.IsPaused || type == DownloadType.IsFailed) {
             if (!isMovie) {
-                body += "S${info.seasonIndex + 1}:E${info.episodeIndex + 1} - ${title}\n"
+                body += "E${info.episodeIndex + 1} - ${title}\n"
             }
             body += "$progressPro % (${convertBytesToAny(progress, 1, 2.0)} MB/${
                 convertBytesToAny(
@@ -562,14 +556,14 @@ object DownloadManager {
             .setContentTitle(
                 when (type) {
                     DownloadType.IsDone -> "Download Done"
-                    DownloadType.IsDownloading -> "${info.title.english} - ${
+                    DownloadType.IsDownloading -> "${info.animeData.name} - ${
                         convertBytesToAny(
                             progressPerSec,
                             2,
                             2.0
                         )
                     } MB/s"
-                    DownloadType.IsPaused -> "${info.title.english} - Paused"
+                    DownloadType.IsPaused -> "${info.animeData.name} - Paused"
                     DownloadType.IsFailed -> "Download Failed"
                     DownloadType.IsStopped -> "Download Stopped"
                 }
@@ -588,12 +582,10 @@ object DownloadManager {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (ep.thumb != null && ep.thumb != "") {
-                val bitmap = getImageBitmapFromUrl(ep.thumb)
-                if (bitmap != null) {
-                    builder.setLargeIcon(bitmap)
-                    builder.setStyle(androidx.media.app.NotificationCompat.MediaStyle()) // NICER IMAGE
-                }
+            val bitmap = getImageBitmapFromUrl(getFullUrlCdn(info.animeData.image))
+            if (bitmap != null) {
+                builder.setLargeIcon(bitmap)
+                builder.setStyle(androidx.media.app.NotificationCompat.MediaStyle()) // NICER IMAGE
             }
         }
         if (body.contains("\n") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -239,7 +239,7 @@ class ResultFragment : Fragment() {
 
                 val key = MainActivity.getViewKey(data!!.anilistId, index, epIndex)
 
-                if (MainActivity.isDonor) {
+                /*if (MainActivity.isDonor) {
                     card.cdi.setOnClickListener {
                         if (data != null) {
                             DownloadManager.downloadEpisode(
@@ -512,7 +512,7 @@ class ResultFragment : Fragment() {
                         }
                     }
                 }
-                title_season_cards.addView(card)
+                title_season_cards.addView(card)*/
             }
         }
     }

@@ -613,7 +613,7 @@ class MainActivity : AppCompatActivity() {
         }
         thread {
             // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
-            isDonor = getDonorStatus() == androidId
+            isDonor = true//getDonorStatus() == androidId
         }
         if (settingsManager.getBoolean("auto_update", true)) {
             thread {

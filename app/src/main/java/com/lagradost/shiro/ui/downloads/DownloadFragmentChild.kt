@@ -73,11 +73,11 @@ class DownloadFragmentChild() : Fragment() {
         // When fastani is down it doesn't report any seasons and this is needed.
         val episodeKeys = DownloadFragment.childMetadataKeys[anilistId]
         val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, anilistId!!)
-        download_header_text.text = parent?.title?.english
+        download_header_text.text = parent?.title
         // Sorts by Seasons and Episode Index
         val sortedEpisodeKeys =
             episodeKeys!!.associateBy({ DataStore.getKey<DownloadManager.DownloadFileMetadata>(it) }, { it }).toList()
-                .sortedBy { (key, _) -> key?.seasonIndex!! * 100000 + key.episodeIndex }.toMap()
+                .sortedBy { (key, _) -> key?.episodeIndex }.toMap()
 
         sortedEpisodeKeys.forEach {
             val child = it.key
@@ -93,7 +93,7 @@ class DownloadFragmentChild() : Fragment() {
                     card.imageView.setImageURI(Uri.parse(child.thumbPath))
                 }
 
-                val key = MainActivity.getViewKey(anilistId!!, child.seasonIndex, child.episodeIndex)
+                val key = MainActivity.getViewKey(anilistId!!, 0, child.episodeIndex)
 
                 card.imageView.setOnClickListener {
                     if (save) {
@@ -104,7 +104,7 @@ class DownloadFragmentChild() : Fragment() {
                             child.videoTitle,
                             child.videoPath,
                             child.episodeIndex,
-                            child.seasonIndex,
+                            0,
                             null,
                             null,
                             anilistId
@@ -113,7 +113,7 @@ class DownloadFragmentChild() : Fragment() {
                     //MainActivity.loadPlayer(epIndex, index, data)
                 }
                 val title = fixEpTitle(
-                    child.videoTitle, child.episodeIndex + 1, child.seasonIndex + 1,
+                    child.videoTitle, child.episodeIndex + 1,
                     parent?.isMovie == true, true
                 )
 
@@ -127,7 +127,7 @@ class DownloadFragmentChild() : Fragment() {
                         DataStore.removeKey(it.value)
                         Toast.makeText(
                             context,
-                            "${child.videoTitle} S${child.seasonIndex + 1}:E${child.episodeIndex + 1} deleted",
+                            "${child.videoTitle} E${child.episodeIndex + 1} deleted",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -147,7 +147,7 @@ class DownloadFragmentChild() : Fragment() {
                                 })
                         }
                         // Set other dialog properties
-                        builder.setTitle("Delete ${child.videoTitle} - S${child.seasonIndex + 1}:E${child.episodeIndex + 1}")
+                        builder.setTitle("Delete ${child.videoTitle} - E${child.episodeIndex + 1}")
 
                         // Create the AlertDialog
                         builder.create()
@@ -186,14 +186,8 @@ class DownloadFragmentChild() : Fragment() {
 
                 fun getDownload(): DownloadManager.DownloadInfo {
                     return DownloadManager.DownloadInfo(
-                        child.seasonIndex,
                         child.episodeIndex,
-                        parent!!.title,
-                        parent.isMovie,
-                        child.anilistId,
-                        child.fastAniId,
-                        FastAniApi.FullEpisode(child.downloadFileUrl, child.videoTitle, child.thumbPath),
-                        null
+                        child.animeData
                     )
                 }
 
@@ -295,7 +289,7 @@ class DownloadFragmentChild() : Fragment() {
                     )
                 }
 
-                val pro = MainActivity.getViewPosDur(anilistId!!, child.seasonIndex, child.episodeIndex)
+                val pro = MainActivity.getViewPosDur(anilistId!!, 0, child.episodeIndex)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
                     if (progress < 5) {

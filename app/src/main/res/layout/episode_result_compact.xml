@@ -23,7 +23,6 @@
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
 
 
-
         <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
         <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/video_progress"
@@ -35,19 +34,41 @@
                 style="@android:style/Widget.Material.ProgressBar.Horizontal"
                 android:layout_height="wrap_content">
         </androidx.core.widget.ContentLoadingProgressBar>
-        <TextView
-                android:id="@+id/cardTitle"
-                android:layout_margin="10dp"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:textSize="15sp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="160dp"
-                android:layout_marginEnd="50dp"
-        >
-        </TextView>
+        <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
+                                                           android:layout_height="match_parent">
 
+            <TextView
+                    android:id="@+id/cardTitle"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/cdi"
+                    android:layout_margin="10dp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textSize="15sp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="160dp"
+                    android:layout_marginEnd="50dp"
+            >
+            </TextView>
+
+            <ImageView android:layout_width="40dp"
+                       android:layout_height="40dp"
+                       android:layout_margin="10dp"
+                       app:layout_constraintBottom_toBottomOf="parent"
+                       app:layout_constraintTop_toTopOf="parent"
+                       app:layout_constraintStart_toEndOf="@id/cardTitle"
+                       app:layout_constraintEnd_toEndOf="parent"
+                       android:src="@drawable/netflix_download"
+                       android:id="@+id/cdi"
+                       android:nextFocusRight="@+id/episode_result_root"
+                       android:nextFocusLeft="@+id/episode_result_root"
+                       android:layout_gravity="end|center_vertical"
+                       android:background="?android:attr/selectableItemBackgroundBorderless"
+            />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageView android:layout_width="40dp" android:layout_height="40dp" android:layout_margin="10dp"
                    android:src="@drawable/exo_icon_stop"
@@ -58,16 +79,6 @@
                    android:visibility="gone"
         />
 
-        <ImageView android:layout_width="40dp"
-                   android:layout_height="40dp"
-                   android:layout_margin="10dp"
-                   android:src="@drawable/netflix_download"
-                   android:id="@+id/cdi"
-                   android:nextFocusRight="@+id/episode_result_root"
-                   android:nextFocusLeft="@+id/episode_result_root"
-                   android:layout_gravity="end|center_vertical"
-                   android:background="?android:attr/selectableItemBackgroundBorderless"
-        />
         <ProgressBar
                 android:layout_width="40dp"
                 android:layout_height="40dp"
