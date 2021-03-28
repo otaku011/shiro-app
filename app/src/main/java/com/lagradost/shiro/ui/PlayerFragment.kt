@@ -14,7 +14,6 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
-import java.lang.Exception
 import android.view.animation.AlphaAnimation
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import android.app.RemoteAction
@@ -52,12 +51,11 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.lagradost.shiro.FastAniApi.Companion.USER_AGENT
-import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
+import com.lagradost.shiro.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
 import com.lagradost.shiro.MainActivity.Companion.hideSystemUI
-import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
 import com.lagradost.shiro.R
 import java.io.File
 import kotlin.collections.ArrayList
@@ -81,9 +79,9 @@ data class PlayerData(
 
     @JsonProperty("episodeIndex") var episodeIndex: Int?,
     @JsonProperty("seasonIndex") var seasonIndex: Int?,
-    @JsonProperty("card") val card: FastAniApi.AnimePageData?,
+    @JsonProperty("card") val card: ShiroApi.AnimePageData?,
     @JsonProperty("startAt") val startAt: Long?,
-    @JsonProperty("anilistId") val anilistId: String?,
+    @JsonProperty("slug") val slug: String,
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -257,7 +255,7 @@ class PlayerFragment() : Fragment() {
         }
     }
 
-    private fun getCurrentEpisode(): FastAniApi.ShiroEpisodes? {
+    private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
         return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
@@ -282,7 +280,7 @@ class PlayerFragment() : Fragment() {
 
     fun savePos() {
         if (this::exoPlayer.isInitialized) {
-            if (((data?.anilistId != null
+            if (((data?.slug != null
                         && data?.seasonIndex != null
                         && data?.episodeIndex != null) || data?.card != null)
                 && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
@@ -825,10 +823,9 @@ class PlayerFragment() : Fragment() {
                             }
                         }
                     }
-                    if (data?.card != null || (data?.anilistId != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
+                    if (data?.card != null || (data?.slug != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
                         val pro = getViewPosDur(
-                            if (data?.card != null) data?.card!!.slug else data?.anilistId!!,
-                            data?.seasonIndex!!,
+                            if (data?.card != null) data?.card!!.slug else data?.slug!!,
                             data?.episodeIndex!!
                         )
                         playbackPosition =
@@ -849,7 +846,6 @@ class PlayerFragment() : Fragment() {
                                 data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1
                             val key = MainActivity.getViewKey(
                                 data?.card!!.slug,
-                                0,
                                 data!!.episodeIndex!! + 1
                             )
                             DataStore.removeKey(VIEW_POS_KEY, key)
@@ -968,7 +964,7 @@ class PlayerFragment() : Fragment() {
         super.onStart()
         hideSystemUI()
         if (data?.card != null) {
-            val pro = getViewPosDur(data?.card!!.slug, data?.seasonIndex!!, data?.episodeIndex!!)
+            val pro = getViewPosDur(data?.card!!.slug, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }

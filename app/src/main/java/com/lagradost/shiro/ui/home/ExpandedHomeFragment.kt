@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.FastAniApi
+import com.lagradost.shiro.ShiroApi
 import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
 import com.lagradost.shiro.R
 import kotlinx.android.synthetic.main.fragment_expanded_home.*
@@ -23,7 +23,7 @@ private const val spanCountLandscape = 6
 private const val spanCountPortrait = 3
 
 class ExpandedHomeFragment : Fragment() {
-    private var cardList: List<FastAniApi.AnimePageData?>? = null
+    private var cardList: List<ShiroApi.AnimePageData?>? = null
     private var title: String? = null
     val mapper = JsonMapper.builder().addModule(KotlinModule())
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build()
@@ -77,7 +77,7 @@ class ExpandedHomeFragment : Fragment() {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             CardAdapter(
                 it,
-                ArrayList<FastAniApi.AnimePageData?>(),
+                ArrayList<ShiroApi.AnimePageData?>(),
                 expanded_card_list_view,
             )
         }
@@ -85,7 +85,7 @@ class ExpandedHomeFragment : Fragment() {
         val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
         val filteredData = if (hideDubbed) cardList?.filter { it?.name?.endsWith("Dubbed") == false } else cardList
         expanded_card_list_view.adapter = adapter
-        (expanded_card_list_view.adapter as CardAdapter).cardList = filteredData as ArrayList<FastAniApi.AnimePageData?>
+        (expanded_card_list_view.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.AnimePageData?>
         (expanded_card_list_view.adapter as CardAdapter).notifyDataSetChanged()
 
     }

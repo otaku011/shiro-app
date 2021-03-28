@@ -2,7 +2,6 @@ package com.lagradost.shiro.ui.settings
 
 import android.content.*
 import android.content.pm.ActivityInfo
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
@@ -11,7 +10,6 @@ import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
-import com.google.android.exoplayer2.offline.Download
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.getKeys
 import com.lagradost.shiro.DataStore.removeKeys
@@ -50,7 +48,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                 ).show()
                             }
                             thread {
-                                FastAniApi.requestHome(true)
+                                ShiroApi.requestHome(true)
                             }
                             clearHistory.summary = "0 items"
                         })
@@ -198,7 +196,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val checkUpdates = findPreference("check_updates") as Preference?
         checkUpdates?.setOnPreferenceClickListener {
             thread {
-                val update = FastAniApi.getAppUpdate()
+                val update = ShiroApi.getAppUpdate()
                 activity?.runOnUiThread {
                     if (update.shouldUpdate && update.updateVersion != null && update.updateURL != null) {
                         //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))

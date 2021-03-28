@@ -17,7 +17,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.shiro.R
-import com.lagradost.shiro.FastAniApi
+import com.lagradost.shiro.ShiroApi
 import com.lagradost.shiro.MainActivity
 import com.lagradost.shiro.toPx
 import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
@@ -57,7 +57,7 @@ class SearchFragment : Fragment() {
         val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
             ResAdapter(
                 it,
-                ArrayList<FastAniApi.ShiroSearchResponseShow>(),
+                ArrayList<ShiroApi.ShiroSearchResponseShow>(),
                 cardSpace,
             )
         }
@@ -70,7 +70,7 @@ class SearchFragment : Fragment() {
                 (cardSpace.adapter as ResAdapter).cardList.clear()
 
                 thread {
-                    val data = FastAniApi.search(query)
+                    val data = ShiroApi.search(query)
                     activity?.runOnUiThread {
                         if (data == null) {
                             Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
@@ -80,7 +80,7 @@ class SearchFragment : Fragment() {
                                 if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
                             progress_bar.visibility = View.GONE // GONE for remove space, INVISIBLE for just alpha = 0
                             (cardSpace.adapter as ResAdapter).cardList =
-                                filteredData as ArrayList<FastAniApi.ShiroSearchResponseShow>
+                                filteredData as ArrayList<ShiroApi.ShiroSearchResponseShow>
                             (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                         }
                     }
@@ -94,7 +94,7 @@ class SearchFragment : Fragment() {
                 if (newText != "") {
                     progress_bar.visibility = View.VISIBLE
                     thread {
-                        val data = FastAniApi.quickSearch(newText)
+                        val data = ShiroApi.quickSearch(newText)
                         activity?.runOnUiThread {
                             if (data == null) {
                                 Toast.makeText(activity, "Server error", Toast.LENGTH_LONG).show()
@@ -105,7 +105,7 @@ class SearchFragment : Fragment() {
                                 val filteredData =
                                     if (hideDubbed) data.filter { !it.name.endsWith("Dubbed") } else data
                                 (cardSpace.adapter as ResAdapter).cardList =
-                                    filteredData as ArrayList<FastAniApi.ShiroSearchResponseShow>
+                                    filteredData as ArrayList<ShiroApi.ShiroSearchResponseShow>
                                 (cardSpace.adapter as ResAdapter).notifyDataSetChanged()
                             }
                         }

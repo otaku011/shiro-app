@@ -34,12 +34,12 @@ import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isViewState
 
 
 class DownloadFragmentChild() : Fragment() {
-    var anilistId: String? = null
+    var slug: String? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
-        arguments?.getString("anilist_id")?.let {
-            anilistId = it
+        arguments?.getString("slug")?.let {
+            slug = it
         }
         val topParams: LinearLayout.LayoutParams = LinearLayout.LayoutParams(
             LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
@@ -50,7 +50,6 @@ class DownloadFragmentChild() : Fragment() {
         download_go_back.setOnClickListener {
             MainActivity.popCurrentPage()
         }
-        println("ANILIST: " + anilistId)
         loadData()
     }
 
@@ -71,8 +70,8 @@ class DownloadFragmentChild() : Fragment() {
         val save = settingsManager.getBoolean("save_history", true)
 
         // When fastani is down it doesn't report any seasons and this is needed.
-        val episodeKeys = DownloadFragment.childMetadataKeys[anilistId]
-        val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, anilistId!!)
+        val episodeKeys = DownloadFragment.childMetadataKeys[slug]
+        val parent = DataStore.getKey<DownloadManager.DownloadParentFileMetadata>(DOWNLOAD_PARENT_KEY, slug!!)
         download_header_text.text = parent?.title
         // Sorts by Seasons and Episode Index
         val sortedEpisodeKeys =
@@ -95,7 +94,7 @@ class DownloadFragmentChild() : Fragment() {
 
 
                 */
-                val key = MainActivity.getViewKey(anilistId!!, 0, child.episodeIndex)
+                val key = MainActivity.getViewKey(slug!!, child.episodeIndex)
                 card.cardBg.setOnClickListener {
                     if (save) {
                         DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
@@ -108,7 +107,7 @@ class DownloadFragmentChild() : Fragment() {
                             0,
                             null,
                             null,
-                            anilistId
+                            slug!!
                         )
                     )
                 }
@@ -272,8 +271,8 @@ class DownloadFragmentChild() : Fragment() {
 
                 DownloadManager.downloadEvent += {
                     activity?.runOnUiThread {
-                        if (it.id == child.internalId) {
-                            val megaBytes = DownloadManager.convertBytesToAny(it.bytes, 0, 2.0).toInt()
+                        if (it.downloadEvent.id == child.internalId) {
+                            val megaBytes = DownloadManager.convertBytesToAny(it.downloadEvent.bytes, 0, 2.0).toInt()
                             card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
                             card.progressBar.progress = maxOf(minOf(megaBytes * 100 / megaBytesTotal, 100), 0)
                             updateIcon(megaBytes)
@@ -290,7 +289,7 @@ class DownloadFragmentChild() : Fragment() {
                     )
                 }
 
-                val pro = MainActivity.getViewPosDur(anilistId!!, 0, child.episodeIndex)
+                val pro = MainActivity.getViewPosDur(slug!!,  child.episodeIndex)
                 if (pro.dur > 0 && pro.pos > 0) {
                     var progress: Int = (pro.pos * 100L / pro.dur).toInt()
                     if (progress < 5) {
@@ -321,7 +320,7 @@ class DownloadFragmentChild() : Fragment() {
         fun newInstance(_anilistId: String) =
             DownloadFragmentChild().apply {
                 arguments = Bundle().apply {
-                    putString("anilist_id", _anilistId)
+                    putString("slug", _anilistId)
                 }
             }
     }

@@ -13,8 +13,8 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.FastAniApi.Companion.requestHome
+import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
 import com.lagradost.shiro.ui.GlideApp

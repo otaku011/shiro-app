@@ -11,7 +11,7 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.ui.GlideApp
 import kotlinx.android.synthetic.main.home_card.view.*
@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.home_card.view.*
 
 class CardAdapter(
     context: Context,
-    animeList: ArrayList<FastAniApi.AnimePageData?>,
+    animeList: ArrayList<ShiroApi.AnimePageData?>,
     resView: RecyclerView
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -52,7 +52,7 @@ class CardAdapter(
     constructor(itemView: View, _context: Context, resView: RecyclerView) : RecyclerView.ViewHolder(itemView) {
         val context = _context
         val card: ImageView = itemView.imageView
-        fun bind(cardInfo: FastAniApi.AnimePageData?) {
+        fun bind(cardInfo: ShiroApi.AnimePageData?) {
             if (cardInfo != null) {
                 val glideUrl =
                     GlideUrl(getFullUrlCdn(cardInfo.image))

@@ -38,7 +38,7 @@
         <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
         <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/video_progress"
-                android:layout_width="142dp"
+                android:layout_width="match_parent"
                 android:indeterminate="false"
                 android:layout_gravity="start|bottom"
 

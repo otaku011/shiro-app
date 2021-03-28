@@ -19,11 +19,11 @@ import androidx.transition.TransitionManager
 import com.bumptech.glide.load.model.GlideUrl
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.mapper
-import com.lagradost.shiro.FastAniApi.Companion.cachedHome
-import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.FastAniApi.Companion.getRandomAnimePage
-import com.lagradost.shiro.FastAniApi.Companion.requestHome
+import com.lagradost.shiro.ShiroApi.Companion.cachedHome
+import com.lagradost.shiro.ShiroApi.Companion.getAnimePage
+import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ShiroApi.Companion.getRandomAnimePage
+import com.lagradost.shiro.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.getNextEpisode
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
 import com.lagradost.shiro.ui.GlideApp
@@ -52,7 +52,7 @@ class HomeFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    private fun homeLoaded(data: FastAniApi.ShiroHomePage?) {
+    private fun homeLoaded(data: ShiroApi.ShiroHomePage?) {
         activity?.runOnUiThread {
 
             /*trending_anime_scroll_view.removeAllViews()
@@ -83,11 +83,11 @@ class HomeFragment : Fragment() {
 
             generateRandom(data?.random)
 
-            fun displayCardData(data: List<FastAniApi.AnimePageData?>?, scrollView: RecyclerView, textView: TextView) {
+            fun displayCardData(data: List<ShiroApi.AnimePageData?>?, scrollView: RecyclerView, textView: TextView) {
                 val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                     CardAdapter(
                         it,
-                        ArrayList<FastAniApi.AnimePageData?>(),
+                        ArrayList<ShiroApi.AnimePageData?>(),
                         scrollView,
                     )
                 }
@@ -95,7 +95,7 @@ class HomeFragment : Fragment() {
                 val hideDubbed = settingsManager.getBoolean("hide_dubbed", false)
                 val filteredData = if (hideDubbed) data?.filter { it?.name?.endsWith("Dubbed") == false } else data
                 scrollView.adapter = adapter
-                (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<FastAniApi.AnimePageData?>
+                (scrollView.adapter as CardAdapter).cardList = filteredData as ArrayList<ShiroApi.AnimePageData?>
                 (scrollView.adapter as CardAdapter).notifyDataSetChanged()
 
 
@@ -205,10 +205,10 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun generateRandom(randomPage: FastAniApi.AnimePage? = null) {
+    private fun generateRandom(randomPage: ShiroApi.AnimePage? = null) {
 
         thread {
-            val random: FastAniApi.AnimePage? = randomPage ?: getRandomAnimePage()
+            val random: ShiroApi.AnimePage? = randomPage ?: getRandomAnimePage()
             cachedHome?.random = random
             val randomData = random?.data
             requireActivity().runOnUiThread {
@@ -229,7 +229,7 @@ class HomeFragment : Fragment() {
                     main_layout.layoutParams = marginParams
 
                     val glideUrlMain =
-                        GlideUrl(getFullUrlCdn(randomData.image)) { FastAniApi.currentHeaders }
+                        GlideUrl(getFullUrlCdn(randomData.image)) { ShiroApi.currentHeaders }
                     context?.let {
                         GlideApp.with(it)
                             .load(glideUrlMain)
@@ -299,7 +299,7 @@ class HomeFragment : Fragment() {
                     main_reload_data_btt.isClickable = false
                     thread {
                         if (fullRe) {
-                            FastAniApi.init()
+                            ShiroApi.init()
                         } else {
                             requestHome(false)
                         }
@@ -312,9 +312,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         main_scroll.alpha = 0f
-        FastAniApi.onHomeError += ::onHomeErrorCatch
-        if (FastAniApi.hasThrownError != -1) {
-            onHomeErrorCatch(FastAniApi.hasThrownError == 1)
+        ShiroApi.onHomeError += ::onHomeErrorCatch
+        if (ShiroApi.hasThrownError != -1) {
+            onHomeErrorCatch(ShiroApi.hasThrownError == 1)
         }
         // CAUSES CRASH ON 6.0.0
         /*main_scroll.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->

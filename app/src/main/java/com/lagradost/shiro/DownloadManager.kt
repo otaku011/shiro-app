@@ -14,8 +14,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
+import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.isDonor
@@ -59,7 +59,9 @@ object DownloadManager {
     private var localContext: Context? = null
     val downloadStatus = hashMapOf<Int, DownloadStatusType>()
     val downloadMustUpdateStatus = hashMapOf<Int, Boolean>()
-    val downloadEvent = Event<DownloadEvent>()
+
+    // THIS IS GLUE TO MAKE IT INVOKE WITH ON PARAMETER
+    val downloadEvent = Event<DownloadEventAndChild>()
     val downloadPauseEvent = Event<Int>()
     val downloadDeleteEvent = Event<Int>()
     val downloadStartEvent = Event<String>()
@@ -94,7 +96,7 @@ object DownloadManager {
     data class DownloadInfo(
         //val card: FastAniApi.Card?,
         @JsonProperty("episodeIndex") val episodeIndex: Int,
-        @JsonProperty("animeData") val animeData: FastAniApi.AnimePageData,
+        @JsonProperty("animeData") val animeData: ShiroApi.AnimePageData,
     )
 
     enum class DownloadType {
@@ -124,10 +126,16 @@ object DownloadManager {
         @JsonProperty("slug") val slug: String,
     )
 
+    // Glue for invoke()
+    data class DownloadEventAndChild(
+        @JsonProperty("downloadEvent") val downloadEvent: DownloadEvent,
+        @JsonProperty("child") val child: DownloadFileMetadata,
+    )
+
     data class DownloadFileMetadata(
         @JsonProperty("internalId") val internalId: Int, // UNIQUE ID BASED ON aniListId season and index
         @JsonProperty("slug") val slug: String,
-        @JsonProperty("animeData") val animeData: FastAniApi.AnimePageData,
+        @JsonProperty("animeData") val animeData: ShiroApi.AnimePageData,
 
         @JsonProperty("thumbPath") val thumbPath: String?,
         @JsonProperty("videoPath") val videoPath: String,
@@ -223,8 +231,8 @@ object DownloadManager {
                 println("RRLL: " + rUrl)
                 val _url = URL(rUrl)
                 val connection: URLConnection = _url.openConnection()
-                for (k in FastAniApi.currentHeaders?.keys!!) {
-                    connection.setRequestProperty(k, FastAniApi.currentHeaders!![k])
+                for (k in ShiroApi.currentHeaders?.keys!!) {
+                    connection.setRequestProperty(k, ShiroApi.currentHeaders!![k])
                 }
 
                 val input: InputStream = BufferedInputStream(connection.inputStream)
@@ -384,22 +392,23 @@ object DownloadManager {
                 var lastUpdate = System.currentTimeMillis()
 
                 // =================== SET KEYS ===================
+                val child = url?.let {
+                    DownloadFileMetadata(
+                        id,
+                        info.animeData.slug,
+                        info.animeData,
+                        posterPath,
+                        path,
+                        title,
+                        info.episodeIndex,
+                        System.currentTimeMillis(),
+                        bytesTotal,
+                        it
+                    )
+                }
                 DataStore.setKey(
                     DOWNLOAD_CHILD_KEY, id.toString(), // MUST HAVE ID TO NOT OVERRIDE
-                    url?.let {
-                        DownloadFileMetadata(
-                            id,
-                            info.animeData.slug,
-                            info.animeData,
-                            posterPath,
-                            path,
-                            title,
-                            info.episodeIndex,
-                            System.currentTimeMillis(),
-                            bytesTotal,
-                            it
-                        )
-                    }
+                    child
                 )
 
                 DataStore.setKey(
@@ -456,8 +465,11 @@ object DownloadManager {
 
                                     info
                                 )
-
-                                downloadEvent.invoke(DownloadEvent(id, bytesRead))
+                                child?.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }?.let {
+                                    downloadEvent.invoke(
+                                        it
+                                    )
+                                }
 
                                 lastUpdate = currentTime
                                 bytesPerSec = 0
@@ -490,7 +502,11 @@ object DownloadManager {
                     }
                 } else {
                     showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
-                    downloadEvent.invoke(DownloadEvent(id, bytesRead))
+                    child?.let { DownloadEventAndChild(DownloadEvent(id, bytesRead), it) }?.let {
+                        downloadEvent.invoke(
+                            it
+                        )
+                    }
                 }
 
                 output.flush()
@@ -523,7 +539,7 @@ object DownloadManager {
 
         val ep =
             info.animeData.episodes?.get(info.episodeIndex)//.card.cdnData.seasons[info.seasonIndex].episodes[info.episodeIndex]
-        val id = (info.animeData?.slug + "E${info.episodeIndex}").hashCode()
+        val id = (info.animeData.slug + "E${info.episodeIndex}").hashCode()
 
         var title = info.animeData.name
         if (title.replace(" ", "") == "") {
@@ -769,7 +785,7 @@ object DownloadManager {
                                     info
                                 )*/
 
-                                downloadEvent.invoke(DownloadEvent(-1, bytesRead))
+                                //downloadEvent.invoke(DownloadEvent(-1, bytesRead))
 
                                 lastUpdate = currentTime
                                 bytesPerSec = 0
@@ -802,7 +818,7 @@ object DownloadManager {
                     }
                 } else {
                     //showNot(bytesRead, bytesTotal, 0, DownloadType.IsDone, info)
-                    downloadEvent.invoke(DownloadEvent(-1, bytesRead))
+                    //downloadEvent.invoke(DownloadEvent(-1, bytesRead))
                 }
 
                 output.flush()

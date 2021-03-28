@@ -26,15 +26,14 @@ import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.CastStateListener
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.mapper
-import com.lagradost.shiro.FastAniApi.Companion.getAnimePage
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.FastAniApi.Companion.requestHome
+import com.lagradost.shiro.ShiroApi.Companion.getAnimePage
+import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
 import com.lagradost.shiro.MainActivity.Companion.isCastApiAvailable
 import com.lagradost.shiro.MainActivity.Companion.popCurrentPage
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
-import com.lagradost.shiro.ui.search.SearchFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_results_new.*
 import kotlin.concurrent.thread
@@ -43,7 +42,7 @@ import kotlin.concurrent.thread
 const val DESCRIPTION_LENGTH1 = 200
 
 class ShiroResultFragment : Fragment() {
-    var data: FastAniApi.AnimePageData? = null
+    var data: ShiroApi.AnimePageData? = null
     private lateinit var resultViewModel: ResultViewModel
     private var isMovie: Boolean = false
     var isBookmarked = false
@@ -71,7 +70,7 @@ class ShiroResultFragment : Fragment() {
             return title
         }
 
-        fun newInstance(data: FastAniApi.ShiroSearchResponseShow) =
+        fun newInstance(data: ShiroApi.ShiroSearchResponseShow) =
             ShiroResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
@@ -79,7 +78,7 @@ class ShiroResultFragment : Fragment() {
                 }
             }
 
-        fun newInstance(data: FastAniApi.AnimePageData) =
+        fun newInstance(data: ShiroApi.AnimePageData) =
             ShiroResultFragment().apply {
                 arguments = Bundle().apply {
                     //println(data)
@@ -231,14 +230,14 @@ class ShiroResultFragment : Fragment() {
         super.onAttach(context)
         arguments?.getString("ShiroSearchResponseShow")?.let {
             thread {
-                data = getAnimePage(mapper.readValue(it, FastAniApi.ShiroSearchResponseShow::class.java))?.data
+                data = getAnimePage(mapper.readValue(it, ShiroApi.ShiroSearchResponseShow::class.java))?.data
                 onLoaded.invoke(true)
             }
         }
         // Kinda hacky solution, but works
         arguments?.getString("AnimePageData")?.let {
             thread {
-                val pageData = mapper.readValue(it, FastAniApi.AnimePageData::class.java)
+                val pageData = mapper.readValue(it, ShiroApi.AnimePageData::class.java)
                 println("DATA $pageData")
                 data = getAnimePage(
                     pageData.slug
@@ -329,15 +328,12 @@ class ShiroResultFragment : Fragment() {
         loadSeason()
     }
 
-    fun onDownloadStarted(anilistId: String) {
-        /*if (anilistId == data!!.anilistId) {
-            activity?.runOnUiThread {
-                loadSeason(currentSeasonIndex)
-            }
-        }*/
+    fun onDownloadStarted(id: String) {
+        requireActivity().runOnUiThread {
+            (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
+        }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true

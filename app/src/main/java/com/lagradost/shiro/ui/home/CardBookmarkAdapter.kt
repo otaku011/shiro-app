@@ -53,7 +53,7 @@ class CardBookmarkAdapter(
         fun bind(cardInfo: BookmarkedTitle?) {
             if (cardInfo != null) {
                 val glideUrl =
-                    GlideUrl(FastAniApi.getFullUrlCdn(cardInfo.image))
+                    GlideUrl(ShiroApi.getFullUrlCdn(cardInfo.image))
                 //  activity?.runOnUiThread {
                 context.let {
                     GlideApp.with(it)

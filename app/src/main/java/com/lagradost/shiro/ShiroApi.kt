@@ -17,7 +17,7 @@ import java.lang.Exception
 import java.net.URLEncoder
 import kotlin.concurrent.thread
 
-class FastAniApi {
+class ShiroApi {
     data class HomePageResponse(
         @JsonProperty("animeData") val animeData: AnimeData,
         @JsonProperty("homeSlidesData") val homeSlidesData: List<Card>,
@@ -507,7 +507,7 @@ class FastAniApi {
             }
         }
 
-        private fun getLastWatch(): List<LastEpisodeInfo?> {
+        fun getLastWatch(): List<LastEpisodeInfo?> {
             val keys = DataStore.getKeys(VIEW_LST_KEY)
             println("KEYS: $keys")
             thread {
@@ -518,17 +518,6 @@ class FastAniApi {
             return (DataStore.getKeys(VIEW_LST_KEY).map {
                 DataStore.getKey<LastEpisodeInfo>(it)
             }).sortedBy { if (it == null) 0 else -(it.seenAt) }
-        }
-
-        private fun getFullFav() {
-
-            /*
-            fullBookmarks.clear()
-            for (b in books) {
-                if (b != null) {
-                    fullBookmarks[b.anilistId] = b
-                }
-            }*/
         }
 
         fun requestHome(canBeCached: Boolean = true): HomePageResponse? {

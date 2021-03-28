@@ -1,21 +1,16 @@
 package com.lagradost.shiro.ui.home
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.lagradost.shiro.FastAniApi
-import com.lagradost.shiro.FastAniApi.Companion.getHome
-import com.lagradost.shiro.FastAniApi.Companion.requestHome
-import kotlinx.coroutines.launch
+import com.lagradost.shiro.ShiroApi
 
 class HomeViewModel : ViewModel() {
 
-    val apiData = MutableLiveData<FastAniApi.ShiroHomePage>().apply {
-        FastAniApi.onHomeFetched += ::homeLoaded
+    val apiData = MutableLiveData<ShiroApi.ShiroHomePage>().apply {
+        ShiroApi.onHomeFetched += ::homeLoaded
     }
 
-    private fun homeLoaded(data: FastAniApi.ShiroHomePage?) {
+    private fun homeLoaded(data: ShiroApi.ShiroHomePage?) {
         apiData.postValue(data!!)
     }
 }
