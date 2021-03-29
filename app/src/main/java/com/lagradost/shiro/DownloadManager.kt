@@ -496,7 +496,7 @@ object DownloadManager {
                     }
                 }
 
-                if (fullResume) { // IF FULL RESUME DELETE CURRENT AND DONT SHOW DONE
+                if (fullResume) { // IF FULL RESUME DELETE CURRENT AND DON'T SHOW DONE
                     with(NotificationManagerCompat.from(localContext!!)) {
                         cancel(id)
                     }

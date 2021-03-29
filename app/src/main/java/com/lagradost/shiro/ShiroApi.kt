@@ -378,6 +378,7 @@ class ShiroApi {
 
         // TODO MAKE THIS ONE FUNCTION
         fun getAnimePage(slug: String): AnimePage? {
+            println("Get anime $slug")
             val url = "https://tapi.shiro.is/anime/slug/${slug}?token=${currentToken?.token}"
             return try {
                 val response = khttp.get(url, timeout = 120.0)

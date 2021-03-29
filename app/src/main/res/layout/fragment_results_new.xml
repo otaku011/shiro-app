@@ -221,11 +221,13 @@
 
                         </TextView>
                     </LinearLayout>
+
                     <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:layout_marginBottom="5dp"
+                            android:id="@+id/episodes_text_holder"
                     >
                         <androidx.cardview.widget.CardView
                                 android:backgroundTint="@color/textColorGray"
@@ -259,7 +261,7 @@
                                 android:backgroundTint="@color/textColorGray"
                                 android:layout_marginEnd="20dp"
                                 android:layout_marginStart="20dp"
-                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintEnd_toStartOf="@id/language_button"
                                 app:layout_constraintStart_toEndOf="@id/episodes_text"
                                 app:layout_constraintTop_toTopOf="parent"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -269,6 +271,24 @@
                         >
 
                         </androidx.cardview.widget.CardView>
+
+                        <ImageView
+                                android:id="@+id/language_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1"
+                                app:layout_constraintStart_toEndOf="@id/episodes_text"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:layout_marginEnd="20dp"
+                                android:src="@drawable/ic_baseline_language_24"
+                                android:visibility="gone"
+                                tools:visibility="visible"
+                        >
+
+                        </ImageView>
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
                     <com.lagradost.shiro.ui.AutofitRecyclerView
                             android:clipToPadding="false"

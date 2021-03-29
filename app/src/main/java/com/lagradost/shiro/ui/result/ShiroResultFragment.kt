@@ -1,6 +1,5 @@
 package com.lagradost.shiro.ui.result
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.Html
@@ -10,6 +9,7 @@ import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.*
@@ -43,9 +43,14 @@ const val DESCRIPTION_LENGTH1 = 200
 
 class ShiroResultFragment : Fragment() {
     var data: ShiroApi.AnimePageData? = null
+    var dataOther: ShiroApi.AnimePageData? = null
+    var isDefaultData = true
+
     private lateinit var resultViewModel: ResultViewModel
     private var isMovie: Boolean = false
     var isBookmarked = false
+    var isSubbed: Boolean? = null
+
 
     companion object {
         var isInResults: Boolean = false
@@ -108,9 +113,22 @@ class ShiroResultFragment : Fragment() {
     }
 
     var onLoaded = Event<Boolean>()
+    var onLoadedOther = Event<Boolean>()
+
+    private fun onLoadOtherEvent(isSucc: Boolean) {
+        activity?.runOnUiThread {
+            val transition: Transition = ChangeBounds()
+            transition.duration = 100
+
+            language_button.visibility = VISIBLE
+            TransitionManager.beginDelayedTransition(episodes_text_holder, transition)
+        }
+    }
+
 
     private fun onLoadEvent(isSucc: Boolean) {
         if (isSucc) {
+            val data = if (isDefaultData) data else dataOther
             activity?.runOnUiThread {
                 if (data == null) {
                     Toast.makeText(activity, "Error loading anime page!", Toast.LENGTH_LONG).show()
@@ -147,7 +165,7 @@ class ShiroResultFragment : Fragment() {
                 } else {
                     title_status.visibility = GONE
                 }
-                isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data!!.slug)
+                isBookmarked = DataStore.containsKey(BOOKMARK_KEY, data.slug)
                 toggleHeartVisual(isBookmarked)
                 title_episodes.text =
                     Html.fromHtml(
@@ -232,6 +250,16 @@ class ShiroResultFragment : Fragment() {
             thread {
                 data = getAnimePage(mapper.readValue(it, ShiroApi.ShiroSearchResponseShow::class.java))?.data
                 onLoaded.invoke(true)
+                isSubbed = data?.slug?.endsWith("-dubbed")?.not()
+
+                dataOther = if (isSubbed == true) {
+                    data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
+                } else {
+                    data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
+                }
+                if (dataOther != null) {
+                    onLoadedOther.invoke(true)
+                }
             }
         }
         // Kinda hacky solution, but works
@@ -242,7 +270,19 @@ class ShiroResultFragment : Fragment() {
                 data = getAnimePage(
                     pageData.slug
                 )?.data
+                isSubbed = data?.slug?.endsWith("-dubbed")?.not()
                 onLoaded.invoke(true)
+
+                dataOther = if (isSubbed == true) {
+                    data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
+                } else {
+                    data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
+                }
+                if (dataOther != null) {
+                    onLoadedOther.invoke(true)
+                }
+
+
             }
         }
 
@@ -250,7 +290,17 @@ class ShiroResultFragment : Fragment() {
         arguments?.getString("BookmarkedTitle")?.let {
             thread {
                 data = getAnimePage(mapper.readValue(it, BookmarkedTitle::class.java))?.data
+                isSubbed = data?.slug?.endsWith("-dubbed")?.not()
                 onLoaded.invoke(true)
+
+                dataOther = if (isSubbed == true) {
+                    data?.let { it1 -> getAnimePage(it1.slug + "-dubbed")?.data }
+                } else {
+                    data?.let { it1 -> getAnimePage(it1.slug.substring(0, it1.slug.length - 7))?.data }
+                }
+                if (dataOther != null) {
+                    onLoadedOther.invoke(true)
+                }
             }
         }
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
@@ -277,6 +327,7 @@ class ShiroResultFragment : Fragment() {
     private fun toggleHeart(_isBookmarked: Boolean) {
         this.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
+        val data = if (isDefaultData) data else dataOther
         /*Saving the new bookmark in the database*/
         if (_isBookmarked) {
             DataStore.setKey<BookmarkedTitle>(
@@ -300,19 +351,19 @@ class ShiroResultFragment : Fragment() {
     private fun loadSeason() {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
         val save = settingsManager.getBoolean("save_history", true)
-
+        val data = if (isDefaultData) data else dataOther
         if (data?.episodes?.isNotEmpty() == true) {
             val adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>? = context?.let {
                 EpisodeAdapter(
                     it,
-                    data!!,
+                    data,
                     title_season_cards,
                     save,
                 )
             }
             title_season_cards.adapter = adapter
             (title_season_cards.adapter as EpisodeAdapter).episodes =
-                data!!.episodes
+                data.episodes
             (title_season_cards.adapter as EpisodeAdapter).notifyDataSetChanged()
         }
     }
@@ -359,7 +410,6 @@ class ShiroResultFragment : Fragment() {
         PlayerFragment.onLeftPlayer += ::onLeftVideoPlayer
         DownloadManager.downloadStartEvent += ::onDownloadStarted
 
-
         results_root.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
@@ -371,6 +421,12 @@ class ShiroResultFragment : Fragment() {
             toggleHeart(!isBookmarked)
         }
 
+        language_button.setOnClickListener {
+            if (dataOther != null) {
+                isDefaultData = !isDefaultData
+                onLoadEvent(true)
+            }
+        }
         /*
         title_viewstate.setOnClickListener {
             ToggleViewState(!isViewState)
@@ -384,7 +440,6 @@ class ShiroResultFragment : Fragment() {
             title_holder.paddingRight,
             0,
         )
-
 
         /*if (data!!.trailer != null) {
             title_background.setOnLongClickListener {
@@ -404,8 +459,7 @@ class ShiroResultFragment : Fragment() {
         title_trailer_btt.alpha = 0f
 */
         // SEASON SELECTOR
+        onLoadedOther += ::onLoadOtherEvent
         onLoaded += ::onLoadEvent
-
-
     }
 }

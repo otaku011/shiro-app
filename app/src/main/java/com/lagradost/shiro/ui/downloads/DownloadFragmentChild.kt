@@ -2,7 +2,6 @@ package com.lagradost.shiro.ui.downloads
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -22,7 +21,6 @@ import kotlinx.android.synthetic.main.episode_result_downloaded.*
 import kotlinx.android.synthetic.main.episode_result_downloaded.view.*
 import kotlinx.android.synthetic.main.fragment_download_child.*
 import kotlinx.android.synthetic.main.home_card.view.*
-import kotlinx.android.synthetic.main.home_card.view.imageView
 import kotlinx.android.synthetic.main.player_custom_layout.*
 import java.io.File
 
@@ -317,10 +315,10 @@ class DownloadFragmentChild() : Fragment() {
 
 
     companion object {
-        fun newInstance(_anilistId: String) =
+        fun newInstance(slug: String) =
             DownloadFragmentChild().apply {
                 arguments = Bundle().apply {
-                    putString("slug", _anilistId)
+                    putString("slug", slug)
                 }
             }
     }

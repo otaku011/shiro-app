@@ -71,7 +71,6 @@ class EpisodeAdapter(
                 if (kotlin.math.abs(position - prevFocus!!) > 3 * 2) {
                     this.resView.layoutManager?.scrollToPosition(0)
                 }
-
             }
             prevFocus = position
             //updateFocusPositions(holder, hasFocus, position)
@@ -84,13 +83,6 @@ class EpisodeAdapter(
         }
     }
 
-    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
-        super.onViewRecycled(holder)
-        /*if (downloadFun != null) {
-            DownloadManager.downloadEvent -= downloadFun!!
-        }*/
-    }
-
     override fun getItemCount(): Int {
         return episodes!!.size
     }
@@ -101,17 +93,19 @@ class EpisodeAdapter(
         val data: ShiroApi.AnimePageData
     ) :
         RecyclerView.ViewHolder(itemView) {
+        // To prevent having to redo this operation on every bind
         val last = getLatestSeenEpisode(data)
         val context = _context
         val card: LinearLayout = itemView.episode_result_root
+        // Downloads is only updated when re-bound!
         fun bind(position: Int) {
             val key = getViewKey(data.slug, position)
 
+            // Because the view is recycled
             card.cdi.visibility = View.VISIBLE
             card.progressBar.visibility = View.GONE
             card.cardPauseIcon.visibility = View.GONE
             card.cardRemoveIcon.visibility = View.GONE
-
 
             if (isDonor) {
                 card.cdi.visibility = View.VISIBLE
@@ -136,7 +130,6 @@ class EpisodeAdapter(
             }
 
             itemView.cardBg.setOnClickListener {
-                //Toast.makeText(activity, "Loading link (Don't press shit!)", Toast.LENGTH_LONG).show()
                 if (save) {
                     DataStore.setKey<Long>(VIEWSTATE_KEY, key, System.currentTimeMillis())
                 }
@@ -158,6 +151,7 @@ class EpisodeAdapter(
                 }
             }
 
+            // Long tap to toggle viewstate, uncommenting this will probably fuck up latest viewstate
             /*card.cardBg.setOnLongClickListener {
                 if (isViewState) {
                     if (DataStore.containsKey(VIEWSTATE_KEY, key)) {
@@ -378,30 +372,12 @@ class EpisodeAdapter(
                             }
                         }
 
-                        /*fun onDownloaded(
-                            downloadEventAndChild: DownloadManager.DownloadEventAndChild
-                        ) {
-                            activity!!.runOnUiThread {
-                                if (downloadEventAndChild.downloadEvent.id == downloadEventAndChild.child.internalId) {
-                                    val megaBytes =
-                                        DownloadManager.convertBytesToAny(
-                                            downloadEventAndChild.downloadEvent.bytes,
-                                            0,
-                                            2.0
-                                        ).toInt()
-                                    //card.cardTitleExtra.text = "${megaBytes} / $megaBytesTotal MB"
-                                    val progress = maxOf(
-                                        minOf(megaBytes * 100 / megaBytesTotal, 100),
-                                        0
-                                    )
-                                    println(progress)
-                                    card.progressBar.progress = progress
-                                    updateIcon(megaBytes, downloadEventAndChild.child)
-                                }
-                            }
-                        }*/
-                        DownloadManager.downloadEvent += {
-                            /*activity?.runOnUiThread {
+                        // This is commented out as it'd be fucked with recyclerview
+                        // recyclerview re-uses the views which means I cannot figure out how to bind events to them
+                        // which doesn't fuck up when scrolling around
+
+                        /*DownloadManager.downloadEvent += {
+                            activity?.runOnUiThread {
                                 if (it.downloadEvent.id == it.child.internalId) {
                                     val megaBytes =
                                         DownloadManager.convertBytesToAny(
@@ -417,8 +393,8 @@ class EpisodeAdapter(
                                     card.progressBar.progress = progress
                                     updateIcon(megaBytes, it.child)
                                 }
-                            }*/
-                        }
+                            }
+                        }*/
                     }
                 }
             }
