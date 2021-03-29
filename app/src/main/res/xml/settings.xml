@@ -34,7 +34,7 @@
                 android:icon="@drawable/ic_baseline_language_24"
                 app:key="hide_dubbed"
                 android:title="Hide all dubbed shows"
-                app:defaultValue="false"
+                app:defaultValue="true"
         />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
