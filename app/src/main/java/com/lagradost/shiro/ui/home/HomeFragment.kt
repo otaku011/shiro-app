@@ -212,74 +212,79 @@ class HomeFragment : Fragment() {
             cachedHome?.random = random
             val randomData = random?.data
             requireActivity().runOnUiThread {
-                if (randomData != null) {
-                    val transition: Transition = ChangeBounds()
-                    transition.duration = 100 // DURATION OF ANIMATION IN MS
+                try {
+                    if (randomData != null) {
+                        // This can throw NPE as main_layout isn't guaranteed to be inflated
+                        val transition: Transition = ChangeBounds()
+                        transition.duration = 100 // DURATION OF ANIMATION IN MS
+                        TransitionManager.beginDelayedTransition(main_layout, transition)
+                        main_poster_holder.visibility = VISIBLE
+                        main_poster_text_holder.visibility = VISIBLE
+                        val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
+                            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+                            LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
+                        )
 
-                    TransitionManager.beginDelayedTransition(main_layout, transition)
+                        marginParams.setMargins(0, 250.toPx, 0, 0)
+                        main_layout.layoutParams = marginParams
 
-                    main_poster_holder.visibility = VISIBLE
-                    main_poster_text_holder.visibility = VISIBLE
-                    val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
-                        LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
-                        LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
-                    )
+                        val glideUrlMain =
+                            GlideUrl(getFullUrlCdn(randomData.image)) { ShiroApi.currentHeaders }
+                        context?.let {
+                            GlideApp.with(it)
+                                .load(glideUrlMain)
+                                .into(main_poster)
+                        }
 
-                    marginParams.setMargins(0, 250.toPx, 0, 0)
-                    main_layout.layoutParams = marginParams
-
-                    val glideUrlMain =
-                        GlideUrl(getFullUrlCdn(randomData.image)) { ShiroApi.currentHeaders }
-                    context?.let {
-                        GlideApp.with(it)
-                            .load(glideUrlMain)
-                            .into(main_poster)
-                    }
-
-                    main_name.text = randomData.name
-                    main_genres.text = randomData.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
-                    main_watch_button.setOnClickListener {
-                        //MainActivity.loadPage(cardInfo!!)
-                        Toast.makeText(activity, "Loading link", Toast.LENGTH_SHORT).show()
-                        thread {
-                            // LETTING USER PRESS STUFF WHEN THIS LOADS CAN CAUSE BUGS
-                            val page = getAnimePage(randomData.slug)
-                            if (page != null) {
-                                val nextEpisode = getNextEpisode(page.data)
-                                loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
-                            } else {
-                                activity?.runOnUiThread {
-                                    Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
+                        main_name.text = randomData.name
+                        main_genres.text = randomData.genres?.joinToString(prefix = "", postfix = "", separator = " • ")
+                        main_watch_button.setOnClickListener {
+                            //MainActivity.loadPage(cardInfo!!)
+                            Toast.makeText(activity, "Loading link", Toast.LENGTH_SHORT).show()
+                            thread {
+                                // LETTING USER PRESS STUFF WHEN THIS LOADS CAN CAUSE BUGS
+                                val page = getAnimePage(randomData.slug)
+                                if (page != null) {
+                                    val nextEpisode = getNextEpisode(page.data)
+                                    loadPlayer(nextEpisode.episodeIndex, 0L, page.data)
+                                } else {
+                                    activity?.runOnUiThread {
+                                        Toast.makeText(activity, "Loading link failed", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
                         }
-                    }
-                    main_watch_button.setOnLongClickListener {
-                        //MainActivity.loadPage(cardInfo!!)
-                        if (cardInfo != null) {
-                            val nextEpisode = getNextEpisode(randomData)
-                            Toast.makeText(
-                                activity,
-                                "Episode ${nextEpisode.episodeIndex + 1}",
-                                Toast.LENGTH_LONG
-                            ).show()
+                        main_watch_button.setOnLongClickListener {
+                            //MainActivity.loadPage(cardInfo!!)
+                            if (cardInfo != null) {
+                                val nextEpisode = getNextEpisode(randomData)
+                                Toast.makeText(
+                                    activity,
+                                    "Episode ${nextEpisode.episodeIndex + 1}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            return@setOnLongClickListener true
                         }
-                        return@setOnLongClickListener true
-                    }
-                    main_info_button.setOnClickListener {
-                        MainActivity.loadPage(randomData)
-                    }
-                } else {
-                    main_poster_holder.visibility = GONE
-                    main_poster_text_holder.visibility = GONE
-                    val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
-                        LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
-                        LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
-                    )
+                        main_info_button.setOnClickListener {
+                            MainActivity.loadPage(randomData)
+                        }
+                    } else {
+                        main_poster_holder.visibility = GONE
+                        main_poster_text_holder.visibility = GONE
+                        val marginParams: FrameLayout.LayoutParams = FrameLayout.LayoutParams(
+                            LinearLayoutCompat.LayoutParams.MATCH_PARENT, // view width
+                            LinearLayoutCompat.LayoutParams.WRAP_CONTENT, // view height
+                        )
 
-                    marginParams.setMargins(0)
-                    main_layout.layoutParams = marginParams
+                        marginParams.setMargins(0)
+                        main_layout.layoutParams = marginParams
+                    }
+                } catch (e: java.lang.NullPointerException) {
+                    println("NPE in generateRandom!")
                 }
+
+
             }
         }
 
@@ -289,14 +294,15 @@ class HomeFragment : Fragment() {
     private fun onHomeErrorCatch(fullRe: Boolean) {
         // Null check because somehow this can crash
         activity?.runOnUiThread {
+            // ?. because it somehow crashes anyways without it for one person
             if (main_reload_data_btt != null) {
-                main_reload_data_btt.alpha = 1f
-                main_load.alpha = 0f
-                main_reload_data_btt.isClickable = true
-                main_reload_data_btt.setOnClickListener {
-                    main_reload_data_btt.alpha = 0f
-                    main_load.alpha = 1f
-                    main_reload_data_btt.isClickable = false
+                main_reload_data_btt?.alpha = 1f
+                main_load?.alpha = 0f
+                main_reload_data_btt?.isClickable = true
+                main_reload_data_btt?.setOnClickListener {
+                    main_reload_data_btt?.alpha = 0f
+                    main_load?.alpha = 1f
+                    main_reload_data_btt?.isClickable = false
                     thread {
                         if (fullRe) {
                             ShiroApi.init()

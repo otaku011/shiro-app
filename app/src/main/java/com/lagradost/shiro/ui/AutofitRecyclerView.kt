@@ -25,7 +25,6 @@ data class GrdLayoutManager(val context: Context, val spanCoun: Int) : GridLayou
     // Allows moving right and left with focus https://gist.github.com/vganin/8930b41f55820ec49e4d
     override fun onInterceptFocusSearch(focused: View, direction: Int): View? {
         val fromPos = getPosition(focused)
-        println("Intercept $fromPos")
         val nextPos = getNextViewPos(fromPos, direction)
         return findViewByPosition(nextPos)
     }

@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.core.view.*
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.Player
@@ -187,7 +188,7 @@ class EpisodeAdapter(
                 // Otherwise color is recycled
                 activity?.let {
                     card.cardBg.setCardBackgroundColor(
-                        it.getColor(
+                        ContextCompat.getColor(activity!!,
                             R.color.darkBar
                         )
                     )

@@ -145,7 +145,7 @@ class ShiroResultFragment : Fragment() {
 
                 val glideUrl =
                     GlideUrl(
-                        data?.image?.let { getFullUrlCdn(it) }?.let { getFullUrlCdn(it) }
+                        getFullUrlCdn(data.image)
                     )
                 context?.let {
                     GlideApp.with(it)
@@ -155,11 +155,11 @@ class ShiroResultFragment : Fragment() {
 
                 val textColor = resources.getString(R.color.textColor).substring(3)
                 val textColorGrey = resources.getString(R.color.textColorGray).substring(3)
-                if (data!!.status != null) {
+                if (data.status != null) {
                     // fromHtml is depreciated, but works on android 6 as opposed to the new
                     title_status.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${data!!.status}</font>"/*,
+                            "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${data.status}</font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
@@ -169,25 +169,25 @@ class ShiroResultFragment : Fragment() {
                 toggleHeartVisual(isBookmarked)
                 title_episodes.text =
                     Html.fromHtml(
-                        "<font color=#${textColor}>Episodes:</font><font color=#${textColorGrey}> ${data!!.episodeCount}</font>"/*,
+                        "<font color=#${textColor}>Episodes:</font><font color=#${textColorGrey}> ${data.episodeCount}</font>"/*,
                         FROM_HTML_MODE_COMPACT*/
                     )
 
-                if (data!!.year != null) {
+                if (data.year != null) {
                     title_year.text =
                         Html.fromHtml(
-                            "<font color=#${textColor}>Year:</font><font color=#${textColorGrey}> ${data!!.year}</font>"/*,
+                            "<font color=#${textColor}>Year:</font><font color=#${textColorGrey}> ${data.year}</font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                         )
                 } else {
                     title_year.visibility = GONE
                 }
 
-                if (data!!.genres != null) {
+                if (data.genres != null) {
                     title_genres.text =
                         Html.fromHtml(
                             "<font color=#${textColor}>Status:</font><font color=#${textColorGrey}> ${
-                                data!!.genres?.joinToString(
+                                data.genres?.joinToString(
                                     ", "
                                 )
                             }</font>"/*,
@@ -197,11 +197,11 @@ class ShiroResultFragment : Fragment() {
                     title_genres.visibility = GONE
                 }
 
-                if (data!!.schedule != null && data?.status != "finished") {
+                if (data.schedule != null && data.status != "finished") {
                     title_day_of_week.text =
                         Html.fromHtml(
                             "<font color=#${textColor}>Schedule:</font><font color=#${textColorGrey}> ${
-                                data!!.schedule
+                                data.schedule
                             }</font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                         )
@@ -209,27 +209,27 @@ class ShiroResultFragment : Fragment() {
                     title_day_of_week.visibility = GONE
                 }
 
-                title_name.text = data!!.name
-                val descript = data!!.synopsis
+                title_name.text = data.name
+                val fullDescription = data.synopsis
                     .replace("<br>", "")
                     .replace("<i>", "")
                     .replace("</i>", "")
                     .replace("\n", " ")
 
-                title_descript.text = if (descript.length > 200) Html.fromHtml(
-                    descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) +
+                title_descript.text = if (fullDescription.length > 200) Html.fromHtml(
+                    fullDescription.substring(0, minOf(fullDescription.length, DESCRIPTION_LENGTH1 - 3)) +
                             "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
                             FROM_HTML_MODE_COMPACT*/
-                ) else descript
+                ) else fullDescription
                 title_descript.setOnClickListener {
                     val transition: Transition = ChangeBounds()
                     transition.duration = 100
                     if (title_descript.text.length <= 200 + 13) {
-                        title_descript.text = descript
+                        title_descript.text = fullDescription
                     } else {
                         title_descript.text =
                             Html.fromHtml(
-                                descript.substring(0, minOf(descript.length, DESCRIPTION_LENGTH1 - 3)) +
+                                fullDescription.substring(0, minOf(fullDescription.length, DESCRIPTION_LENGTH1 - 3)) +
                                         "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
                             FROM_HTML_MODE_COMPACT*/
                             )
@@ -395,7 +395,7 @@ class ShiroResultFragment : Fragment() {
             val mMediaRouteButton = view.findViewById<MediaRouteButton>(R.id.media_route_button)
 
             CastButtonFactory.setUpMediaRouteButton(activity, mMediaRouteButton);
-            val castContext = CastContext.getSharedInstance(activity!!.applicationContext)
+            val castContext = CastContext.getSharedInstance(requireActivity().applicationContext)
 
             if (castContext.castState != CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.VISIBLE
             castContext.addCastStateListener(CastStateListener { state ->
@@ -414,7 +414,7 @@ class ShiroResultFragment : Fragment() {
         //media_route_button_holder.setPadding(0, MainActivity.statusHeight, 0, 0)
         //media_route_button.layoutParams = LinearLayout.LayoutParams(20.toPx, 20.toPx + MainActivity.statusHeight)  //setPadding(0, MainActivity.statusHeight, 0, 0)
         title_go_back.setOnClickListener {
-            MainActivity.popCurrentPage()
+            popCurrentPage()
         }
 
         bookmark_holder.setOnClickListener {

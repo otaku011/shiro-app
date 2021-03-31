@@ -837,7 +837,7 @@ class PlayerFragment() : Fragment() {
                     } else if (data?.startAt != null) {
                         playbackPosition = data?.startAt!!
                     }
-                    video_title.text = getCurrentTitle()
+                    video_title?.text = getCurrentTitle()
                     if (canPlayNextEpisode()) {
                         next_episode_btt.visibility = VISIBLE
                         next_episode_btt.setOnClickListener {
