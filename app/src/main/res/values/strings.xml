@@ -1,9 +1,9 @@
 <resources>
-    <string name="version_code">1.4.0 Public Release</string>
+    <string name="version_code">1.4.1 Public Release</string>
     <string name="changelog">\n
-        - Added change language button\n
-        - Fixed viewstate on episodes\n
-        - Fixed download icon\n
+        - Fixed downloads for some shows\n
+        - Fixed crashes\n
+        - Fixed issues on lower android versions\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

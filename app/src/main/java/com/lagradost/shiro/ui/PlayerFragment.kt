@@ -389,7 +389,8 @@ class PlayerFragment() : Fragment() {
     }
 
     private fun updatePIPModeActions() {
-        if (!MainActivity.isInPIPMode) return
+        if (!MainActivity.isInPIPMode || !this::exoPlayer.isInitialized) return
+
         val actions: ArrayList<RemoteAction> = ArrayList()
 
         actions.add(getRemoteAction(R.drawable.go_back_30, "Go Back", PlayerEventType.SeekBack))
@@ -663,7 +664,6 @@ class PlayerFragment() : Fragment() {
 
         }
 
-
         click_overlay.setOnTouchListener(
             Listener()
         )
@@ -782,8 +782,10 @@ class PlayerFragment() : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(STATE_RESUME_WINDOW, exoPlayer.currentWindowIndex)
-        outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
+        if (this::exoPlayer.isInitialized) {
+            outState.putInt(STATE_RESUME_WINDOW, exoPlayer.currentWindowIndex)
+            outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
+        }
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, isFullscreen)
         outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
         outState.putInt(RESIZE_MODE_KEY, resizeMode!!)

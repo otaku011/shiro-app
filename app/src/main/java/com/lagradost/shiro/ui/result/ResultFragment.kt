@@ -1,6 +1,7 @@
 package com.lagradost.shiro.ui.result
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.transition.ChangeBounds
@@ -20,6 +21,7 @@ import androidx.mediarouter.app.MediaRouteButton
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
@@ -36,6 +38,8 @@ import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.PlayerFragment
 import kotlinx.android.synthetic.main.episode_result.view.*
 import kotlinx.android.synthetic.main.fragment_results_new.*
+import java.util.*
+import kotlin.concurrent.schedule
 import kotlin.concurrent.thread
 
 
@@ -109,6 +113,7 @@ class ShiroResultFragment : Fragment() {
     ): View? {
         resultViewModel =
             activity?.let { ViewModelProviders.of(it).get(ResultViewModel::class.java) }!!
+
         return inflater.inflate(R.layout.fragment_results_new, container, false)
     }
 
@@ -138,10 +143,19 @@ class ShiroResultFragment : Fragment() {
                 val fadeAnimation = AlphaAnimation(1f, 0f)
 
                 fadeAnimation.duration = 300
+                fadeAnimation.isFillEnabled = true
                 fadeAnimation.fillAfter = true
-
                 loading_overlay.startAnimation(fadeAnimation)
                 loadSeason()
+
+                // Somehow the above animation doesn't trigger sometimes on lower android versions
+                thread {
+                    Timer().schedule(500){
+                        requireActivity().runOnUiThread {
+                            loading_overlay.alpha = 0f
+                        }
+                    }
+                }
 
                 val glideUrl =
                     GlideUrl(
@@ -216,26 +230,33 @@ class ShiroResultFragment : Fragment() {
                     .replace("</i>", "")
                     .replace("\n", " ")
 
-                title_descript.text = if (fullDescription.length > 200) Html.fromHtml(
-                    fullDescription.substring(0, minOf(fullDescription.length, DESCRIPTION_LENGTH1 - 3)) +
-                            "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
+                // Somehow for an unknown reason (I haven't even found online) setting a textview with large amount of text
+                // 'crashes' (hangs for a good while) the application on low android versions. I'm betting Nougat+ works.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    title_descript.text = if (fullDescription.length > 200) Html.fromHtml(
+                        fullDescription.substring(0, minOf(fullDescription.length, DESCRIPTION_LENGTH1 - 3)) +
+                                "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
                             FROM_HTML_MODE_COMPACT*/
-                ) else fullDescription
-                title_descript.setOnClickListener {
-                    val transition: Transition = ChangeBounds()
-                    transition.duration = 100
-                    if (title_descript.text.length <= 200 + 13) {
-                        title_descript.text = fullDescription
-                    } else {
-                        title_descript.text =
-                            Html.fromHtml(
+                    ) else fullDescription
+                    title_descript.setOnClickListener {
+                        //val transition: Transition = ChangeBounds()
+                        //transition.duration = 100
+                        if (title_descript.text.length <= 200 + 13) {
+                            title_descript.text = fullDescription
+                        } else {
+                            title_descript.text = Html.fromHtml(
                                 fullDescription.substring(0, minOf(fullDescription.length, DESCRIPTION_LENGTH1 - 3)) +
                                         "<font color=#${textColorGrey}>...<i> Read more</i></font>"/*,
-                            FROM_HTML_MODE_COMPACT*/
+                        FROM_HTML_MODE_COMPACT*/
                             )
+                        }
+                        //TransitionManager.beginDelayedTransition(description_holder, transition)
                     }
-                    TransitionManager.beginDelayedTransition(description_holder, transition)
+
+                } else {
+                    title_descript.text = fullDescription.substring(0, DESCRIPTION_LENGTH1 - 3) + "..."
                 }
+
                 /*var ratTxt = (data!!.averageScore / 10f).toString().replace(',', '.') // JUST IN CASE DUE TO LANG SETTINGS
                 if (!ratTxt.contains('.')) ratTxt += ".0"
                 title_rating.text = "Rated: $ratTxt"
@@ -246,6 +267,7 @@ class ShiroResultFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        println("Attached result fragment")
         arguments?.getString("ShiroSearchResponseShow")?.let {
             thread {
                 data = getAnimePage(mapper.readValue(it, ShiroApi.ShiroSearchResponseShow::class.java))?.data
@@ -304,7 +326,6 @@ class ShiroResultFragment : Fragment() {
             }
         }
         //isMovie = data!!.episodes == 1 && data!!.status == "FINISHED"
-
     }
     /*
     private fun ToggleViewState(_isViewState: Boolean) {
@@ -327,26 +348,48 @@ class ShiroResultFragment : Fragment() {
     private fun toggleHeart(_isBookmarked: Boolean) {
         this.isBookmarked = _isBookmarked
         toggleHeartVisual(_isBookmarked)
-        val data = if (isDefaultData) data else dataOther
+        val data = (if (isDefaultData) data else dataOther) ?: return
         /*Saving the new bookmark in the database*/
         if (_isBookmarked) {
             DataStore.setKey<BookmarkedTitle>(
                 BOOKMARK_KEY,
-                data!!.slug,
+                data.slug,
                 BookmarkedTitle(
-                    data!!.name,
-                    data!!.image,
-                    data!!.slug
+                    data.name,
+                    data.image,
+                    data.slug
                 )
             )
         } else {
-            DataStore.removeKey(BOOKMARK_KEY, data!!.slug)
+            DataStore.removeKey(BOOKMARK_KEY, data.slug)
         }
         thread {
             requestHome(true)
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        println("onCreate")
+        if (savedInstanceState != null) {
+            data = savedInstanceState.getString("data")?.let { mapper.readValue(it) }
+            dataOther = savedInstanceState.getString("dataOther")?.let { mapper.readValue(it) }
+        }
+        if (data != null) {
+            onLoaded.invoke(true)
+        }
+        super.onCreate(savedInstanceState)
+
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (data != null) {
+            outState.putString("data", mapper.writeValueAsString(data))
+        }
+        if (dataOther != null) {
+            outState.putString("dataOther", mapper.writeValueAsString(data))
+        }
+        super.onSaveInstanceState(outState)
+    }
 
     private fun loadSeason() {
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(MainActivity.activity)
@@ -389,6 +432,7 @@ class ShiroResultFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         isInResults = true
 
+
         hideKeyboard()
         //title_duration.text = data!!.duration.toString() + "min"
         if (isCastApiAvailable()) {
@@ -401,7 +445,7 @@ class ShiroResultFragment : Fragment() {
             castContext.addCastStateListener(CastStateListener { state ->
                 if (media_route_button != null) {
                     if (state == CastState.NO_DEVICES_AVAILABLE) media_route_button.visibility = View.GONE else {
-                        if (media_route_button.visibility == View.GONE) media_route_button.visibility = View.VISIBLE
+                        if (media_route_button.visibility == GONE) media_route_button.visibility = View.VISIBLE
                     }
                 }
             })

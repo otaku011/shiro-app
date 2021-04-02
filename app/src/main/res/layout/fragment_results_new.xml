@@ -210,7 +210,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content">
 
-                        <TextView
+                        <com.google.android.material.textview.MaterialTextView
                                 android:layout_margin="10dp"
                                 android:id="@+id/title_descript"
                                 android:layout_width="match_parent"
@@ -219,7 +219,7 @@
                                 tools:text="The orphans at Grace Field House have only ever known peace. Their home is nice, their bellies stay full, and their caretaker, Mom, loves them very much. But their world turns upside down when the smartest children of the bunch—Emma, Ray, and Norman—learn what horror awaits them on adoption day. Now, their cultivated wit may be their only chance of survival. (Source: Funimation)"
                         >
 
-                        </TextView>
+                        </com.google.android.material.textview.MaterialTextView>
                     </LinearLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -329,7 +329,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
     >
-
 
         <FrameLayout
                 android:background="@color/background"
