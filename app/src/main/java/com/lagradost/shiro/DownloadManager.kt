@@ -20,6 +20,7 @@ import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import com.lagradost.shiro.MainActivity.Companion.isDonor
 import com.lagradost.shiro.MainActivity.Companion.md5
+import com.lagradost.shiro.ShiroApi.Companion.USER_AGENT
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
@@ -329,9 +330,8 @@ object DownloadManager {
                 val connection: URLConnection = _url.openConnection()
 
                 var bytesRead = 0L
-                val androidId: String =
-                    Settings.Secure.getString(localContext?.contentResolver, Settings.Secure.ANDROID_ID)
-                val referer = androidId.md5()
+                //val androidId: String = Settings.Secure.getString(localContext?.contentResolver, Settings.Secure.ANDROID_ID)
+                val referer = "https://shiro.is/"
 
                 // =================== STORAGE ===================
                 try {
@@ -360,6 +360,7 @@ object DownloadManager {
                 if (referer != "") {
                     println("REFERER: " + referer)
                     connection.setRequestProperty("Referer", referer)
+                    connection.setRequestProperty("User-Agent", USER_AGENT)
                 }
                 connection.connectTimeout = 10000
                 var clen = 0
