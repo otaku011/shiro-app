@@ -17,6 +17,7 @@ import com.lagradost.shiro.*
 import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
 import com.lagradost.shiro.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.activity
+import com.lagradost.shiro.MainActivity.Companion.fixCardTitle
 import com.lagradost.shiro.ui.AutofitRecyclerView
 import kotlinx.android.synthetic.main.search_result.view.*
 import kotlinx.android.synthetic.main.search_result.view.imageText
@@ -126,12 +127,7 @@ class ResAdapter(
                     coverHeight
                 )
             }
-            itemView.imageText.text = if (card.name.endsWith("Dubbed")) "✦ ${
-                card.name.substring(
-                    0,
-                    card.name.length - 6
-                )
-            }" else card.name
+            itemView.imageText.text = fixCardTitle(card.name)
             cardView.setOnLongClickListener {
                 Toast.makeText(context, card.name, Toast.LENGTH_SHORT).show()
                 return@setOnLongClickListener true

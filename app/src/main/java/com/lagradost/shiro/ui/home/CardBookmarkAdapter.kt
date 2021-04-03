@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.*
+import com.lagradost.shiro.MainActivity.Companion.fixCardTitle
 import com.lagradost.shiro.ui.GlideApp
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import kotlinx.android.synthetic.main.home_card.view.*
@@ -62,13 +63,7 @@ class CardBookmarkAdapter(
                         .into(card.imageView)
                 }
                 itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).start()
-                itemView.imageText.text =
-                    if (cardInfo.name.endsWith("Dubbed")) "✦ ${
-                        cardInfo.name.substring(
-                            0,
-                            cardInfo.name.length - 6
-                        )
-                    }" else cardInfo.name
+                itemView.imageText.text = fixCardTitle(cardInfo.name)
 
                 itemView.home_card_root.setOnLongClickListener {
                     Toast.makeText(context, cardInfo.name, Toast.LENGTH_SHORT).show()

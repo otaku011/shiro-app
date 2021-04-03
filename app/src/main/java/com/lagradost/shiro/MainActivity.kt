@@ -312,6 +312,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        fun fixCardTitle(title: String): String {
+            val suffix = " Dubbed"
+            return if (title.endsWith(suffix)) "✦ ${
+                title.substring(
+                    0,
+                    title.length - suffix.length
+                ).replace(" (Anime)", "")
+            }" else title.replace(" (Anime)", "")
+        }
+
         fun splitQuery(url: URL): Map<String, String>? {
             val query_pairs: MutableMap<String, String> = LinkedHashMap()
             val query: String = url.getQuery()
