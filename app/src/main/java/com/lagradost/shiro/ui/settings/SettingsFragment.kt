@@ -13,8 +13,10 @@ import com.bumptech.glide.Glide
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.getKeys
 import com.lagradost.shiro.DataStore.removeKeys
+import com.lagradost.shiro.MainActivity.Companion.checkWrite
 import com.lagradost.shiro.MainActivity.Companion.isDonor
 import com.lagradost.shiro.MainActivity.Companion.md5
+import com.lagradost.shiro.MainActivity.Companion.requestRW
 import com.lagradost.shiro.R
 import com.lagradost.shiro.VIEW_LST_KEY
 import kotlin.concurrent.thread
@@ -214,7 +216,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
             MainActivity.changeStatusBarState(newValue == true)
             return@setOnPreferenceChangeListener true
         }
-
+        val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
+        useExternalStorage?.setOnPreferenceChangeListener { _, newValue ->
+            if (newValue == true) {
+                if (!checkWrite()) {
+                    requestRW()
+                }
+            }
+            return@setOnPreferenceChangeListener true
+        }
         // EASTER EGG THEME
         val versionButton = findPreference("version") as Preference?
         val coolMode = findPreference("cool_mode") as SwitchPreference?

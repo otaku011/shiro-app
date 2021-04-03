@@ -1,5 +1,6 @@
 package com.lagradost.shiro
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
@@ -29,6 +30,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -310,6 +312,24 @@ class MainActivity : AppCompatActivity() {
                     ShiroApi.requestHome(true)
                 }
             }
+        }
+
+        fun checkWrite(): Boolean {
+            return (ContextCompat.checkSelfPermission(
+                activity!!,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED)
+        }
+
+        fun requestRW() {
+            ActivityCompat.requestPermissions(
+                activity!!,
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                1337
+            )
         }
 
         fun fixCardTitle(title: String): String {
@@ -627,7 +647,12 @@ class MainActivity : AppCompatActivity() {
         } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-
+        if (settingsManager.getBoolean("use_external_storage", false)) {
+            if (!checkWrite()){
+                Toast.makeText(activity, "Accept storage permissions to download", Toast.LENGTH_LONG).show()
+                requestRW()
+            }
+        }
         thread {
             ShiroApi.init()
         }

@@ -7,11 +7,13 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
+import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
@@ -261,6 +263,9 @@ object DownloadManager {
 
     @SuppressLint("HardwareIds")
     fun downloadEpisode(info: DownloadInfo, resumeIntent: Boolean = false) {
+        val settingsManager = PreferenceManager.getDefaultSharedPreferences(activity)
+        val useExternalStorage = settingsManager.getBoolean("use_external_storage", false)
+
         // IsInResult == isDonor
         if (!isDonor) { // FINAL CHECK
             Toast.makeText(activity, txt, Toast.LENGTH_SHORT).show()
@@ -296,9 +301,14 @@ object DownloadManager {
                     title = "Episode " + info.episodeIndex + 1
                 }
 
+
+                val basePath =
+                    if (useExternalStorage) Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    else activity!!.filesDir
+
                 // =================== DOWNLOAD POSTERS AND SETUP PATH ===================
-                val path = activity!!.filesDir.toString() +
-                        "/Download/Anime/" +
+                val path = basePath.toString() +
+                        "/Shiro/Anime/" +
                         censorFilename(mainTitle) +
                         if (isMovie)
                             ".mp4"
@@ -306,11 +316,11 @@ object DownloadManager {
                             "/" + censorFilename("E${info.episodeIndex + 1} $title") + ".mp4"
 
                 val posterPath = path.replace("/Anime/", "/Posters/").replace(".mp4", ".jpg")
-                downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
+                //downloadPoster(posterPath, getFullUrlCdn(info.animeData.image))
                 val mainPosterPath =
                     //android.os.Environment.getExternalStorageDirectory().path +
                     activity!!.filesDir.toString() +
-                            "/Download/MainPosters/" +
+                            "/Shiro/MainPosters/" +
                             censorFilename(info.animeData.name) + ".jpg"
 
                 downloadPoster(mainPosterPath, getFullUrlCdn(info.animeData.image))

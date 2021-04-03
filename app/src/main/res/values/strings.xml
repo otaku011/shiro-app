@@ -1,9 +1,7 @@
 <resources>
-    <string name="version_code">1.4.1 Public Release</string>
+    <string name="version_code">1.4.2 Public Release</string>
     <string name="changelog">\n
-        - Fixed downloads for many shows\n
-        - Fixed crashes\n
-        - Fixed issues on lower android versions\n
+        - Added option to download to sdcard\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>

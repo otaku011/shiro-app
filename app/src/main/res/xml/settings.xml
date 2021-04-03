@@ -36,6 +36,12 @@
                 android:title="Hide all dubbed shows"
                 app:defaultValue="true"
         />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_storage_24"
+                app:key="use_external_storage"
+                android:title="Use external storage for downloads"
+                app:defaultValue="false"
+        />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"
@@ -221,17 +227,6 @@
 
         </Preference>
 
-        <Preference
-                app:isPreferenceVisible="false"
-                android:title="App discord"
-                android:icon="@drawable/ic_baseline_discord_24"
-                app:summary="Talk with app developers, give suggestions and report bugs"
-        >
-            <!-- INVISIBLE as app might get official support -->
-            <intent android:action="android.intent.action.VIEW"
-                    android:data="https://discord.gg/GEqWYkRZf2"/>
-
-        </Preference>
         <Preference
                 android:title="Github"
                 android:icon="@drawable/ic_github_logo"
