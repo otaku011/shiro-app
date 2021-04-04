@@ -15,7 +15,7 @@
 
             app:cardBackgroundColor="@color/darkBar">
         <!-- USING CROP RATIO (182/268), centerCrop for fill -->
-        <ImageView
+        <!--<ImageView
                 android:id="@+id/imageView"
                 android:scaleType="centerCrop"
                 android:layout_width="142dp"
@@ -33,12 +33,12 @@
                 android:scaleY="0.5"
                 android:src="@drawable/nexflix_play_btt"
         >
-        </ImageView>
+        </ImageView>-->
 
         <!-- STYLE HERE IS IMPORTANT OR ELSE IT WILL LOOK UGLY -->
         <androidx.core.widget.ContentLoadingProgressBar
                 android:id="@+id/video_progress"
-                android:layout_width="142dp"
+                android:layout_width="match_parent"
                 android:indeterminate="false"
                 android:layout_gravity="start|bottom"
 
@@ -48,7 +48,7 @@
         </androidx.core.widget.ContentLoadingProgressBar>
         <!--TODO FIX-->
         <LinearLayout
-                android:layout_marginStart="160dp"
+                android:layout_marginStart="50dp"
                 android:layout_marginEnd="50dp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
@@ -56,7 +56,7 @@
                     android:id="@+id/cardTitle"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center_vertical"
+                    android:gravity="center"
                     android:textSize="15sp"
                     android:layout_gravity="center_vertical"
                     android:textColor="@color/textColor"
@@ -66,7 +66,7 @@
                     android:id="@+id/cardTitleExtra"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center_vertical"
+                    android:gravity="center"
                     android:textSize="12sp"
                     android:textColor="@color/textColorGray"
                     android:layout_gravity="center_vertical"

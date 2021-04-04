@@ -1,5 +1,6 @@
 package com.lagradost.shiro
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
@@ -10,7 +11,6 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -30,7 +30,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -45,12 +45,13 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.lagradost.shiro.FastAniApi.Companion.getAppUpdate
-import com.lagradost.shiro.FastAniApi.Companion.getDonorStatus
+import com.lagradost.shiro.ShiroApi.Companion.getAppUpdate
+import com.lagradost.shiro.ShiroApi.Companion.getDonorStatus
 import com.lagradost.shiro.ui.PlayerData
 import com.lagradost.shiro.ui.PlayerEventType
 import com.lagradost.shiro.ui.PlayerFragment
 import com.lagradost.shiro.ui.PlayerFragment.Companion.isInPlayer
+import com.lagradost.shiro.ui.home.ExpandedHomeFragment.Companion.isInExpandedView
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.ui.result.ShiroResultFragment.Companion.isInResults
 import kotlinx.android.synthetic.main.update_dialog.*
@@ -72,12 +73,12 @@ data class LastEpisodeInfo(
     @JsonProperty("pos") val pos: Long,
     @JsonProperty("dur") val dur: Long,
     @JsonProperty("seenAt") val seenAt: Long,
-    @JsonProperty("id") val id: FastAniApi.AnimePageData?,
+    @JsonProperty("id") val id: ShiroApi.AnimePageData?,
     @JsonProperty("aniListId") val aniListId: String,
     @JsonProperty("episodeIndex") val episodeIndex: Int,
     @JsonProperty("seasonIndex") val seasonIndex: Int,
     @JsonProperty("isMovie") val isMovie: Boolean,
-    @JsonProperty("episode") val episode: FastAniApi.ShiroEpisodes?,
+    @JsonProperty("episode") val episode: ShiroApi.ShiroEpisodes?,
     @JsonProperty("coverImage") val coverImage: String,
     @JsonProperty("title") val title: String,
     @JsonProperty("bannerImage") val bannerImage: String,
@@ -89,12 +90,11 @@ data class NextEpisode(
     @JsonProperty("seasonIndex") val seasonIndex: Int,
 )
 
+/*Class for storing bookmarks*/
 data class BookmarkedTitle(
-    @JsonProperty("id") val id: String,
-    @JsonProperty("anilistId") val anilistId: String,
-    @JsonProperty("description") val description: String,
-    @JsonProperty("title") val title: FastAniApi.Title,
-    @JsonProperty("coverImage") val coverImage: FastAniApi.CoverImage,
+    @JsonProperty("name") val name: String,
+    @JsonProperty("image") val image: String,
+    @JsonProperty("slug") val slug: String
 )
 
 class MainActivity : AppCompatActivity() {
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
 
         var focusRequest: AudioFocusRequest? = null
 
-        fun UnixTime(): Long {
+        fun unixTime(): Long {
             return System.currentTimeMillis() / 1000L
         }
 
@@ -131,14 +131,13 @@ class MainActivity : AppCompatActivity() {
 
         fun getViewKey(data: PlayerData): String {
             return getViewKey(
-                if (data.card != null) data.card.slug else data.anilistId!!,
-                data.seasonIndex!!,
+                data.slug,
                 data.episodeIndex!!
             )
         }
 
-        fun getViewKey(aniListId: String, seasonIndex: Int, episodeIndex: Int): String {
-            return aniListId + "S" + seasonIndex + "E" + episodeIndex
+        fun getViewKey(id: String, episodeIndex: Int): String {
+            return id + "E" + episodeIndex
         }
 
         fun Context.hideKeyboard(view: View) {
@@ -188,8 +187,8 @@ class MainActivity : AppCompatActivity() {
             activity!!.startActivity(intent)
         }
 
-        fun getViewPosDur(aniListId: String, seasonIndex: Int, episodeIndex: Int): EpisodePosDurInfo {
-            val key = getViewKey(aniListId, seasonIndex, episodeIndex)
+        fun getViewPosDur(aniListId: String, episodeIndex: Int): EpisodePosDurInfo {
+            val key = getViewKey(aniListId, episodeIndex)
 
             return EpisodePosDurInfo(
                 DataStore.getKey<Long>(VIEW_POS_KEY, key, -1L)!!,
@@ -198,9 +197,8 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        fun canPlayNextEpisode(card: FastAniApi.AnimePageData?, seasonIndex: Int, episodeIndex: Int): NextEpisode {
+        fun canPlayNextEpisode(card: ShiroApi.AnimePageData?, seasonIndex: Int, episodeIndex: Int): NextEpisode {
             val canNext = card!!.episodes!!.size > episodeIndex + 1
-
 
             return if (canNext) {
                 NextEpisode(true, episodeIndex + 1, 0)
@@ -210,12 +208,22 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        fun getNextEpisode(data: FastAniApi.AnimePageData): NextEpisode {
+        fun getLatestSeenEpisode(data: ShiroApi.AnimePageData): NextEpisode {
+            for (i in (data.episodes?.size ?: 0) downTo 0) {
+                val firstPos = getViewPosDur(data.slug, i)
+                if (firstPos.viewstate) {
+                    return NextEpisode(true, i, 0)
+                }
+            }
+            return NextEpisode(false, 0, 0)
+        }
+
+        fun getNextEpisode(data: ShiroApi.AnimePageData): NextEpisode {
             // HANDLES THE LOGIC FOR NEXT EPISODE
             var episodeIndex = 0
             var seasonIndex = 0
             val maxValue = 90
-            val firstPos = getViewPosDur(data.slug, 0, 0)
+            val firstPos = getViewPosDur(data.slug, 0)
             // Hacky but works :)
             if (((firstPos.pos * 100) / firstPos.dur <= maxValue || firstPos.pos == -1L) && !firstPos.viewstate) {
                 val found = data.episodes?.getOrNull(episodeIndex) != null
@@ -225,7 +233,7 @@ class MainActivity : AppCompatActivity() {
             while (true) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
                 val next = canPlayNextEpisode(data, seasonIndex, episodeIndex)
                 if (next.isFound) {
-                    val nextPro = getViewPosDur(data.slug, next.seasonIndex, next.episodeIndex)
+                    val nextPro = getViewPosDur(data.slug, next.episodeIndex)
                     seasonIndex = next.seasonIndex
                     episodeIndex = next.episodeIndex
                     if (((nextPro.pos * 100) / nextPro.dur <= maxValue || nextPro.pos == -1L) && !nextPro.viewstate) {
@@ -263,7 +271,7 @@ class MainActivity : AppCompatActivity() {
             while (canContinue) { // IF PROGRESS IS OVER 95% CONTINUE SEARCH FOR NEXT EPISODE
                 val next = canPlayNextEpisode(card, seasonIndex, episodeIndex)
                 if (next.isFound) {
-                    val nextPro = getViewPosDur(card.slug, next.seasonIndex, next.episodeIndex)
+                    val nextPro = getViewPosDur(card.slug, next.episodeIndex)
                     seasonIndex = next.seasonIndex
                     episodeIndex = next.episodeIndex
                     if ((nextPro.pos * 100) / dur <= maxValue) {
@@ -301,9 +309,37 @@ class MainActivity : AppCompatActivity() {
                 )
 
                 thread {
-                    FastAniApi.requestHome(true)
+                    ShiroApi.requestHome(true)
                 }
             }
+        }
+
+        fun checkWrite(): Boolean {
+            return (ContextCompat.checkSelfPermission(
+                activity!!,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED)
+        }
+
+        fun requestRW() {
+            ActivityCompat.requestPermissions(
+                activity!!,
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                1337
+            )
+        }
+
+        fun fixCardTitle(title: String): String {
+            val suffix = " Dubbed"
+            return if (title.endsWith(suffix)) "✦ ${
+                title.substring(
+                    0,
+                    title.length - suffix.length
+                ).replace(" (Anime)", "")
+            }" else title.replace(" (Anime)", "")
         }
 
         fun splitQuery(url: URL): Map<String, String>? {
@@ -332,16 +368,30 @@ class MainActivity : AppCompatActivity() {
             }
 
             // No fucked animations leaving the player :)
-            if (isInPlayer) {
-                activity?.supportFragmentManager!!.beginTransaction()
-                    //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment)
-                    .commitAllowingStateLoss()
-            } else {
-                activity?.supportFragmentManager!!.beginTransaction()
-                    .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                    .remove(currentFragment)
-                    .commitAllowingStateLoss()
+            when {
+                isInPlayer -> {
+                    activity?.supportFragmentManager!!.beginTransaction()
+                        //.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
+                isInExpandedView && !isInResults -> {
+                    activity?.supportFragmentManager!!.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.enter_from_right,
+                            R.anim.exit_to_right,
+                            R.anim.pop_enter,
+                            R.anim.pop_exit
+                        )
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
+                else -> {
+                    activity?.supportFragmentManager!!.beginTransaction()
+                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .remove(currentFragment)
+                        .commitAllowingStateLoss()
+                }
             }
         }
 
@@ -384,7 +434,7 @@ class MainActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
         }
 
-        fun loadPlayer(episodeIndex: Int, startAt: Long, card: FastAniApi.AnimePageData) {
+        fun loadPlayer(episodeIndex: Int, startAt: Long, card: ShiroApi.AnimePageData) {
             loadPlayer(
                 PlayerData(
                     null, null,
@@ -392,17 +442,17 @@ class MainActivity : AppCompatActivity() {
                     0,
                     card,
                     startAt,
-                    null
+                    card.slug
                 )
             )
         }
 
         /*fun loadPlayer(pageData: FastAniApi.AnimePageData, episodeIndex: Int, startAt: Long?) {
             loadPlayer(PlayerData("${pageData.name} - Episode ${episodeIndex + 1}", null, episodeIndex, null, null, startAt, null, true))
-        }*/
+        }
         fun loadPlayer(title: String?, url: String, startAt: Long?) {
             loadPlayer(PlayerData(title, url, null, null, null, startAt, null))
-        }
+        }*/
 
         fun loadPlayer(data: PlayerData) {
             activity?.supportFragmentManager?.beginTransaction()
@@ -416,7 +466,7 @@ class MainActivity : AppCompatActivity() {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
         }
 
-        fun loadPage(card: FastAniApi.AnimePageData) {
+        fun loadPage(card: ShiroApi.AnimePageData) {
 
             activity?.supportFragmentManager?.beginTransaction()
                 ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
@@ -464,9 +514,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        println("BACK PRESSED!!!! $isInResults")
+        println("BACK PRESSED!!!! $isInResults $isInPlayer $isInExpandedView")
 
-        if (isInResults || isInPlayer) {
+        if (isInResults || isInPlayer || isInExpandedView) {
             popCurrentPage()
         } else {
             super.onBackPressed()
@@ -597,12 +647,16 @@ class MainActivity : AppCompatActivity() {
         } else {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-
-        thread {
-            FastAniApi.init()
+        if (settingsManager.getBoolean("use_external_storage", false)) {
+            if (!checkWrite()){
+                Toast.makeText(activity, "Accept storage permissions to download", Toast.LENGTH_LONG).show()
+                requestRW()
+            }
         }
         thread {
-            // Developers please do not share an apk with donor mode enabled for all as fastani relies on donors to keep the site alive and ad-free.
+            ShiroApi.init()
+        }
+        thread {
             isDonor = getDonorStatus() == androidId
         }
         if (settingsManager.getBoolean("auto_update", true)) {

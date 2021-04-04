@@ -14,7 +14,6 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.player.*
 import kotlinx.android.synthetic.main.player_custom_layout.*
-import java.lang.Exception
 import android.view.animation.AlphaAnimation
 import com.lagradost.shiro.MainActivity.Companion.getColorFromAttr
 import android.app.RemoteAction
@@ -52,7 +51,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.lagradost.shiro.FastAniApi.Companion.getVideoLink
+import com.lagradost.shiro.ShiroApi.Companion.USER_AGENT
+import com.lagradost.shiro.ShiroApi.Companion.getVideoLink
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.hideKeyboard
 import com.lagradost.shiro.MainActivity.Companion.hideSystemUI
@@ -79,9 +79,9 @@ data class PlayerData(
 
     @JsonProperty("episodeIndex") var episodeIndex: Int?,
     @JsonProperty("seasonIndex") var seasonIndex: Int?,
-    @JsonProperty("card") val card: FastAniApi.AnimePageData?,
+    @JsonProperty("card") val card: ShiroApi.AnimePageData?,
     @JsonProperty("startAt") val startAt: Long?,
-    @JsonProperty("anilistId") val anilistId: String?,
+    @JsonProperty("slug") val slug: String,
 )
 
 enum class PlayerEventType(val value: Int) {
@@ -128,11 +128,13 @@ class PlayerFragment() : Fragment() {
             }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onAttach(context: Context) {
         super.onAttach(context)
         arguments?.getString("data")?.let {
             data = mapper.readValue(it, PlayerData::class.java)
         }
+
     }
 
     private var isLocked = false
@@ -253,7 +255,7 @@ class PlayerFragment() : Fragment() {
         }
     }
 
-    private fun getCurrentEpisode(): FastAniApi.ShiroEpisodes? {
+    private fun getCurrentEpisode(): ShiroApi.ShiroEpisodes? {
         return data?.card?.episodes?.get(data?.episodeIndex!!)//data?.card!!.cdnData.seasons.getOrNull(data?.seasonIndex!!)?.episodes?.get(data?.episodeIndex!!)
     }
 
@@ -277,12 +279,14 @@ class PlayerFragment() : Fragment() {
     }
 
     fun savePos() {
-        if (((data?.anilistId != null
-                    && data?.seasonIndex != null
-                    && data?.episodeIndex != null) || data?.card != null)
-            && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
-        ) {
-            MainActivity.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
+        if (this::exoPlayer.isInitialized) {
+            if (((data?.slug != null
+                        && data?.seasonIndex != null
+                        && data?.episodeIndex != null) || data?.card != null)
+                && exoPlayer.duration > 0 && exoPlayer.currentPosition > 0
+            ) {
+                MainActivity.setViewPosDur(data!!, exoPlayer.currentPosition, exoPlayer.duration)
+            }
         }
     }
 
@@ -385,7 +389,8 @@ class PlayerFragment() : Fragment() {
     }
 
     private fun updatePIPModeActions() {
-        if (!MainActivity.isInPIPMode) return
+        if (!MainActivity.isInPIPMode || !this::exoPlayer.isInitialized) return
+
         val actions: ArrayList<RemoteAction> = ArrayList()
 
         actions.add(getRemoteAction(R.drawable.go_back_30, "Go Back", PlayerEventType.SeekBack))
@@ -659,7 +664,6 @@ class PlayerFragment() : Fragment() {
 
         }
 
-
         click_overlay.setOnTouchListener(
             Listener()
         )
@@ -701,6 +705,7 @@ class PlayerFragment() : Fragment() {
             MainActivity.popCurrentPage()
         }
         video_go_back_holder.setOnClickListener {
+            println("video_go_back_pressed")
             MainActivity.popCurrentPage()
         }
         exo_rew_text.text = fastForwardTime.toString()
@@ -777,8 +782,10 @@ class PlayerFragment() : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(STATE_RESUME_WINDOW, exoPlayer.currentWindowIndex)
-        outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
+        if (this::exoPlayer.isInitialized) {
+            outState.putInt(STATE_RESUME_WINDOW, exoPlayer.currentWindowIndex)
+            outState.putLong(STATE_RESUME_POSITION, exoPlayer.currentPosition)
+        }
         outState.putBoolean(STATE_PLAYER_FULLSCREEN, isFullscreen)
         outState.putBoolean(STATE_PLAYER_PLAYING, isPlayerPlaying)
         outState.putInt(RESIZE_MODE_KEY, resizeMode!!)
@@ -789,11 +796,9 @@ class PlayerFragment() : Fragment() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initPlayer() {
-        // NEEDED FOR HEADERS
         view?.setOnTouchListener { _, _ -> return@setOnTouchListener true } // VERY IMPORTANT https://stackoverflow.com/questions/28818926/prevent-clicking-on-a-button-in-an-activity-while-showing-a-fragment
         thread {
             var currentUrl = getCurrentUrl()
-            println(currentUrl)
             if (currentUrl == null) {
                 requireActivity().runOnUiThread {
                     Toast.makeText(activity, "Error getting link", Toast.LENGTH_LONG).show()
@@ -801,172 +806,172 @@ class PlayerFragment() : Fragment() {
                 }
                 currentUrl = ""
             }
-            requireActivity().runOnUiThread {
-                val isOnline = currentUrl?.startsWith("https://") == true || currentUrl?.startsWith("http://") == true
+            try {
+                requireActivity().runOnUiThread {
+                    val isOnline =
+                        currentUrl?.startsWith("https://") == true || currentUrl?.startsWith("http://") == true
 
-                class CustomFactory : DataSource.Factory {
-                    override fun createDataSource(): DataSource {
-                        return if (isOnline) {
-                            val dataSource = DefaultHttpDataSourceFactory(FastAniApi.USER_AGENT).createDataSource()
-                            FastAniApi.currentHeaders?.forEach {
-                                dataSource.setRequestProperty(it.key, it.value)
+                    class CustomFactory : DataSource.Factory {
+                        override fun createDataSource(): DataSource {
+                            return if (isOnline) {
+                                val dataSource = DefaultHttpDataSourceFactory(USER_AGENT).createDataSource()
+                                /*FastAniApi.currentHeaders?.forEach {
+                                    dataSource.setRequestProperty(it.key, it.value)
+                                }*/
+                                dataSource.setRequestProperty("Referer", "https://cherry.subsplea.se/")
+                                dataSource
+                            } else {
+                                DefaultDataSourceFactory(requireContext(), USER_AGENT).createDataSource()
                             }
-                            dataSource
-                        } else {
-                            DefaultDataSourceFactory(requireContext(), "ua").createDataSource()
                         }
                     }
-                }
-                if (data?.card != null || (data?.anilistId != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
-                    val pro = getViewPosDur(
-                        if (data?.card != null) data?.card!!.slug else data?.anilistId!!,
-                        data?.seasonIndex!!,
-                        data?.episodeIndex!!
-                    )
-                    playbackPosition =
-                        if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
-                            pro.pos
-                        } else {
-                            0L
-                        }
-                } else if (data?.startAt != null) {
-                    playbackPosition = data?.startAt!!
-                }
-                video_title.text = getCurrentTitle()
-                if (canPlayNextEpisode()) {
-                    next_episode_btt.visibility = VISIBLE
-                    next_episode_btt.setOnClickListener {
-                        savePos()
-                        val next =
-                            data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1
-                        val key = MainActivity.getViewKey(
-                            data?.card!!.slug,
-                            0,
-                            data!!.episodeIndex!! + 1
+                    if (data?.card != null || (data?.slug != null && data?.episodeIndex != null && data?.seasonIndex != null)) {
+                        val pro = getViewPosDur(
+                            if (data?.card != null) data?.card!!.slug else data?.slug!!,
+                            data?.episodeIndex!!
                         )
-                        DataStore.removeKey(VIEW_POS_KEY, key)
-                        DataStore.removeKey(VIEW_DUR_KEY, key)
-
-                        data?.seasonIndex = 0
-                        data?.episodeIndex = data!!.episodeIndex!! + 1
-                        releasePlayer()
-                        initPlayer()
+                        playbackPosition =
+                            if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
+                                pro.pos
+                            } else {
+                                0L
+                            }
+                    } else if (data?.startAt != null) {
+                        playbackPosition = data?.startAt!!
                     }
-                }
-                // this to make the button visible in the editor
-                else {
-                    next_episode_btt.visibility = GONE
-                }
+                    video_title?.text = getCurrentTitle()
+                    if (canPlayNextEpisode()) {
+                        next_episode_btt.visibility = VISIBLE
+                        next_episode_btt.setOnClickListener {
+                            savePos()
+                            val next =
+                                data!!.card!!.episodes!!.size > data!!.episodeIndex!! + 1
+                            val key = MainActivity.getViewKey(
+                                data?.card!!.slug,
+                                data!!.episodeIndex!! + 1
+                            )
+                            DataStore.removeKey(VIEW_POS_KEY, key)
+                            DataStore.removeKey(VIEW_DUR_KEY, key)
 
-                if (isOnline) {
-                    currentUrl = currentUrl?.replace(" ", "%20")
-                }
-                val _mediaItem = MediaItem.Builder()
-                    //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
-                    .setMimeType(MimeTypes.APPLICATION_MP4)
-
-                if (isOnline) {
-                    _mediaItem.setUri(currentUrl)
-                } else {
-                    _mediaItem.setUri(Uri.fromFile(File(currentUrl)))
-                }
-
-                val mediaItem = _mediaItem.build()
-                val trackSelector = DefaultTrackSelector(requireContext())
-                // Disable subtitles
-                trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
-                    .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
-                    .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
-                    .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
-                    .clearSelectionOverrides()
-                    .build()
-
-                val _exoPlayer =
-                    SimpleExoPlayer.Builder(this.requireContext())
-                        .setTrackSelector(trackSelector)
-
-                if (!isOnline) {
-                    _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
-                }
-
-                exoPlayer = _exoPlayer.build().apply {
-                    playWhenReady = isPlayerPlaying
-                    seekTo(currentWindow, playbackPosition)
-                    setMediaItem(mediaItem, false)
-                    prepare()
-                }
-
-                val alphaAnimation = AlphaAnimation(1f, 0f)
-                alphaAnimation.duration = 300
-                alphaAnimation.fillAfter = true
-                loading_overlay.startAnimation(alphaAnimation)
-                video_go_back_holder.visibility = GONE
-
-                exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
-                player_view.player = exoPlayer
-                // Sets the speed
-                exoPlayer.setPlaybackParameters(PlaybackParameters(playbackSpeed!!))
-
-                //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
-                exoPlayer.addListener(object : DefaultEventListener() {
-                    override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                        updatePIPModeActions()
-                        if (playWhenReady && playbackState == Player.STATE_READY) {
-                            MainActivity.requestAudioFocus()
+                            data?.seasonIndex = 0
+                            data?.episodeIndex = data!!.episodeIndex!! + 1
+                            releasePlayer()
+                            initPlayer()
                         }
                     }
+                    // this to make the button visible in the editor
+                    else {
+                        next_episode_btt.visibility = GONE
+                    }
 
-                    override fun onPlayerError(error: ExoPlaybackException) {
-                        // Lets pray this doesn't spam Toasts :)
-                        when (error.type) {
-                            ExoPlaybackException.TYPE_SOURCE -> {
-                                if (currentUrl != "") {
+                    if (isOnline) {
+                        currentUrl = currentUrl?.replace(" ", "%20")
+                    }
+                    val _mediaItem = MediaItem.Builder()
+                        //Replace needed for android 6.0.0  https://github.com/google/ExoPlayer/issues/5983
+                        .setMimeType(MimeTypes.APPLICATION_MP4)
+
+                    if (isOnline) {
+                        _mediaItem.setUri(currentUrl)
+                    } else {
+                        _mediaItem.setUri(Uri.fromFile(File(currentUrl)))
+                    }
+
+                    val mediaItem = _mediaItem.build()
+                    val trackSelector = DefaultTrackSelector(requireContext())
+                    // Disable subtitles
+                    trackSelector.parameters = DefaultTrackSelector.ParametersBuilder(requireContext())
+                        .setRendererDisabled(C.TRACK_TYPE_VIDEO, true)
+                        .setRendererDisabled(C.TRACK_TYPE_TEXT, true)
+                        .setDisabledTextTrackSelectionFlags(C.TRACK_TYPE_TEXT)
+                        .clearSelectionOverrides()
+                        .build()
+
+                    val _exoPlayer =
+                        SimpleExoPlayer.Builder(this.requireContext())
+                            .setTrackSelector(trackSelector)
+
+                    _exoPlayer.setMediaSourceFactory(DefaultMediaSourceFactory(CustomFactory()))
+
+                    exoPlayer = _exoPlayer.build().apply {
+                        playWhenReady = isPlayerPlaying
+                        seekTo(currentWindow, playbackPosition)
+                        setMediaItem(mediaItem, false)
+                        prepare()
+                    }
+
+                    val alphaAnimation = AlphaAnimation(1f, 0f)
+                    alphaAnimation.duration = 300
+                    alphaAnimation.fillAfter = true
+                    loading_overlay.startAnimation(alphaAnimation)
+                    video_go_back_holder.visibility = GONE
+
+                    exoPlayer.setHandleAudioBecomingNoisy(true) // WHEN HEADPHONES ARE PLUGGED OUT https://github.com/google/ExoPlayer/issues/7288
+                    player_view.player = exoPlayer
+                    // Sets the speed
+                    exoPlayer.setPlaybackParameters(PlaybackParameters(playbackSpeed!!))
+
+                    //https://stackoverflow.com/questions/47731779/detect-pause-resume-in-exoplayer
+                    exoPlayer.addListener(object : DefaultEventListener() {
+                        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                            updatePIPModeActions()
+                            if (playWhenReady && playbackState == Player.STATE_READY) {
+                                MainActivity.requestAudioFocus()
+                            }
+                        }
+
+                        override fun onPlayerError(error: ExoPlaybackException) {
+                            // Lets pray this doesn't spam Toasts :)
+                            when (error.type) {
+                                ExoPlaybackException.TYPE_SOURCE -> {
+                                    if (currentUrl != "") {
+                                        Toast.makeText(
+                                            activity,
+                                            "Source error\n" + error.sourceException.message,
+                                            LENGTH_LONG
+                                        )
+                                            .show()
+                                    }
+                                }
+                                ExoPlaybackException.TYPE_REMOTE -> {
+                                    Toast.makeText(activity, "Remote error", LENGTH_LONG)
+                                        .show()
+                                }
+                                ExoPlaybackException.TYPE_RENDERER -> {
                                     Toast.makeText(
                                         activity,
-                                        "Source error\n" + error.sourceException.message,
+                                        "Renderer error\n" + error.rendererException.message,
                                         LENGTH_LONG
                                     )
                                         .show()
                                 }
-                            }
-                            ExoPlaybackException.TYPE_REMOTE -> {
-                                Toast.makeText(activity, "Remote error", LENGTH_LONG)
-                                    .show()
-                            }
-                            ExoPlaybackException.TYPE_RENDERER -> {
-                                Toast.makeText(
-                                    activity,
-                                    "Renderer error\n" + error.rendererException.message,
-                                    LENGTH_LONG
-                                )
-                                    .show()
-                            }
-                            ExoPlaybackException.TYPE_UNEXPECTED -> {
-                                Toast.makeText(
-                                    activity,
-                                    "Unexpected player error\n" + error.unexpectedException.message,
-                                    LENGTH_LONG
-                                ).show()
+                                ExoPlaybackException.TYPE_UNEXPECTED -> {
+                                    Toast.makeText(
+                                        activity,
+                                        "Unexpected player error\n" + error.unexpectedException.message,
+                                        LENGTH_LONG
+                                    ).show()
+                                }
                             }
                         }
-                    }
-                })
+                    })
+                }
+            } catch (e: java.lang.IllegalStateException) {
+                println("Warning: Illegal state exception in PlayerFragment")
             }
         }
-
     }
 
     override fun onStart() {
         super.onStart()
         hideSystemUI()
         if (data?.card != null) {
-            val pro = getViewPosDur(data?.card!!.slug, data?.seasonIndex!!, data?.episodeIndex!!)
+            val pro = getViewPosDur(data?.card!!.slug, data?.episodeIndex!!)
             if (pro.pos > 0 && pro.dur > 0 && (pro.pos * 100 / pro.dur) < 95) { // UNDER 95% RESUME
                 playbackPosition = pro.pos
             }
         }
         thread {
-
             if (Util.SDK_INT > 23) {
                 initPlayer()
                 if (player_view != null) player_view.onResume()
@@ -1001,11 +1006,14 @@ class PlayerFragment() : Fragment() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.player, container, false)
+        val playerView = inflater.inflate(R.layout.player, container, false)
+        return playerView
+
     }
 }

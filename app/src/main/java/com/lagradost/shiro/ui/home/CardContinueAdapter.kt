@@ -13,8 +13,8 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.FastAniApi.Companion.getFullUrl
-import com.lagradost.shiro.FastAniApi.Companion.requestHome
+import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
+import com.lagradost.shiro.ShiroApi.Companion.requestHome
 import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.loadPlayer
 import com.lagradost.shiro.ui.GlideApp
@@ -63,7 +63,7 @@ class CardContinueAdapter(
         fun bind(cardInfo: LastEpisodeInfo?) {
             if (cardInfo != null) {
                 val glideUrl =
-                    GlideUrl(cardInfo.id?.let { getFullUrl(it.image) })
+                    GlideUrl(cardInfo.id?.let { getFullUrlCdn(it.image) })
                 //  activity?.runOnUiThread {
                 context.let {
                     GlideApp.with(it)

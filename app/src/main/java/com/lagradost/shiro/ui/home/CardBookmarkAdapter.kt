@@ -9,18 +9,16 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.lagradost.shiro.ui.result.ShiroResultFragment
 import com.lagradost.shiro.*
-import com.lagradost.shiro.ShiroApi.Companion.getFullUrlCdn
-import com.lagradost.shiro.MainActivity.Companion.activity
 import com.lagradost.shiro.MainActivity.Companion.fixCardTitle
 import com.lagradost.shiro.ui.GlideApp
+import com.lagradost.shiro.ui.result.ShiroResultFragment
 import kotlinx.android.synthetic.main.home_card.view.*
 
-
-class CardAdapter(
+/*Creates card adapters for the bookmarks list*/
+class CardBookmarkAdapter(
     context: Context,
-    animeList: ArrayList<ShiroApi.AnimePageData?>,
+    animeList: List<BookmarkedTitle?>?,
     resView: RecyclerView
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -39,24 +37,24 @@ class CardAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is CardViewHolder -> {
-                holder.bind(cardList[position])
+                holder.bind(cardList?.get(position))
             }
 
         }
     }
 
     override fun getItemCount(): Int {
-        return cardList.size
+        return if (cardList?.size == null) 0 else cardList!!.size
     }
 
     class CardViewHolder
     constructor(itemView: View, _context: Context, resView: RecyclerView) : RecyclerView.ViewHolder(itemView) {
         val context = _context
         val card: ImageView = itemView.imageView
-        fun bind(cardInfo: ShiroApi.AnimePageData?) {
+        fun bind(cardInfo: BookmarkedTitle?) {
             if (cardInfo != null) {
                 val glideUrl =
-                    GlideUrl(getFullUrlCdn(cardInfo.image))
+                    GlideUrl(ShiroApi.getFullUrlCdn(cardInfo.image))
                 //  activity?.runOnUiThread {
                 context.let {
                     GlideApp.with(it)
@@ -72,7 +70,7 @@ class CardAdapter(
                     return@setOnLongClickListener true
                 }
                 itemView.home_card_root.setOnClickListener {
-                    activity?.supportFragmentManager?.beginTransaction()
+                    MainActivity.activity?.supportFragmentManager?.beginTransaction()
                         ?.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                         ?.add(R.id.homeRoot, ShiroResultFragment.newInstance(cardInfo))
                         ?.commit()

@@ -2,7 +2,6 @@ package com.lagradost.shiro.ui.settings
 
 import android.content.*
 import android.content.pm.ActivityInfo
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
@@ -11,12 +10,13 @@ import androidx.preference.*
 
 import androidx.preference.PreferenceFragmentCompat
 import com.bumptech.glide.Glide
-import com.google.android.exoplayer2.offline.Download
 import com.lagradost.shiro.*
 import com.lagradost.shiro.DataStore.getKeys
 import com.lagradost.shiro.DataStore.removeKeys
+import com.lagradost.shiro.MainActivity.Companion.checkWrite
 import com.lagradost.shiro.MainActivity.Companion.isDonor
 import com.lagradost.shiro.MainActivity.Companion.md5
+import com.lagradost.shiro.MainActivity.Companion.requestRW
 import com.lagradost.shiro.R
 import com.lagradost.shiro.VIEW_LST_KEY
 import kotlin.concurrent.thread
@@ -50,7 +50,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                 ).show()
                             }
                             thread {
-                                FastAniApi.requestHome(true)
+                                ShiroApi.requestHome(true)
                             }
                             clearHistory.summary = "0 items"
                         })
@@ -198,7 +198,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val checkUpdates = findPreference("check_updates") as Preference?
         checkUpdates?.setOnPreferenceClickListener {
             thread {
-                val update = FastAniApi.getAppUpdate()
+                val update = ShiroApi.getAppUpdate()
                 activity?.runOnUiThread {
                     if (update.shouldUpdate && update.updateVersion != null && update.updateURL != null) {
                         //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.updateURL)))
@@ -216,7 +216,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
             MainActivity.changeStatusBarState(newValue == true)
             return@setOnPreferenceChangeListener true
         }
-
+        val useExternalStorage = findPreference("use_external_storage") as SwitchPreference?
+        useExternalStorage?.setOnPreferenceChangeListener { _, newValue ->
+            if (newValue == true) {
+                if (!checkWrite()) {
+                    requestRW()
+                }
+            }
+            return@setOnPreferenceChangeListener true
+        }
         // EASTER EGG THEME
         val versionButton = findPreference("version") as Preference?
         val coolMode = findPreference("cool_mode") as SwitchPreference?

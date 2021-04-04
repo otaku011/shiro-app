@@ -1,7 +1,7 @@
 <resources>
-    <string name="version_code">1.0.3 Public Release</string>
+    <string name="version_code">1.4.2 Public Release</string>
     <string name="changelog">\n
-        - Increased timeout and removed one crash\n
+        - Added option to download to sdcard\n
     </string>
     <string name="app_name">Shiro Unofficial</string>
     <string name="title_home">Home</string>
@@ -24,7 +24,7 @@
     <string name="home_recently_updated">Recently Updated</string>
     <string name="home_background_content_description">Background</string>
     <string name="resultpage1">Download something to make it show up here</string>
-    <string name="resultpage2">Donate to download shows</string>
+    <string name="resultpage2">Downloads unavailable</string>
     <string name="error_connecting_reload">Error Connecting, Reload</string>
     <string name="acra_report_toast">Sorry, the application crashed. An anonymous bug report will be sent to the
         developers :)
@@ -32,4 +32,6 @@
     <string name="pref_disable_acra">Disable automatic bug reporting</string>
     <string name="downloads">Downloads</string>
     <string name="latest_anime">Latest anime</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

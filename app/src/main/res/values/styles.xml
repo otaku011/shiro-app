@@ -18,8 +18,10 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorOnPrimary">@color/colorAccent</item>
+
         <!-- <item name="android:windowBackground">@drawable/splash_background</item> -->
         <item name="colorPrimaryMegaDark">@color/colorPrimaryMegaDark</item>
+        <item name="colorPrimaryDarker">@color/colorPrimaryDarker</item>
         <!-- <item name="android:windowBackground">@color/darkBar</item>-->
         <item name="castExpandedControllerStyle">
             @style/CustomCastExpandedController
@@ -53,6 +55,7 @@
         <item name="colorPrimaryMegaDark">#121840</item>
         <item name="colorPrimary">#3F51B5</item>
         <item name="colorPrimaryDark">#303F9F</item>
+        <item name="colorPrimaryDarker">#212C70</item>
         <item name="colorAccent">#007dfe</item>
         <item name="colorOnPrimary">#007dfe</item>
     </style>
@@ -95,4 +98,10 @@
     <style name="Button.White" parent="ThemeOverlay.AppCompat">
         <item name="colorPrimary">@android:color/white</item>
     </style>
+
+    <style name="CustomProgressBarTheme">
+        <item name="colorAccent">@color/white</item>
+        <item name="android:progressBarStyle">@style/Widget.AppCompat.ProgressBar.Horizontal</item>
+    </style>
+
 </resources>

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.lagradost.shiro.ui.downloads.DownloadFragment
 import java.net.URL
 import java.security.SecureRandom
 import kotlin.concurrent.thread
@@ -78,7 +77,7 @@ class MALApi {
             try {
                 if (response != "") {
                     var token = mapper.readValue<ResponseToken>(response)
-                    DataStore.setKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID, (token.expires_in + MainActivity.UnixTime()))
+                    DataStore.setKey(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID, (token.expires_in + MainActivity.unixTime()))
                     DataStore.setKey(MAL_REFRESH_TOKEN_KEY, MAL_ACCOUNT_ID, token.refresh_token)
                     DataStore.setKey(MAL_TOKEN_KEY, MAL_ACCOUNT_ID, token.access_token)
                 }
@@ -150,7 +149,7 @@ class MALApi {
         }
 
         fun checkToken() {
-            if (MainActivity.UnixTime() > DataStore.getKey<Long>(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)!!) {
+            if (MainActivity.unixTime() > DataStore.getKey<Long>(MAL_UNIXTIME_KEY, MAL_ACCOUNT_ID)!!) {
                 refreshToken()
             }
         }

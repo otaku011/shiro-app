@@ -20,6 +20,8 @@ const val DOWNLOAD_PARENT_KEY: String = "dload_parent" // DownloadParentFileMeta
 const val PLAYBACK_SPEED_KEY: String = "playback_speed" // Last used playback speed
 const val RESIZE_MODE_KEY: String = "resize_mode" // Last used resize mode
 
+const val LEGACY_BOOKMARKS: String = "legacy_bookmarks" // for converting old bookmark system
+
 const val ANILIST_UNIXTIME_KEY: String = "anilist_unixtime" // When token expires
 const val MAL_UNIXTIME_KEY: String = "mal_unixtime" // When token expires
 

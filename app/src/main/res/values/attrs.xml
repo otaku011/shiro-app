@@ -2,5 +2,6 @@
 <resources>
     <declare-styleable name="MainColors">
         <attr name="colorPrimaryMegaDark" format="color" />
+        <attr name="colorPrimaryDarker" format="color" />
     </declare-styleable>
 </resources>

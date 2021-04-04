@@ -30,7 +30,18 @@
                 android:title="Compact search results"
                 app:defaultValue="true"
         />
-
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_language_24"
+                app:key="hide_dubbed"
+                android:title="Hide all dubbed shows"
+                app:defaultValue="true"
+        />
+        <SwitchPreference
+                android:icon="@drawable/ic_baseline_storage_24"
+                app:key="use_external_storage"
+                android:title="Use external storage for downloads"
+                app:defaultValue="false"
+        />
         <SwitchPreference android:key="acra.disable"
                           android:icon="@drawable/ic_baseline_bug_report_24"
                           android:title="@string/pref_disable_acra"
@@ -207,14 +218,15 @@
 
         </Preference>
         <Preference
-                android:title="Discord"
+                android:title="Shiro.is discord"
                 android:icon="@drawable/ic_baseline_discord_24"
-                app:summary="Join the Shiro community "
+                app:summary="Join the Shiro community"
         >
             <intent android:action="android.intent.action.VIEW"
                     android:data="https://discord.gg/shiro"/>
 
         </Preference>
+
         <Preference
                 android:title="Github"
                 android:icon="@drawable/ic_github_logo"
